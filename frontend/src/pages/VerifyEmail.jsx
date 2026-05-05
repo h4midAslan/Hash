@@ -9,7 +9,7 @@ export default function VerifyEmail() {
   useEffect(() => {
     const token = searchParams.get("token");
     if (!token) { setStatus("invalid"); return; }
-    api.get(`/api/auth/verify-email?token=${token}`)
+    api.get(`/auth/verify-email?token=${token}`)
       .then(() => setStatus("success"))
       .catch(() => setStatus("invalid"));
   }, []);
