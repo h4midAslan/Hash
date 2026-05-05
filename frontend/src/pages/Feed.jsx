@@ -6,6 +6,7 @@ import UserAvatar from "../components/UserAvatar";
 import { formatBakuDate, formatBakuHM } from "../utils/time";
 import { useDarkClasses } from "../hooks/useDarkClasses";
 import { toast } from "../components/Toast";
+import { useLang } from "../hooks/useLang";
 
 export default function Feed() {
   const [posts, setPosts] = useState([]);
@@ -24,6 +25,7 @@ export default function Feed() {
   const [commentText, setCommentText] = useState({});
   const [loading, setLoading] = useState(true);
   const d = useDarkClasses();
+  const { t } = useLang();
 
   useEffect(() => {
     loadFeed().finally(() => setLoading(false));
@@ -164,9 +166,9 @@ export default function Feed() {
       {user && (
         <div className="mb-6">
           <h1 className={`text-2xl font-bold ${d.heading}`}>
-            Salam, {user.full_name?.split(" ")[0]}
+            {t("feed_title")}
           </h1>
-          <p className={d.textFaint + " text-sm mt-1"}>Bugün nə paylaşmaq istəyirsən?</p>
+          <p className={d.textFaint + " text-sm mt-1"}>{t("feed_placeholder")}</p>
           {/* <Link to="/article/new" className="inline-flex items-center gap-2 mt-3 text-sm font-semibold text-blue-600 hover:text-blue-700 transition">
             <FileText size={16} /> Məqalə yaz
           </Link> */}
@@ -183,7 +185,7 @@ export default function Feed() {
             <textarea
               value={newPost}
               onChange={(e) => setNewPost(e.target.value)}
-              placeholder="Fikrin, layihən və ya təcrübən haqqında yaz..."
+              placeholder={t("feed_textarea")}
               className={`w-full p-3 border-0 resize-none focus:outline-none ${d.textSecondary} ${d.dark ? "placeholder-gray-500 bg-transparent" : "placeholder-gray-300"} text-[15px] leading-relaxed`}
               rows={3}
             />
@@ -220,7 +222,7 @@ export default function Feed() {
               <ThumbsDown size={14} /> göstər
             </label>
             <button type="submit" disabled={(!newPost.trim() && !imageUrl && !videoUrl) || posting || uploading} className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-2.5 rounded-xl font-semibold hover:shadow-lg hover:shadow-blue-200 transition-all duration-300 flex items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed disabled:shadow-none text-sm">
-              <Send size={15} /> {posting ? "Paylaşılır..." : "Paylaş"}
+              <Send size={15} /> {posting ? "..." : t("feed_share")}
             </button>
           </div>
         </div>
@@ -265,7 +267,7 @@ export default function Feed() {
               <div className="flex items-center gap-2">
                 {post.is_pinned && (
                   <span className="flex items-center gap-1.5 bg-gradient-to-r from-amber-50 to-orange-50 text-amber-600 text-xs px-3.5 py-1.5 rounded-full font-semibold border border-amber-100">
-                    <Pin size={12} /> Sabitlənmiş
+                    <Pin size={12} /> {t("feed_pinned")}
                   </span>
                 )}
                 {user && post.author_id === user.id && (
@@ -300,7 +302,7 @@ export default function Feed() {
             {openComments[post.id] && (
               <div className={`mt-4 pt-4 border-t ${d.border}`}>
                 <div className="flex gap-3 mb-4">
-                  <input type="text" value={commentText[post.id] || ""} onChange={(e) => setCommentText({ ...commentText, [post.id]: e.target.value })} onKeyDown={(e) => e.key === "Enter" && submitComment(post.id)} placeholder="Şərh yaz..."
+                  <input type="text" value={commentText[post.id] || ""} onChange={(e) => setCommentText({ ...commentText, [post.id]: e.target.value })} onKeyDown={(e) => e.key === "Enter" && submitComment(post.id)} placeholder={t("feed_comment_placeholder")}
                     className={`flex-1 px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-300 transition ${d.input}`} />
                   <button onClick={() => submitComment(post.id)} disabled={!commentText[post.id]?.trim()} className="bg-blue-600 text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-blue-700 transition disabled:opacity-30"><Send size={14} /></button>
                 </div>
@@ -353,8 +355,8 @@ export default function Feed() {
           <div className={`w-20 h-20 ${d.dark ? "bg-blue-500/10" : "bg-gradient-to-br from-blue-50 to-indigo-50"} rounded-3xl flex items-center justify-center mx-auto mb-5 shadow-sm`}>
             <TrendingUp size={32} className="text-blue-400" />
           </div>
-          <p className={`${d.text} font-semibold text-lg`}>Hələ post yoxdur</p>
-          <p className={`${d.textFaint} text-sm mt-2 max-w-xs mx-auto`}>İlk postu sən yaz və şəbəkəni canlandır!</p>
+          <p className={`${d.text} font-semibold text-lg`}>{t("feed_empty")}</p>
+          <p className={`${d.textFaint} text-sm mt-2 max-w-xs mx-auto`}>{t("feed_empty_sub")}</p>
         </div>
       )}
     </div>

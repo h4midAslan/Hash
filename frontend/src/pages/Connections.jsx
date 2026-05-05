@@ -4,12 +4,14 @@ import { Check, X, Users, Clock, UserCheck, UserMinus } from "lucide-react";
 import api from "../api/client";
 import { useDarkClasses } from "../hooks/useDarkClasses";
 import { toast } from "../components/Toast";
+import { useLang } from "../hooks/useLang";
 
 export default function Connections() {
   const [connections, setConnections] = useState([]);
   const [pending, setPending] = useState([]);
   const [tab, setTab] = useState("my");
   const d = useDarkClasses();
+  const { t } = useLang();
 
   useEffect(() => {
     loadConnections();
@@ -64,8 +66,8 @@ export default function Connections() {
   return (
     <div className="max-w-2xl mx-auto py-8 px-4">
       <div className="mb-6">
-        <h2 className={`text-2xl font-bold ${d.heading}`}>Bağlantılarım</h2>
-        <p className={`${d.textFaint} text-sm mt-1`}>Professional şəbəkəni idarə et</p>
+        <h2 className={`text-2xl font-bold ${d.heading}`}>{t("connections_title")}</h2>
+        <p className={`${d.textFaint} text-sm mt-1`}>{t("connections_subtitle")}</p>
       </div>
 
       {/* Tabs */}
@@ -78,7 +80,7 @@ export default function Connections() {
               : `${d.textFaint} hover:text-gray-700`
           }`}
         >
-          <UserCheck size={17} /> Bağlantılarım ({connections.length})
+          <UserCheck size={17} /> {t("connections_yours")} ({connections.length})
         </button>
         <button
           onClick={() => setTab("pending")}
@@ -88,7 +90,7 @@ export default function Connections() {
               : `${d.textFaint} hover:text-gray-700`
           }`}
         >
-          <Clock size={17} /> Gözləyən ({pending.length})
+          <Clock size={17} /> {t("connections_pending")} ({pending.length})
           {pending.length > 0 && (
             <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
           )}
@@ -155,7 +157,7 @@ export default function Connections() {
                     ? "bg-green-500/10 text-green-400 border-green-500/20 hover:bg-green-500/20"
                     : "bg-green-50 text-green-600 border-green-100 hover:shadow-md hover:shadow-green-100"
                 }`}
-                title="Qəbul et"
+                title={t("connections_accept")}
               >
                 <Check size={18} />
               </button>
@@ -166,7 +168,7 @@ export default function Connections() {
                     ? "bg-red-500/10 text-red-400 border-red-500/20 hover:bg-red-500/20"
                     : "bg-red-50 text-red-400 border-red-100 hover:bg-red-100"
                 }`}
-                title="Rədd et"
+                title={t("connections_reject")}
               >
                 <X size={18} />
               </button>
@@ -181,9 +183,9 @@ export default function Connections() {
           <div className={`w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-5 shadow-sm ${d.dark ? "bg-gray-800" : "bg-gradient-to-br from-blue-50 to-indigo-50"}`}>
             <Users size={32} className="text-blue-400" />
           </div>
-          <p className={`${d.text} font-semibold text-lg`}>Hələ bağlantınız yoxdur</p>
+          <p className={`${d.text} font-semibold text-lg`}>{t("connections_empty")}</p>
           <p className={`${d.textFaint} text-sm mt-2 max-w-xs mx-auto`}>
-            Tələbə axtarışından birini tapın və bağlantı istəyi göndərin
+            {t("feed_no_connections_sub")}
           </p>
         </div>
       )}
@@ -192,8 +194,7 @@ export default function Connections() {
           <div className={`w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-5 shadow-sm ${d.dark ? "bg-gray-800" : "bg-gradient-to-br from-gray-50 to-gray-100"}`}>
             <Clock size={32} className="text-gray-400" />
           </div>
-          <p className={`${d.text} font-semibold text-lg`}>Gözləyən istək yoxdur</p>
-          <p className={`${d.textFaint} text-sm mt-2`}>Bütün istəklər cavablandırılıb</p>
+          <p className={`${d.text} font-semibold text-lg`}>{t("connections_pending_empty")}</p>
         </div>
       )}
     </div>
