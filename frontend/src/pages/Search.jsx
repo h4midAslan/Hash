@@ -46,8 +46,8 @@ export default function Search() {
   return (
     <div className="max-w-2xl mx-auto py-8 px-4">
       <div className="mb-6">
-        <h2 className={`text-2xl font-bold ${d.heading}`}>Telebe axtar</h2>
-        <p className={`${d.textFaint} text-sm mt-1`}>Bacariq ve ya ad ile uygun telebeni tap</p>
+        <h2 className={`text-2xl font-bold ${d.heading}`}>Tələbə axtar</h2>
+        <p className={`${d.textFaint} text-sm mt-1`}>Bacarıq və ya ad ilə uyğun tələbəni tap</p>
       </div>
 
       {/* Search form */}
@@ -58,7 +58,7 @@ export default function Search() {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Ad ile axtar..."
+            placeholder="Ad ilə axtar..."
             className={`w-full pl-12 pr-4 py-3.5 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm ${d.inputAlt}`}
           />
         </div>
@@ -68,7 +68,7 @@ export default function Search() {
             type="text"
             value={skill}
             onChange={(e) => setSkill(e.target.value)}
-            placeholder="Bacariq filtri (mes: Python, Design)"
+            placeholder="Bacarıq filtri (məs: Python, Design)"
             className={`w-full pl-12 pr-4 py-3.5 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm ${d.inputAlt}`}
           />
         </div>
@@ -82,7 +82,7 @@ export default function Search() {
 
       {/* Results count */}
       {searched && results.length > 0 && (
-        <p className={`text-sm ${d.textFaint} mb-4 font-medium`}>{results.length} neticə tapildi</p>
+        <p className={`text-sm ${d.textFaint} mb-4 font-medium`}>{results.length} nəticə tapıldı</p>
       )}
 
       {/* Results */}
@@ -118,7 +118,7 @@ export default function Search() {
             <button
               onClick={() => sendConnection(user.id)}
               className={`p-3 rounded-xl hover:shadow-md transition-all duration-200 shrink-0 ml-3 border ${d.dark ? "bg-blue-500/10 text-blue-400 border-blue-500/20 hover:shadow-blue-900" : "bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-600 border-blue-100 hover:shadow-blue-100"}`}
-              title="Baglanti isteyi gonder"
+              title="Bağlantı istəyi göndər"
             >
               <UserPlus size={20} />
             </button>
@@ -132,8 +132,8 @@ export default function Search() {
           <div className={`w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-5 shadow-sm ${d.dark ? "bg-gray-700" : "bg-gradient-to-br from-gray-50 to-gray-100"}`}>
             <Users size={32} className="text-gray-400" />
           </div>
-          <p className={`${d.text} font-semibold text-lg`}>Netice tapilmadi</p>
-          <p className={`${d.textFaint} text-sm mt-2 max-w-xs mx-auto`}>Bashqa acar sozle yoxlayin ve ya bacariq filtrini deyishin</p>
+          <p className={`${d.text} font-semibold text-lg`}>Nəticə tapılmadı</p>
+          <p className={`${d.textFaint} text-sm mt-2 max-w-xs mx-auto`}>Başqa açar sözlə yoxlayın və ya bacarıq filtrini dəyişin</p>
         </div>
       )}
     </div>

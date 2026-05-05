@@ -166,7 +166,7 @@ export default function Feed() {
           <h1 className={`text-2xl font-bold ${d.heading}`}>
             Salam, {user.full_name?.split(" ")[0]}
           </h1>
-          <p className={d.textFaint + " text-sm mt-1"}>Bugün nə paylasmaq isteyirsen?</p>
+          <p className={d.textFaint + " text-sm mt-1"}>Bugün nə paylaşmaq istəyirsən?</p>
           {/* <Link to="/article/new" className="inline-flex items-center gap-2 mt-3 text-sm font-semibold text-blue-600 hover:text-blue-700 transition">
             <FileText size={16} /> Məqalə yaz
           </Link> */}
@@ -183,7 +183,7 @@ export default function Feed() {
             <textarea
               value={newPost}
               onChange={(e) => setNewPost(e.target.value)}
-              placeholder="Fikrin, layihen ve ya tecruben haqqinda yaz..."
+              placeholder="Fikrin, layihən və ya təcrübən haqqında yaz..."
               className={`w-full p-3 border-0 resize-none focus:outline-none ${d.textSecondary} ${d.dark ? "placeholder-gray-500 bg-transparent" : "placeholder-gray-300"} text-[15px] leading-relaxed`}
               rows={3}
             />
@@ -220,7 +220,7 @@ export default function Feed() {
               <ThumbsDown size={14} /> göstər
             </label>
             <button type="submit" disabled={(!newPost.trim() && !imageUrl && !videoUrl) || posting || uploading} className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-2.5 rounded-xl font-semibold hover:shadow-lg hover:shadow-blue-200 transition-all duration-300 flex items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed disabled:shadow-none text-sm">
-              <Send size={15} /> {posting ? "Paylaşılır..." : "Paylas"}
+              <Send size={15} /> {posting ? "Paylaşılır..." : "Paylaş"}
             </button>
           </div>
         </div>
@@ -265,7 +265,7 @@ export default function Feed() {
               <div className="flex items-center gap-2">
                 {post.is_pinned && (
                   <span className="flex items-center gap-1.5 bg-gradient-to-r from-amber-50 to-orange-50 text-amber-600 text-xs px-3.5 py-1.5 rounded-full font-semibold border border-amber-100">
-                    <Pin size={12} /> Sabitlenmis
+                    <Pin size={12} /> Sabitlənmiş
                   </span>
                 )}
                 {user && post.author_id === user.id && (
@@ -353,8 +353,8 @@ export default function Feed() {
           <div className={`w-20 h-20 ${d.dark ? "bg-blue-500/10" : "bg-gradient-to-br from-blue-50 to-indigo-50"} rounded-3xl flex items-center justify-center mx-auto mb-5 shadow-sm`}>
             <TrendingUp size={32} className="text-blue-400" />
           </div>
-          <p className={`${d.text} font-semibold text-lg`}>Hele post yoxdur</p>
-          <p className={`${d.textFaint} text-sm mt-2 max-w-xs mx-auto`}>Ilk postu sen yaz ve sebekeni canlandir!</p>
+          <p className={`${d.text} font-semibold text-lg`}>Hələ post yoxdur</p>
+          <p className={`${d.textFaint} text-sm mt-2 max-w-xs mx-auto`}>İlk postu sən yaz və şəbəkəni canlandır!</p>
         </div>
       )}
     </div>

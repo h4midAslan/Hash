@@ -69,22 +69,22 @@ export default function Messages() {
     <div className="max-w-5xl mx-auto py-8 px-4">
       <div className="mb-6">
         <h2 className={`text-2xl font-bold ${d.heading}`}>Mesajlar</h2>
-        <p className={`${d.textFaint} text-sm mt-1`}>Baglantilarin ile sohbet et</p>
+        <p className={`${d.textFaint} text-sm mt-1`}>Bağlantıların ilə söhbət et</p>
       </div>
 
       <div className={`flex ${d.card} rounded-3xl shadow-sm overflow-hidden`} style={{ height: "560px" }}>
-        {/* Chat siyahisi */}
+        {/* Chat siyahısı */}
         <div className={`w-full md:w-80 border-r ${d.border} overflow-y-auto ${activeChat ? "hidden md:block" : ""}`}>
           <div className={`p-4 border-b ${d.border}`}>
-            <h3 className={`text-sm font-semibold ${d.textMuted} uppercase tracking-wider`}>Sohbetler</h3>
+            <h3 className={`text-sm font-semibold ${d.textMuted} uppercase tracking-wider`}>Söhbətlər</h3>
           </div>
           {chats.length === 0 && (
             <div className={`flex flex-col items-center justify-center h-[calc(100%-57px)] ${d.textFaint} px-6`}>
               <div className={`w-16 h-16 ${d.dark ? "bg-gray-700" : "bg-gray-50"} rounded-2xl flex items-center justify-center mb-3`}>
                 <MessageCircle size={28} />
               </div>
-              <p className="text-sm font-medium">Hele mesaj yoxdur</p>
-              <p className={`text-xs ${d.textFaint} mt-1 text-center`}>Baglantilarin ile mesajlasmaga bashla</p>
+              <p className="text-sm font-medium">Hələ mesaj yoxdur</p>
+              <p className={`text-xs ${d.textFaint} mt-1 text-center`}>Bağlantıların ilə mesajlaşmağa başla</p>
             </div>
           )}
           {chats.map((chat) => (
@@ -121,7 +121,7 @@ export default function Messages() {
           ))}
         </div>
 
-        {/* Mesaj sahesi */}
+        {/* Mesaj sahəsi */}
         <div className={`flex-1 flex flex-col ${!activeChat ? "hidden md:flex" : ""}`}>
           {activeChat ? (
             <>
@@ -198,8 +198,8 @@ export default function Messages() {
               <div className={`w-20 h-20 rounded-3xl flex items-center justify-center mb-5 shadow-sm ${d.dark ? "bg-blue-500/10" : "bg-gradient-to-br from-blue-50 to-indigo-50"}`}>
                 <MessageCircle size={32} className="text-blue-400" />
               </div>
-              <p className={`font-semibold ${d.text} text-lg`}>Sohbet secin</p>
-              <p className={`text-sm mt-2 ${d.textFaint} text-center max-w-xs`}>Soldaki siyahidan bir sohbet secerek mesajlasmaga bashlayin</p>
+              <p className={`font-semibold ${d.text} text-lg`}>Söhbət seçin</p>
+              <p className={`text-sm mt-2 ${d.textFaint} text-center max-w-xs`}>Soldakı siyahıdan bir söhbət seçərək mesajlaşmağa başlayın</p>
             </div>
           )}
         </div>

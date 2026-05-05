@@ -78,7 +78,7 @@ export default function Admin() {
   };
 
   const deleteReportedPost = async (postId) => {
-    if (!confirm("Bu postu silmek isteyirsiniz? Sikayetler de silinecek.")) return;
+    if (!confirm("Bu postu silmək istəyirsinizmi? Şikayətlər də silinəcək.")) return;
     try {
       await api.delete(`/admin/posts/${postId}`);
       loadReports();
@@ -120,7 +120,7 @@ export default function Admin() {
   };
 
   const deleteUser = async (userId, name) => {
-    if (!confirm(`"${name}" istifadecisini silmek isteyirsiniz?\n\nBu emeliyyat geri qaytarila bilmez. Istifadecinin butun postlari, mesajlari ve baglantiları da silinecek.`)) return;
+    if (!confirm(`"${name}" istifadəçisini silmək istəyirsinizmi?\n\nBu əməliyyat geri qaytarıla bilməz. İstifadəçinin bütün postları, mesajları və bağlantıları da silinəcək.`)) return;
     try {
       await api.delete(`/admin/users/${userId}`);
       loadUsers();
@@ -141,7 +141,7 @@ export default function Admin() {
   };
 
   const deletePost = async (postId) => {
-    if (!confirm("Bu postu silmek isteyirsiniz?")) return;
+    if (!confirm("Bu postu silmək istəyirsinizmi?")) return;
     try {
       await api.delete(`/admin/posts/${postId}`);
       loadPosts();
@@ -153,9 +153,9 @@ export default function Admin() {
 
   const tabs = [
     { id: "dashboard", icon: BarChart3, label: "Panel" },
-    { id: "users", icon: Users, label: "Istifadeciler" },
+    { id: "users", icon: Users, label: "İstifadəçilər" },
     { id: "posts", icon: FileText, label: "Postlar" },
-    { id: "reports", icon: Flag, label: "Sikayetler" },
+    { id: "reports", icon: Flag, label: "Şikayətlər" },
     { id: "logs", icon: Activity, label: "Loglar" },
   ];
 
@@ -174,7 +174,7 @@ export default function Admin() {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Admin Panel</h1>
-              <p className="text-gray-400 text-sm mt-0.5">Hash platformasini idar et</p>
+              <p className="text-gray-400 text-sm mt-0.5">Hash platformasını idarə et</p>
             </div>
           </div>
           <button
@@ -182,7 +182,7 @@ export default function Admin() {
             className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-all shadow-sm"
           >
             <RefreshCw size={15} />
-            Yenile
+            Yenilə
           </button>
         </div>
 
@@ -209,12 +209,12 @@ export default function Admin() {
             {/* Stats Grid */}
             {stats && (
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
-                <StatCard icon={Users} label="Umumi istifadeci" value={stats.total_users} color="slate" />
-                <StatCard icon={UserCheck} label="Aktiv istifadeci" value={stats.active_users} color="emerald" subtitle={stats.total_users > 0 ? `${Math.round((stats.active_users / stats.total_users) * 100)}% aktiv` : null} />
-                <StatCard icon={FileText} label="Umumi post" value={stats.total_posts} color="blue" />
-                <StatCard icon={Link2} label="Baglanti isteyi" value={stats.total_connections} color="violet" />
-                <StatCard icon={CheckCircle} label="Qebul edilmis" value={stats.accepted_connections} color="teal" subtitle={stats.total_connections > 0 ? `${Math.round((stats.accepted_connections / stats.total_connections) * 100)}% qebul` : null} />
-                <StatCard icon={MessageCircle} label="Umumi mesaj" value={stats.total_messages} color="amber" />
+                <StatCard icon={Users} label="Ümumi istifadəçi" value={stats.total_users} color="slate" />
+                <StatCard icon={UserCheck} label="Aktiv istifadəçi" value={stats.active_users} color="emerald" subtitle={stats.total_users > 0 ? `${Math.round((stats.active_users / stats.total_users) * 100)}% aktiv` : null} />
+                <StatCard icon={FileText} label="Ümumi post" value={stats.total_posts} color="blue" />
+                <StatCard icon={Link2} label="Bağlantı istəyi" value={stats.total_connections} color="violet" />
+                <StatCard icon={CheckCircle} label="Qəbul edilmiş" value={stats.accepted_connections} color="teal" subtitle={stats.total_connections > 0 ? `${Math.round((stats.accepted_connections / stats.total_connections) * 100)}% qəbul` : null} />
+                <StatCard icon={MessageCircle} label="Ümumi mesaj" value={stats.total_messages} color="amber" />
               </div>
             )}
 
@@ -223,26 +223,26 @@ export default function Admin() {
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
                   <div className="flex items-center justify-between mb-5">
-                    <h3 className="font-bold text-gray-900">Platform xulasesi</h3>
+                    <h3 className="font-bold text-gray-900">Platform xülasəsi</h3>
                     <Activity size={18} className="text-gray-300" />
                   </div>
                   <div className="space-y-4">
-                    <OverviewRow label="Orta post/istifadeci" value={stats.total_users > 0 ? (stats.total_posts / stats.total_users).toFixed(1) : "0"} />
-                    <OverviewRow label="Orta mesaj/istifadeci" value={stats.total_users > 0 ? (stats.total_messages / stats.total_users).toFixed(1) : "0"} />
-                    <OverviewRow label="Orta baglanti/istifadeci" value={stats.total_users > 0 ? (stats.accepted_connections / stats.total_users).toFixed(1) : "0"} />
-                    <OverviewRow label="Bloklanmis istifadeci" value={stats.total_users - stats.active_users} highlight={stats.total_users - stats.active_users > 0} />
+                    <OverviewRow label="Orta post/istifadəçi" value={stats.total_users > 0 ? (stats.total_posts / stats.total_users).toFixed(1) : "0"} />
+                    <OverviewRow label="Orta mesaj/istifadəçi" value={stats.total_users > 0 ? (stats.total_messages / stats.total_users).toFixed(1) : "0"} />
+                    <OverviewRow label="Orta bağlantı/istifadəçi" value={stats.total_users > 0 ? (stats.accepted_connections / stats.total_users).toFixed(1) : "0"} />
+                    <OverviewRow label="Bloklanmış istifadəçi" value={stats.total_users - stats.active_users} highlight={stats.total_users - stats.active_users > 0} />
                   </div>
                 </div>
 
                 <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
                   <div className="flex items-center justify-between mb-5">
-                    <h3 className="font-bold text-gray-900">Suretli emeliyyatlar</h3>
+                    <h3 className="font-bold text-gray-900">Sürətli əməliyyatlar</h3>
                     <TrendingUp size={18} className="text-gray-300" />
                   </div>
                   <div className="space-y-2.5">
-                    <QuickAction icon={Users} label="Istifadeciileri idar et" count={stats.total_users} onClick={() => setTab("users")} />
-                    <QuickAction icon={FileText} label="Postlari idar et" count={stats.total_posts} onClick={() => setTab("posts")} />
-                    <QuickAction icon={Ban} label="Bloklanmis hesablar" count={stats.total_users - stats.active_users} onClick={() => setTab("users")} warning={stats.total_users - stats.active_users > 0} />
+                    <QuickAction icon={Users} label="İstifadəçiləri idarə et" count={stats.total_users} onClick={() => setTab("users")} />
+                    <QuickAction icon={FileText} label="Postları idarə et" count={stats.total_posts} onClick={() => setTab("posts")} />
+                    <QuickAction icon={Ban} label="Bloklanmış hesablar" count={stats.total_users - stats.active_users} onClick={() => setTab("users")} warning={stats.total_users - stats.active_users > 0} />
                   </div>
                 </div>
               </div>
@@ -268,14 +268,14 @@ export default function Admin() {
                     type="text"
                     value={userSearch}
                     onChange={(e) => setUserSearch(e.target.value)}
-                    placeholder="Ad ile axtar..."
+                    placeholder="Ad ilə axtar..."
                     className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent transition-all text-sm shadow-sm"
                   />
                 </div>
               </form>
               <div className="flex gap-2">
                 <span className="flex items-center gap-1.5 px-4 py-2 bg-white border border-gray-200 rounded-xl text-xs font-semibold text-gray-500 shadow-sm">
-                  <Users size={14} /> {users.length} istifadeci
+                  <Users size={14} /> {users.length} istifadəçi
                 </span>
                 {adminCount > 0 && (
                   <span className="flex items-center gap-1.5 px-4 py-2 bg-slate-800 rounded-xl text-xs font-semibold text-white shadow-sm">
@@ -294,11 +294,11 @@ export default function Admin() {
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
               {/* Table header */}
               <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-3.5 bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                <div className="col-span-4">Istifadeci</div>
-                <div className="col-span-2">Ixtisas</div>
+                <div className="col-span-4">İstifadəçi</div>
+                <div className="col-span-2">İxtisas</div>
                 <div className="col-span-2">Status</div>
                 <div className="col-span-2">Qeydiyyat</div>
-                <div className="col-span-2 text-right">Emeliyyat</div>
+                <div className="col-span-2 text-right">Əməliyyat</div>
               </div>
 
               {loading && (
@@ -353,7 +353,7 @@ export default function Admin() {
                         : "bg-red-50 text-red-500 border border-red-100"
                     }`}>
                       <span className={`w-1.5 h-1.5 rounded-full ${user.is_active ? "bg-emerald-500" : "bg-red-500"}`} />
-                      {user.is_active ? "Aktiv" : "Bloklanib"}
+                      {user.is_active ? "Aktiv" : "Bloklanıb"}
                     </span>
                   </div>
 
@@ -389,7 +389,7 @@ export default function Admin() {
                           ? "bg-slate-100 text-slate-600 hover:bg-slate-200 border-slate-200"
                           : "bg-blue-50 text-blue-600 hover:bg-blue-100 border-blue-100"
                       }`}
-                      title={user.is_admin ? "Admin cixar" : "Admin et"}
+                      title={user.is_admin ? "Admin çıxar" : "Admin et"}
                     >
                       {user.is_admin ? <ShieldOff size={15} /> : <Shield size={15} />}
                     </button>
@@ -411,7 +411,7 @@ export default function Admin() {
                           <p className="text-gray-700 font-medium flex items-center gap-1.5"><Mail size={13} /> {user.email}</p>
                         </div>
                         <div>
-                          <p className="text-xs text-gray-400 mb-1">Ixtisas</p>
+                          <p className="text-xs text-gray-400 mb-1">İxtisas</p>
                           <p className="text-gray-700 font-medium flex items-center gap-1.5"><GraduationCap size={13} /> {user.major || "—"}</p>
                         </div>
                         <div>
@@ -425,10 +425,10 @@ export default function Admin() {
                       </div>
                       <div className="flex items-center gap-3 mt-3 pt-3 border-t border-gray-200">
                         <span className={`text-xs px-2.5 py-1 rounded-lg font-medium ${user.is_open_for_team ? "bg-green-50 text-green-600 border border-green-100" : "bg-gray-100 text-gray-400"}`}>
-                          {user.is_open_for_team ? "Komanda ucun aciq" : "Komanda ucun bagli"}
+                          {user.is_open_for_team ? "Komanda üçün açıq" : "Komanda üçün bağlı"}
                         </span>
                         <span className={`text-xs px-2.5 py-1 rounded-lg font-medium ${user.is_admin ? "bg-slate-800 text-white" : "bg-gray-100 text-gray-400"}`}>
-                          {user.is_admin ? "Admin" : "Normal istifadeci"}
+                          {user.is_admin ? "Admin" : "Normal istifadəçi"}
                         </span>
                       </div>
                     </div>
@@ -441,8 +441,8 @@ export default function Admin() {
                   <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
                     <Users size={28} className="text-gray-300" />
                   </div>
-                  <p className="text-gray-500 font-medium">Istifadeci tapilmadi</p>
-                  <p className="text-gray-400 text-xs mt-1">Axtaris sorgunuzu deyishin</p>
+                  <p className="text-gray-500 font-medium">İstifadəçi tapılmadı</p>
+                  <p className="text-gray-400 text-xs mt-1">Axtarış sorğunuzu dəyişin</p>
                 </div>
               )}
             </div>
@@ -460,7 +460,7 @@ export default function Admin() {
                     type="text"
                     value={postSearch}
                     onChange={(e) => setPostSearch(e.target.value)}
-                    placeholder="Post icerikinde axtar..."
+                    placeholder="Post içəriğində axtar..."
                     className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent transition-all text-sm shadow-sm"
                   />
                 </div>
@@ -520,11 +520,11 @@ export default function Admin() {
                     <div className="flex items-center gap-5">
                       <span className="flex items-center gap-1.5 text-xs text-gray-400 font-medium">
                         <Heart size={14} className="text-red-400" />
-                        {post.like_count} begeni
+                        {post.like_count} bəyəni
                       </span>
                       <span className="flex items-center gap-1.5 text-xs text-gray-400 font-medium">
                         <MessageCircle size={14} className="text-blue-400" />
-                        {post.comment_count} serh
+                        {post.comment_count} şərh
                       </span>
                     </div>
 
@@ -558,8 +558,8 @@ export default function Admin() {
                 <div className="w-20 h-20 bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl flex items-center justify-center mx-auto mb-5 shadow-sm">
                   <FileText size={32} className="text-gray-300" />
                 </div>
-                <p className="text-gray-600 font-semibold text-lg">Post tapilmadi</p>
-                <p className="text-gray-400 text-sm mt-2">Axtaris sorgunuzu deyishin</p>
+                <p className="text-gray-600 font-semibold text-lg">Post tapılmadı</p>
+                <p className="text-gray-400 text-sm mt-2">Axtarış sorğunuzu dəyişin</p>
               </div>
             )}
           </div>
@@ -663,9 +663,9 @@ export default function Admin() {
                 onChange={(e) => setLogAction(e.target.value)}
                 className="px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
               >
-                <option value="">Butun emeliyyatlar</option>
-                <option value="login_success">Ugurlu giris</option>
-                <option value="login_failed">Ugursuz giris</option>
+                <option value="">Bütün əməliyyatlar</option>
+                <option value="login_success">Uğurlu giriş</option>
+                <option value="login_failed">Uğursuz giriş</option>
                 <option value="register">Qeydiyyat</option>
               </select>
               <form onSubmit={(e) => { e.preventDefault(); loadLogs(); }} className="flex-1 flex gap-3">
@@ -675,7 +675,7 @@ export default function Admin() {
                     type="text"
                     value={logEmail}
                     onChange={(e) => setLogEmail(e.target.value)}
-                    placeholder="Email ile axtar..."
+                    placeholder="Email ilə axtar..."
                     className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-500 text-sm shadow-sm"
                   />
                 </div>
@@ -683,7 +683,7 @@ export default function Admin() {
                   type="submit"
                   className="px-5 py-3 bg-slate-800 text-white rounded-xl text-sm font-semibold hover:bg-slate-900 transition"
                 >
-                  Filtrle
+                  Filtrələ
                 </button>
               </form>
               <span className="flex items-center gap-1.5 px-4 py-2 bg-white border border-gray-200 rounded-xl text-xs font-semibold text-gray-500 shadow-sm">
@@ -701,11 +701,11 @@ export default function Admin() {
             {!loading && (
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                 <div className="hidden md:grid grid-cols-12 gap-4 px-5 py-3.5 bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                  <div className="col-span-3">Istifadeci</div>
-                  <div className="col-span-2">Emeliyyat</div>
+                  <div className="col-span-3">İstifadəçi</div>
+                  <div className="col-span-2">Əməliyyat</div>
                   <div className="col-span-3">Vaxt</div>
                   <div className="col-span-2">IP</div>
-                  <div className="col-span-2">Etrafli</div>
+                  <div className="col-span-2">Ətraflı</div>
                 </div>
 
                 {logs.map((log, i) => (
@@ -718,7 +718,7 @@ export default function Admin() {
                       <Activity size={28} className="text-gray-300" />
                     </div>
                     <p className="text-gray-500 font-medium">Log qeydi yoxdur</p>
-                    <p className="text-gray-400 text-xs mt-1">Filtri deyishin ve ya yenile</p>
+                    <p className="text-gray-400 text-xs mt-1">Filtri dəyişin və ya yenilə</p>
                   </div>
                 )}
               </div>
@@ -733,10 +733,10 @@ export default function Admin() {
 
 /* ─── Log Row ─── */
 const actionMeta = {
-  login_success: { label: "Ugurlu giris", icon: LogIn, color: "emerald" },
-  login_failed: { label: "Ugursuz giris", icon: Ban, color: "red" },
+  login_success: { label: "Uğurlu giriş", icon: LogIn, color: "emerald" },
+  login_failed: { label: "Uğursuz giriş", icon: Ban, color: "red" },
   register: { label: "Qeydiyyat", icon: UserPlus, color: "blue" },
-  profile_picture_update: { label: "Profil sekli", icon: Image, color: "violet" },
+  profile_picture_update: { label: "Profil şəkli", icon: Image, color: "violet" },
   message_send: { label: "Mesaj", icon: Send, color: "amber" },
 };
 

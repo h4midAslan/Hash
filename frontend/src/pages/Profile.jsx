@@ -188,7 +188,6 @@ export default function Profile() {
     } catch (err) {}
   };
 
-  // Profil tamamlanma faizi
   const getCompletionPercent = () => {
     if (!user) return 0;
     const checks = [
@@ -266,7 +265,7 @@ export default function Profile() {
                     : "bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-600 hover:shadow-md hover:shadow-blue-100 border border-blue-100"
                 }`}
               >
-                {editing ? <><X size={16} /> Legv et</> : <><Edit3 size={16} /> Redakte</>}
+                {editing ? <><X size={16} /> Ləğv et</> : <><Edit3 size={16} /> Redaktə</>}
               </button>
             )}
           </div>
@@ -277,15 +276,14 @@ export default function Profile() {
 
         {user.is_open_for_team && (
           <span className="inline-flex items-center gap-1.5 bg-gradient-to-r from-green-50 to-emerald-50 text-green-600 text-xs px-4 py-1.5 rounded-full mt-3 font-semibold border border-green-100">
-            <Award size={13} /> Komanda ucun aciq
+            <Award size={13} /> Komanda üçün açıq
           </span>
         )}
 
-        {/* Profil tamamlanma faizi */}
         {isOwn && completionPercent < 100 && (
           <div className={`mt-4 ${d.dark ? "bg-gray-700/50" : "bg-gray-50"} p-4 rounded-xl border ${d.border}`}>
             <div className="flex items-center justify-between mb-2">
-              <p className={`text-xs font-semibold ${d.textMuted}`}>Profil tamamlanma</p>
+              <p className={`text-xs font-semibold ${d.textMuted}`}>Profil tamamlanması</p>
               <p className={`text-xs font-bold ${d.textSecondary}`}>{completionPercent}%</p>
             </div>
             <div className={`w-full ${d.dark ? "bg-gray-600" : "bg-gray-200"} rounded-full h-2`}>
@@ -295,12 +293,12 @@ export default function Profile() {
               />
             </div>
             <p className={`text-xs ${d.textFaint} mt-2`}>
-              {!user.profile_picture && "Profil sekli, "}
-              {!user.bio && "haqqinda, "}
-              {!user.skills && "bacariqlar, "}
+              {!user.profile_picture && "Profil şəkli, "}
+              {!user.bio && "haqqında, "}
+              {!user.skills && "bacarıqlar, "}
               {certificates.length === 0 && "sertifikat, "}
-              {projects.length === 0 && "layihe "}
-              elave et
+              {projects.length === 0 && "layihə "}
+              əlavə et
             </p>
           </div>
         )}
@@ -318,7 +316,7 @@ export default function Profile() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className={`block text-sm font-semibold ${d.textSecondary} mb-2`}>Ixtisas</label>
+                <label className={`block text-sm font-semibold ${d.textSecondary} mb-2`}>İxtisas</label>
                 <input
                   type="text"
                   value={form.major || ""}
@@ -333,16 +331,16 @@ export default function Profile() {
                   onChange={(e) => setForm({ ...form, course: parseInt(e.target.value) || null })}
                   className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${d.inputAlt}`}
                 >
-                  <option value="">Secin</option>
+                  <option value="">Seçin</option>
                   <option value="1">1-ci kurs</option>
                   <option value="2">2-ci kurs</option>
-                  <option value="3">3-cu kurs</option>
-                  <option value="4">4-cu kurs</option>
+                  <option value="3">3-cü kurs</option>
+                  <option value="4">4-cü kurs</option>
                 </select>
               </div>
             </div>
             <div>
-              <label className={`block text-sm font-semibold ${d.textSecondary} mb-2`}>Haqqinda</label>
+              <label className={`block text-sm font-semibold ${d.textSecondary} mb-2`}>Haqqında</label>
               <textarea
                 value={form.bio || ""}
                 onChange={(e) => setForm({ ...form, bio: e.target.value })}
@@ -351,7 +349,7 @@ export default function Profile() {
               />
             </div>
             <div>
-              <label className={`block text-sm font-semibold ${d.textSecondary} mb-2`}>Bacariqlar</label>
+              <label className={`block text-sm font-semibold ${d.textSecondary} mb-2`}>Bacarıqlar</label>
               <input
                 type="text"
                 value={form.skills || ""}
@@ -368,8 +366,8 @@ export default function Profile() {
                 className="w-5 h-5 text-blue-600 rounded-lg border-gray-300"
               />
               <div>
-                <span className={`text-sm font-medium ${d.textSecondary}`}>Komanda ucun acigam</span>
-                <p className={`text-xs ${d.textFaint} mt-0.5`}>Basqalari sizi komandaya devet ede biler</p>
+                <span className={`text-sm font-medium ${d.textSecondary}`}>Komanda üçün açığam</span>
+                <p className={`text-xs ${d.textFaint} mt-0.5`}>Başqaları sizi komandaya dəvət edə bilər</p>
               </div>
             </label>
             <button
@@ -387,7 +385,7 @@ export default function Profile() {
                   <GraduationCap size={20} className="text-blue-500" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-400 font-medium">Ixtisas</p>
+                  <p className="text-sm text-gray-400 font-medium">İxtisas</p>
                   <p className={`${d.text} font-semibold`}>{user.major} {user.course && `· ${user.course}-ci kurs`}</p>
                 </div>
               </div>
@@ -397,7 +395,7 @@ export default function Profile() {
               <div className="${d.surface} p-5 rounded-xl border ${d.border}">
                 <div className="flex items-center gap-2 mb-2">
                   <BookOpen size={16} className="text-gray-400" />
-                  <p className="text-sm text-gray-400 font-medium">Haqqinda</p>
+                  <p className="text-sm text-gray-400 font-medium">Haqqında</p>
                 </div>
                 <p className={`${d.textSecondary} leading-relaxed`}>{user.bio}</p>
               </div>
@@ -407,7 +405,7 @@ export default function Profile() {
               <div className="${d.surface} p-5 rounded-xl border ${d.border}">
                 <div className="flex items-center gap-2 mb-3">
                   <Sparkles size={16} className="text-gray-400" />
-                  <p className="text-sm text-gray-400 font-medium">Bacariqlar</p>
+                  <p className="text-sm text-gray-400 font-medium">Bacarıqlar</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {user.skills.split(",").map((s, i) => (
@@ -428,22 +426,22 @@ export default function Profile() {
                 </div>
                 {isOwn && (
                   <button onClick={() => setShowCertForm(!showCertForm)} className="flex items-center gap-1 text-blue-600 text-sm font-medium hover:text-blue-700 transition">
-                    <Plus size={16} /> Elave et
+                    <Plus size={16} /> Əlavə et
                   </button>
                 )}
               </div>
 
               {isOwn && showCertForm && (
                 <div className={`${d.dark ? "bg-gray-700" : "bg-white"} p-4 rounded-xl border ${d.dark ? "border-blue-500/20" : "border-blue-100"} mb-4 space-y-3`}>
-                  <input type="text" placeholder="Sertifikat adi" value={certForm.name} onChange={(e) => setCertForm({ ...certForm, name: e.target.value })} className={`w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${d.inputAlt}`} />
-                  <input type="text" placeholder="Veren teshkilat (meselen: Google, ISC2)" value={certForm.issuer} onChange={(e) => setCertForm({ ...certForm, issuer: e.target.value })} className={`w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${d.inputAlt}`} />
+                  <input type="text" placeholder="Sertifikat adı" value={certForm.name} onChange={(e) => setCertForm({ ...certForm, name: e.target.value })} className={`w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${d.inputAlt}`} />
+                  <input type="text" placeholder="Verən təşkilat (məsələn: Google, ISC2)" value={certForm.issuer} onChange={(e) => setCertForm({ ...certForm, issuer: e.target.value })} className={`w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${d.inputAlt}`} />
                   <div className="grid grid-cols-2 gap-3">
                     <input type="date" value={certForm.issue_date} onChange={(e) => setCertForm({ ...certForm, issue_date: e.target.value })} className={`w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${d.inputAlt}`} />
-                    <input type="url" placeholder="Dogrulama linki" value={certForm.credential_url} onChange={(e) => setCertForm({ ...certForm, credential_url: e.target.value })} className={`w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${d.inputAlt}`} />
+                    <input type="url" placeholder="Doğrulama linki" value={certForm.credential_url} onChange={(e) => setCertForm({ ...certForm, credential_url: e.target.value })} className={`w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${d.inputAlt}`} />
                   </div>
                   <div className="flex gap-2">
-                    <button onClick={handleAddCert} disabled={!certForm.name || !certForm.issuer} className="bg-blue-600 text-white px-5 py-2 rounded-xl text-sm font-semibold hover:bg-blue-700 transition disabled:opacity-40">Elave et</button>
-                    <button onClick={() => setShowCertForm(false)} className={`${d.dark ? "bg-gray-600 text-gray-300 hover:bg-gray-500" : "bg-gray-100 text-gray-600 hover:bg-gray-200"} px-5 py-2 rounded-xl text-sm font-medium transition`}>Legv et</button>
+                    <button onClick={handleAddCert} disabled={!certForm.name || !certForm.issuer} className="bg-blue-600 text-white px-5 py-2 rounded-xl text-sm font-semibold hover:bg-blue-700 transition disabled:opacity-40">Əlavə et</button>
+                    <button onClick={() => setShowCertForm(false)} className={`${d.dark ? "bg-gray-600 text-gray-300 hover:bg-gray-500" : "bg-gray-100 text-gray-600 hover:bg-gray-200"} px-5 py-2 rounded-xl text-sm font-medium transition`}>Ləğv et</button>
                   </div>
                 </div>
               )}
@@ -468,7 +466,7 @@ export default function Profile() {
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-300 text-sm text-center py-4">{isOwn ? "Hele sertifikat elave olunmayib" : "Sertifikat yoxdur"}</p>
+                <p className="text-gray-300 text-sm text-center py-4">{isOwn ? "Hələ sertifikat əlavə olunmayıb" : "Sertifikat yoxdur"}</p>
               )}
             </div>
 
@@ -524,31 +522,31 @@ export default function Profile() {
               )}
             </div>
 
-            {/* Layiheler */}
+            {/* Layihələr */}
             <div className="${d.surface} p-5 rounded-xl border ${d.border}">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <FolderGit2 size={16} className="text-gray-400" />
-                  <p className="text-sm text-gray-400 font-medium">Layiheler</p>
+                  <p className="text-sm text-gray-400 font-medium">Layihələr</p>
                 </div>
                 {isOwn && (
                   <button onClick={() => setShowProjForm(!showProjForm)} className="flex items-center gap-1 text-blue-600 text-sm font-medium hover:text-blue-700 transition">
-                    <Plus size={16} /> Elave et
+                    <Plus size={16} /> Əlavə et
                   </button>
                 )}
               </div>
 
               {isOwn && showProjForm && (
                 <div className={`${d.dark ? "bg-gray-700" : "bg-white"} p-4 rounded-xl border ${d.dark ? "border-blue-500/20" : "border-blue-100"} mb-4 space-y-3`}>
-                  <input type="text" placeholder="Layihe adi" value={projForm.title} onChange={(e) => setProjForm({ ...projForm, title: e.target.value })} className={`w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${d.inputAlt}`} />
-                  <textarea placeholder="Qisa tesvir" value={projForm.description} onChange={(e) => setProjForm({ ...projForm, description: e.target.value })} rows={2} className={`w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${d.inputAlt} resize-none`} />
+                  <input type="text" placeholder="Layihə adı" value={projForm.title} onChange={(e) => setProjForm({ ...projForm, title: e.target.value })} className={`w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${d.inputAlt}`} />
+                  <textarea placeholder="Qısa təsvir" value={projForm.description} onChange={(e) => setProjForm({ ...projForm, description: e.target.value })} rows={2} className={`w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${d.inputAlt} resize-none`} />
                   <div className="grid grid-cols-2 gap-3">
                     <input type="text" placeholder="Texnologiyalar (React, Python...)" value={projForm.technologies} onChange={(e) => setProjForm({ ...projForm, technologies: e.target.value })} className={`w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${d.inputAlt}`} />
                     <input type="url" placeholder="GitHub linki" value={projForm.github_url} onChange={(e) => setProjForm({ ...projForm, github_url: e.target.value })} className={`w-full px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${d.inputAlt}`} />
                   </div>
                   <div className="flex gap-2">
-                    <button onClick={handleAddProject} disabled={!projForm.title} className="bg-blue-600 text-white px-5 py-2 rounded-xl text-sm font-semibold hover:bg-blue-700 transition disabled:opacity-40">Elave et</button>
-                    <button onClick={() => setShowProjForm(false)} className={`${d.dark ? "bg-gray-600 text-gray-300 hover:bg-gray-500" : "bg-gray-100 text-gray-600 hover:bg-gray-200"} px-5 py-2 rounded-xl text-sm font-medium transition`}>Legv et</button>
+                    <button onClick={handleAddProject} disabled={!projForm.title} className="bg-blue-600 text-white px-5 py-2 rounded-xl text-sm font-semibold hover:bg-blue-700 transition disabled:opacity-40">Əlavə et</button>
+                    <button onClick={() => setShowProjForm(false)} className={`${d.dark ? "bg-gray-600 text-gray-300 hover:bg-gray-500" : "bg-gray-100 text-gray-600 hover:bg-gray-200"} px-5 py-2 rounded-xl text-sm font-medium transition`}>Ləğv et</button>
                   </div>
                 </div>
               )}
@@ -582,7 +580,7 @@ export default function Profile() {
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-300 text-sm text-center py-4">{isOwn ? "Hele layihe elave olunmayib" : "Layihe yoxdur"}</p>
+                <p className="text-gray-300 text-sm text-center py-4">{isOwn ? "Hələ layihə əlavə olunmayıb" : "Layihə yoxdur"}</p>
               )}
             </div>
           </div>
