@@ -3,25 +3,27 @@ import { Home, Search, Users, User, LogOut, Menu, X, Shield, Settings, Bell, Hea
 import { useState, useEffect, useRef } from "react";
 import api from "../api/client";
 import { useDarkMode } from "../hooks/useTheme";
+import { useLang } from "../hooks/useLang";
 
-const NOTIF_LABELS = {
-  connection_request:  { icon: UserPlus,    text: "sənə bağlantı istəyi göndərdi",  color: "text-blue-500" },
-  connection_accepted: { icon: UserCheck,   text: "bağlantı istəyini qəbul etdi",   color: "text-green-500" },
-  post_liked:          { icon: Heart,       text: "postunu bəyəndi",                color: "text-red-500" },
-  post_commented:      { icon: MessageCircle, text: "postuna şərh yazdı",           color: "text-indigo-500" },
-};
-
-function timeAgo(dateStr) {
+function timeAgo(dateStr, t) {
   const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000);
-  if (diff < 60) return "indicə";
-  if (diff < 3600) return `${Math.floor(diff / 60)} dəq`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)} saat`;
-  return `${Math.floor(diff / 86400)} gün`;
+  if (diff < 60) return t("time_now");
+  if (diff < 3600) return `${Math.floor(diff / 60)} ${t("time_min")}`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)} ${t("time_hour")}`;
+  return `${Math.floor(diff / 86400)} ${t("time_day")}`;
 }
 
 function NotificationDropdown({ dark, onClose }) {
   const [notifs, setNotifs] = useState([]);
   const ref = useRef(null);
+  const { t } = useLang();
+
+  const NOTIF_LABELS = {
+    connection_request:  { icon: UserPlus,      textKey: "notif_connection_request",  color: "text-blue-500" },
+    connection_accepted: { icon: UserCheck,     textKey: "notif_connection_accepted", color: "text-green-500" },
+    post_liked:          { icon: Heart,         textKey: "notif_post_liked",          color: "text-red-500" },
+    post_commented:      { icon: MessageCircle, textKey: "notif_post_commented",      color: "text-indigo-500" },
+  };
 
   useEffect(() => {
     api.get("/notifications").then(res => setNotifs(res.data)).catch(() => {});
@@ -39,7 +41,7 @@ function NotificationDropdown({ dark, onClose }) {
         ${dark ? "bg-gray-900 border-gray-700" : "bg-white border-gray-100"}`}
     >
       <div className={`px-4 py-3 border-b ${dark ? "border-gray-700" : "border-gray-100"} flex items-center justify-between`}>
-        <span className={`font-bold text-sm ${dark ? "text-white" : "text-gray-900"}`}>Bildirişlər</span>
+        <span className={`font-bold text-sm ${dark ? "text-white" : "text-gray-900"}`}>{t("notif_title")}</span>
         <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X size={16} /></button>
       </div>
 
@@ -47,7 +49,7 @@ function NotificationDropdown({ dark, onClose }) {
         {notifs.length === 0 ? (
           <div className="py-10 text-center">
             <Bell size={28} className="mx-auto text-gray-300 mb-2" />
-            <p className={`text-sm ${dark ? "text-gray-500" : "text-gray-400"}`}>Bildiriş yoxdur</p>
+            <p className={`text-sm ${dark ? "text-gray-500" : "text-gray-400"}`}>{t("notif_empty")}</p>
           </div>
         ) : notifs.map(n => {
           const cfg = NOTIF_LABELS[n.type] || {};
@@ -65,9 +67,9 @@ function NotificationDropdown({ dark, onClose }) {
               <div className="flex-1 min-w-0">
                 <p className={`text-sm leading-snug ${dark ? "text-gray-200" : "text-gray-800"}`}>
                   <span className="font-semibold">{n.from_user_name}</span>{" "}
-                  {cfg.text}
+                  {cfg.textKey ? t(cfg.textKey) : ""}
                 </p>
-                <p className={`text-xs mt-0.5 ${dark ? "text-gray-500" : "text-gray-400"}`}>{timeAgo(n.created_at)}</p>
+                <p className={`text-xs mt-0.5 ${dark ? "text-gray-500" : "text-gray-400"}`}>{timeAgo(n.created_at, t)}</p>
               </div>
               {!n.is_read && <span className="w-2 h-2 bg-blue-500 rounded-full shrink-0 mt-1" />}
             </div>
@@ -86,6 +88,7 @@ export default function Navbar() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [showNotifs, setShowNotifs] = useState(false);
   const dark = useDarkMode();
+  const { t } = useLang();
 
   useEffect(() => {
     api.get("/users/me").then(res => setCurrentUser(res.data)).catch(() => {});
@@ -109,12 +112,12 @@ export default function Navbar() {
   };
 
   const links = [
-    { path: "/feed", icon: Home, label: "Feed" },
-    { path: "/search", icon: Search, label: "Axtar" },
-    { path: "/connections", icon: Users, label: "Bağlantılar" },
-    { path: "/profile", icon: User, label: "Profil" },
-    { path: "/settings", icon: Settings, label: "Parametrlər" },
-    ...(currentUser?.is_admin ? [{ path: "/admin", icon: Shield, label: "Admin" }] : []),
+    { path: "/feed", icon: Home, label: t("nav_feed") },
+    { path: "/search", icon: Search, label: t("nav_search") },
+    { path: "/connections", icon: Users, label: t("nav_connections") },
+    { path: "/profile", icon: User, label: t("nav_profile") },
+    { path: "/settings", icon: Settings, label: t("nav_settings") },
+    ...(currentUser?.is_admin ? [{ path: "/admin", icon: Shield, label: t("nav_admin") }] : []),
   ];
 
   return (
@@ -181,7 +184,7 @@ export default function Navbar() {
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium ${dark ? "text-gray-400 hover:bg-red-500/10 hover:text-red-400" : "text-gray-400 hover:bg-red-50 hover:text-red-500"} transition-all duration-200`}
           >
             <LogOut size={18} />
-            <span>Çıxış</span>
+            <span>{t("nav_logout")}</span>
           </button>
         </div>
 
@@ -241,7 +244,7 @@ export default function Navbar() {
             className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 transition w-full"
           >
             <LogOut size={20} />
-            <span>Çıxış</span>
+            <span>{t("nav_logout")}</span>
           </button>
         </div>
       )}

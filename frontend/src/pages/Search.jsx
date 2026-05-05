@@ -4,6 +4,7 @@ import { Search as SearchIcon, UserPlus, Filter, Sparkles, Users } from "lucide-
 import api from "../api/client";
 import { useDarkClasses } from "../hooks/useDarkClasses";
 import { toast } from "../components/Toast";
+import { useLang } from "../hooks/useLang";
 
 export default function Search() {
   const [query, setQuery] = useState("");
@@ -11,6 +12,7 @@ export default function Search() {
   const [results, setResults] = useState([]);
   const [searched, setSearched] = useState(false);
   const d = useDarkClasses();
+  const { t } = useLang();
   const debounceRef = useRef(null);
 
   const doSearch = useCallback(async (q, s) => {
@@ -46,8 +48,8 @@ export default function Search() {
   return (
     <div className="max-w-2xl mx-auto py-8 px-4">
       <div className="mb-6">
-        <h2 className={`text-2xl font-bold ${d.heading}`}>Tələbə axtar</h2>
-        <p className={`${d.textFaint} text-sm mt-1`}>Bacarıq və ya ad ilə uyğun tələbəni tap</p>
+        <h2 className={`text-2xl font-bold ${d.heading}`}>{t("search_title")}</h2>
+        <p className={`${d.textFaint} text-sm mt-1`}>{t("search_subtitle")}</p>
       </div>
 
       {/* Search form */}
@@ -58,7 +60,7 @@ export default function Search() {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Ad ilə axtar..."
+            placeholder={t("search_name")}
             className={`w-full pl-12 pr-4 py-3.5 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm ${d.inputAlt}`}
           />
         </div>
@@ -68,7 +70,7 @@ export default function Search() {
             type="text"
             value={skill}
             onChange={(e) => setSkill(e.target.value)}
-            placeholder="Bacarıq filtri (məs: Python, Design)"
+            placeholder={t("search_skill")}
             className={`w-full pl-12 pr-4 py-3.5 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm ${d.inputAlt}`}
           />
         </div>
@@ -76,13 +78,13 @@ export default function Search() {
           type="submit"
           className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3.5 rounded-xl font-semibold hover:shadow-lg hover:shadow-blue-200 transition-all duration-300 flex items-center justify-center gap-2 text-sm"
         >
-          <SearchIcon size={18} /> Axtar
+          <SearchIcon size={18} /> {t("search_btn")}
         </button>
       </form>
 
       {/* Results count */}
       {searched && results.length > 0 && (
-        <p className={`text-sm ${d.textFaint} mb-4 font-medium`}>{results.length} nəticə tapıldı</p>
+        <p className={`text-sm ${d.textFaint} mb-4 font-medium`}>{results.length} {t("search_results")}</p>
       )}
 
       {/* Results */}
@@ -98,7 +100,7 @@ export default function Search() {
             <div className="ml-4 flex-1 min-w-0">
               <Link to={`/profile/${user.id}`} className={`font-semibold ${d.text} text-[15px] hover:text-blue-600 transition`}>{user.full_name}</Link>
               <p className={`text-sm ${d.textFaint} mt-0.5`}>
-                {user.major} {user.course && `· Kurs ${user.course}`}
+                {user.major} {user.course && `· ${t("search_course")} ${user.course}`}
               </p>
               {user.skills && (
                 <div className="flex flex-wrap gap-1.5 mt-2">
@@ -118,7 +120,7 @@ export default function Search() {
             <button
               onClick={() => sendConnection(user.id)}
               className={`p-3 rounded-xl hover:shadow-md transition-all duration-200 shrink-0 ml-3 border ${d.dark ? "bg-blue-500/10 text-blue-400 border-blue-500/20 hover:shadow-blue-900" : "bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-600 border-blue-100 hover:shadow-blue-100"}`}
-              title="Bağlantı istəyi göndər"
+              title={t("search_connect")}
             >
               <UserPlus size={20} />
             </button>
@@ -132,8 +134,8 @@ export default function Search() {
           <div className={`w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-5 shadow-sm ${d.dark ? "bg-gray-700" : "bg-gradient-to-br from-gray-50 to-gray-100"}`}>
             <Users size={32} className="text-gray-400" />
           </div>
-          <p className={`${d.text} font-semibold text-lg`}>Nəticə tapılmadı</p>
-          <p className={`${d.textFaint} text-sm mt-2 max-w-xs mx-auto`}>Başqa açar sözlə yoxlayın və ya bacarıq filtrini dəyişin</p>
+          <p className={`${d.text} font-semibold text-lg`}>{t("search_empty")}</p>
+          <p className={`${d.textFaint} text-sm mt-2 max-w-xs mx-auto`}>{t("search_empty_sub")}</p>
         </div>
       )}
     </div>

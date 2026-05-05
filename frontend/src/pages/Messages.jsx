@@ -4,6 +4,7 @@ import { Send, MessageCircle, ArrowLeft, Circle } from "lucide-react";
 import api from "../api/client";
 import { formatBakuHM, isActiveNow, formatLastSeen } from "../utils/time";
 import { useDarkClasses } from "../hooks/useDarkClasses";
+import { useLang } from "../hooks/useLang";
 
 export default function Messages() {
   const [chats, setChats] = useState([]);
@@ -64,27 +65,28 @@ export default function Messages() {
   };
 
   const d = useDarkClasses();
+  const { t } = useLang();
 
   return (
     <div className="max-w-5xl mx-auto py-8 px-4">
       <div className="mb-6">
-        <h2 className={`text-2xl font-bold ${d.heading}`}>Mesajlar</h2>
-        <p className={`${d.textFaint} text-sm mt-1`}>Bağlantıların ilə söhbət et</p>
+        <h2 className={`text-2xl font-bold ${d.heading}`}>{t("messages_title")}</h2>
+        <p className={`${d.textFaint} text-sm mt-1`}>{t("messages_subtitle")}</p>
       </div>
 
       <div className={`flex ${d.card} rounded-3xl shadow-sm overflow-hidden`} style={{ height: "560px" }}>
         {/* Chat siyahısı */}
         <div className={`w-full md:w-80 border-r ${d.border} overflow-y-auto ${activeChat ? "hidden md:block" : ""}`}>
           <div className={`p-4 border-b ${d.border}`}>
-            <h3 className={`text-sm font-semibold ${d.textMuted} uppercase tracking-wider`}>Söhbətlər</h3>
+            <h3 className={`text-sm font-semibold ${d.textMuted} uppercase tracking-wider`}>{t("messages_chats")}</h3>
           </div>
           {chats.length === 0 && (
             <div className={`flex flex-col items-center justify-center h-[calc(100%-57px)] ${d.textFaint} px-6`}>
               <div className={`w-16 h-16 ${d.dark ? "bg-gray-700" : "bg-gray-50"} rounded-2xl flex items-center justify-center mb-3`}>
                 <MessageCircle size={28} />
               </div>
-              <p className="text-sm font-medium">Hələ mesaj yoxdur</p>
-              <p className={`text-xs ${d.textFaint} mt-1 text-center`}>Bağlantıların ilə mesajlaşmağa başla</p>
+              <p className="text-sm font-medium">{t("messages_empty")}</p>
+              <p className={`text-xs ${d.textFaint} mt-1 text-center`}>{t("messages_empty_sub")}</p>
             </div>
           )}
           {chats.map((chat) => (
@@ -143,7 +145,7 @@ export default function Messages() {
                       <div className="flex items-center gap-1.5">
                         <Circle size={8} fill={active ? "#22c55e" : "#9ca3af"} className={active ? "text-green-500" : "text-gray-400"} />
                         <p className={`text-xs font-medium ${active ? "text-green-500" : "text-gray-400"}`}>
-                          {active ? "Aktiv" : formatLastSeen(activeChat.lastSeen)}
+                          {active ? t("messages_active") : formatLastSeen(activeChat.lastSeen)}
                         </p>
                       </div>
                     );
@@ -181,7 +183,7 @@ export default function Messages() {
                   type="text"
                   value={newMsg}
                   onChange={(e) => setNewMsg(e.target.value)}
-                  placeholder="Mesaj yaz..."
+                  placeholder={t("messages_placeholder")}
                   className={`flex-1 px-5 py-3 border rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm ${d.inputAlt}`}
                 />
                 <button
@@ -198,8 +200,8 @@ export default function Messages() {
               <div className={`w-20 h-20 rounded-3xl flex items-center justify-center mb-5 shadow-sm ${d.dark ? "bg-blue-500/10" : "bg-gradient-to-br from-blue-50 to-indigo-50"}`}>
                 <MessageCircle size={32} className="text-blue-400" />
               </div>
-              <p className={`font-semibold ${d.text} text-lg`}>Söhbət seçin</p>
-              <p className={`text-sm mt-2 ${d.textFaint} text-center max-w-xs`}>Soldakı siyahıdan bir söhbət seçərək mesajlaşmağa başlayın</p>
+              <p className={`font-semibold ${d.text} text-lg`}>{t("messages_select")}</p>
+              <p className={`text-sm mt-2 ${d.textFaint} text-center max-w-xs`}>{t("messages_select_sub")}</p>
             </div>
           )}
         </div>

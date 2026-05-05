@@ -1,16 +1,23 @@
 import { useState } from "react";
-import { Settings as SettingsIcon, Check, Moon, Sun, Image as ImageIcon } from "lucide-react";
+import { Settings as SettingsIcon, Check, Moon, Sun, Image as ImageIcon, Globe } from "lucide-react";
 import { useDarkClasses } from "../hooks/useDarkClasses";
+import { useLang, setLang } from "../hooks/useLang";
 
 const BG_OPTIONS = [
-  { id: "default", label: "Normal", preview: "bg-gray-50" },
-  { id: "navy", label: "Tünd göy", preview: "bg-[#0f172a]" },
-  { id: "vectors", label: "Vektor & Aviasiya", preview: "bg-[#1a1a2e]", local: true },
+  { id: "default", labelKey: "bg_default", preview: "bg-gray-50" },
+  { id: "navy", labelKey: "bg_navy", preview: "bg-[#0f172a]" },
+  { id: "vectors", labelKey: "bg_vectors", preview: "bg-[#1a1a2e]", local: true },
+];
+
+const LANG_OPTIONS = [
+  { id: "az", flag: "🇦🇿", labelKey: "settings_lang_az" },
+  { id: "en", flag: "🇬🇧", labelKey: "settings_lang_en" },
 ];
 
 export default function Settings() {
   const [selected, setSelected] = useState(localStorage.getItem("bg_theme") || "default");
   const [darkMode, setDarkMode] = useState(localStorage.getItem("dark_mode") === "true");
+  const { lang, t } = useLang();
 
   const handleSelect = (id) => {
     setSelected(id);
@@ -34,8 +41,8 @@ export default function Settings() {
           <SettingsIcon size={24} className="text-white" />
         </div>
         <div>
-          <h1 className={`text-2xl font-bold ${d.heading}`}>Parametrlər</h1>
-          <p className={d.textFaint + " text-sm"}>Görünüş və fərdiləşdirmə</p>
+          <h1 className={`text-2xl font-bold ${d.heading}`}>{t("settings_title")}</h1>
+          <p className={d.textFaint + " text-sm"}>{t("settings_subtitle")}</p>
         </div>
       </div>
 
@@ -45,8 +52,8 @@ export default function Settings() {
           <div className="flex items-center gap-3">
             {darkMode ? <Moon size={20} className="text-indigo-500" /> : <Sun size={20} className="text-amber-500" />}
             <div>
-              <h2 className={`text-lg font-semibold ${d.text}`}>Qaranlıq rejim</h2>
-              <p className={`text-xs ${d.textFaint}`}>Kartlar, navbar və mətnlər tünd rəngdə göstərilir</p>
+              <h2 className={`text-lg font-semibold ${d.text}`}>{t("settings_dark_mode")}</h2>
+              <p className={`text-xs ${d.textFaint}`}>{t("settings_dark_desc")}</p>
             </div>
           </div>
           <button
@@ -66,11 +73,41 @@ export default function Settings() {
         </div>
       </div>
 
-      {/* Arxa plan seçimi */}
+      {/* Language Selector */}
+      <div className={`${d.card} rounded-2xl shadow-sm p-6 mb-6`}>
+        <div className="flex items-center gap-2 mb-5">
+          <Globe size={18} className={d.textMuted} />
+          <h2 className={`text-lg font-semibold ${d.text}`}>{t("settings_lang")}</h2>
+        </div>
+        <p className={`text-xs ${d.textFaint} mb-4`}>{t("settings_lang_desc")}</p>
+        <div className="flex gap-3">
+          {LANG_OPTIONS.map((opt) => (
+            <button
+              key={opt.id}
+              onClick={() => setLang(opt.id)}
+              className={`flex-1 flex items-center justify-center gap-2.5 py-3 rounded-xl border-2 font-semibold text-sm transition-all duration-200 ${
+                lang === opt.id
+                  ? "border-blue-500 shadow-md shadow-blue-100 " + (d.dark ? "bg-blue-500/10 text-blue-400" : "bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-600")
+                  : (d.dark ? "border-gray-700 text-gray-400 hover:border-gray-600" : "border-gray-200 text-gray-500 hover:border-gray-300")
+              }`}
+            >
+              <span className="text-lg">{opt.flag}</span>
+              <span>{t(opt.labelKey)}</span>
+              {lang === opt.id && (
+                <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
+                  <Check size={10} className="text-white" />
+                </div>
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Background */}
       <div className={`${d.card} rounded-2xl shadow-sm p-6`}>
         <div className="flex items-center gap-2 mb-5">
           <ImageIcon size={18} className={d.textMuted} />
-          <h2 className={`text-lg font-semibold ${d.text}`}>Arxa plan</h2>
+          <h2 className={`text-lg font-semibold ${d.text}`}>{t("settings_bg")}</h2>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -84,7 +121,6 @@ export default function Settings() {
                   : "border-gray-200 hover:border-gray-300 hover:shadow-md"
               }`}
             >
-              {/* Preview */}
               <div className={`h-24 ${opt.preview || ""} relative`}>
                 {opt.local && (
                   <div
@@ -102,18 +138,14 @@ export default function Settings() {
                   </div>
                 )}
               </div>
-
-              {/* Label */}
               <div className={`px-3 py-2 ${d.dark ? "bg-gray-800" : "bg-white"}`}>
-                <span className={`text-xs font-medium ${d.textSecondary}`}>{opt.label}</span>
+                <span className={`text-xs font-medium ${d.textSecondary}`}>{t(opt.labelKey)}</span>
               </div>
             </button>
           ))}
         </div>
 
-        <p className={`text-xs ${d.textFaint} mt-4 text-center`}>
-          Seçim yalnız bu cihazda saxlanılır · Şəkillər Unsplash-dan
-        </p>
+        <p className={`text-xs ${d.textFaint} mt-4 text-center`}>{t("settings_bg_note")}</p>
       </div>
     </div>
   );
