@@ -18,7 +18,7 @@ def send_verification_code(to_email: str, code: str) -> bool:
             "https://api.resend.com/emails",
             headers={"Authorization": f"Bearer {settings.RESEND_API_KEY}"},
             json={
-                "from": "Hash <onboarding@resend.dev>",
+                "from": "Hash <noreply@hashcampus.site>",
                 "to": [to_email],
                 "subject": "Hash — Təsdiq kodunuz",
                 "html": html,
