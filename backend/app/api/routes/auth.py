@@ -1,4 +1,5 @@
 import secrets
+import random
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, EmailStr
@@ -7,7 +8,7 @@ from slowapi.util import get_remote_address
 from app.services.database import get_db
 from app.services.auth import hash_password, verify_password, create_access_token
 from app.services.activity_logger import log_activity
-from app.services.email import send_verification_email
+from app.services.email import send_verification_code
 from app.models.user import User
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -103,14 +104,14 @@ def register(request: Request, data: RegisterRequest, db: Session = Depends(get_
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Bu email artıq qeydiyyatdan keçib"
             )
-        # verify edilməmiş hesab — yenidən email göndər
-        existing.verification_token = secrets.token_urlsafe(32)
+        code = f"{random.randint(100000, 999999)}"
+        existing.verification_token = code
         existing.password_hash = hash_password(data.password)
         db.commit()
-        send_verification_email(existing.email, existing.verification_token)
-        return {"message": "Təsdiq emaili yenidən göndərildi. Emailinizi yoxlayın."}
+        send_verification_code(existing.email, code)
+        return {"message": "Kod emailinizə göndərildi.", "email": existing.email}
 
-    verification_token = secrets.token_urlsafe(32)
+    code = f"{random.randint(100000, 999999)}"
     user = User(
         email=data.email,
         password_hash=hash_password(data.password),
@@ -119,16 +120,16 @@ def register(request: Request, data: RegisterRequest, db: Session = Depends(get_
         major=data.major,
         course=data.course,
         is_verified=False,
-        verification_token=verification_token,
+        verification_token=code,
     )
     db.add(user)
     db.commit()
     db.refresh(user)
 
     log_activity(db, action="register", user_id=user.id, email=user.email, request=request)
-    send_verification_email(user.email, verification_token)
+    send_verification_code(user.email, code)
 
-    return {"message": "Qeydiyyat uğurlu oldu. Emailinizi yoxlayın və hesabı təsdiqləyin."}
+    return {"message": "Kod emailinizə göndərildi.", "email": user.email}
 
 
 @router.get("/faculties")
@@ -159,14 +160,20 @@ def login(request: Request, data: LoginRequest, db: Session = Depends(get_db)):
     return TokenResponse(access_token=token)
 
 
-@router.get("/verify-email")
-def verify_email(token: str, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.verification_token == token).first()
-    if not user:
-        raise HTTPException(status_code=400, detail="Yanlış və ya köhnəlmiş doğrulama linki")
-    if user.is_verified:
-        return {"message": "Email artıq təsdiqlənib"}
+class VerifyCodeRequest(BaseModel):
+    email: str
+    code: str
+
+
+@router.post("/verify-code")
+def verify_code(data: VerifyCodeRequest, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == data.email).first()
+    if not user or user.is_verified:
+        raise HTTPException(status_code=400, detail="Yanlış sorğu")
+    if user.verification_token != data.code:
+        raise HTTPException(status_code=400, detail="Kod yanlışdır")
     user.is_verified = True
     user.verification_token = None
     db.commit()
-    return {"message": "Email uğurla təsdiqləndi. İndi daxil ola bilərsiniz."}
+    token = create_access_token({"sub": str(user.id)})
+    return TokenResponse(access_token=token)
