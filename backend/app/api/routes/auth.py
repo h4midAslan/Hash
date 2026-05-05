@@ -98,10 +98,17 @@ def register(request: Request, data: RegisterRequest, db: Session = Depends(get_
 
     existing = db.query(User).filter(User.email == data.email).first()
     if existing:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Bu email artıq qeydiyyatdan keçib"
-        )
+        if existing.is_verified:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Bu email artıq qeydiyyatdan keçib"
+            )
+        # verify edilməmiş hesab — yenidən email göndər
+        existing.verification_token = secrets.token_urlsafe(32)
+        existing.password_hash = hash_password(data.password)
+        db.commit()
+        send_verification_email(existing.email, existing.verification_token)
+        return {"message": "Təsdiq emaili yenidən göndərildi. Emailinizi yoxlayın."}
 
     verification_token = secrets.token_urlsafe(32)
     user = User(
