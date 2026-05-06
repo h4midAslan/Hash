@@ -6,6 +6,17 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from app.api.routes import auth, users, posts, connections, messages, admin, certificates, upload, projects, events, articles, notifications
+from alembic.config import Config
+from alembic import command
+
+def run_migrations():
+    try:
+        alembic_cfg = Config("alembic.ini")
+        command.upgrade(alembic_cfg, "head")
+    except Exception as e:
+        print(f"Migration xətası (davam edir): {e}")
+
+run_migrations()
 
 limiter = Limiter(key_func=get_remote_address)
 app = FastAPI(title="Hash API", version="1.0.0")
