@@ -23,7 +23,26 @@ def run_migrations():
                 time.sleep(5)
     print("Migration tamamlanmadı, server işə davam edir")
 
+
+def ensure_columns():
+    from sqlalchemy import text
+    from app.services.database import engine
+    import time
+    for attempt in range(5):
+        try:
+            with engine.connect() as conn:
+                conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS last_page VARCHAR(255)"))
+                conn.commit()
+            print("ensure_columns: last_page OK")
+            return
+        except Exception as e:
+            print(f"ensure_columns cəhdi {attempt + 1}/5: {e}")
+            if attempt < 4:
+                time.sleep(5)
+
+
 run_migrations()
+ensure_columns()
 
 limiter = Limiter(key_func=get_remote_address)
 app = FastAPI(title="Hash API", version="1.0.0")
