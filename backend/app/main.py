@@ -10,11 +10,18 @@ from alembic.config import Config
 from alembic import command
 
 def run_migrations():
-    try:
-        alembic_cfg = Config("alembic.ini")
-        command.upgrade(alembic_cfg, "head")
-    except Exception as e:
-        print(f"Migration xətası (davam edir): {e}")
+    import time
+    for attempt in range(5):
+        try:
+            alembic_cfg = Config("alembic.ini")
+            command.upgrade(alembic_cfg, "head")
+            print("Migrations uğurla tamamlandı")
+            return
+        except Exception as e:
+            print(f"Migration cəhdi {attempt + 1}/5 uğursuz: {e}")
+            if attempt < 4:
+                time.sleep(5)
+    print("Migration tamamlanmadı, server işə davam edir")
 
 run_migrations()
 
