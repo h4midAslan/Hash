@@ -135,7 +135,6 @@ def register(request: Request, data: RegisterRequest, db: Session = Depends(get_
     db.commit()
     db.refresh(user)
 
-    log_activity(db, action="register", user_id=user.id, email=user.email, request=request)
     sent = send_verification_code(user.email, code)
     logger.info("VERIFY_CODE email=%s code=%s sent=%s", user.email, code, sent)
     if not sent:
@@ -181,14 +180,16 @@ class VerifyCodeRequest(BaseModel):
 
 
 @router.post("/verify-code")
-def verify_code(data: VerifyCodeRequest, db: Session = Depends(get_db)):
+def verify_code(request: Request, data: VerifyCodeRequest, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == data.email).first()
     if not user or user.is_verified:
         raise HTTPException(status_code=400, detail="Yanlış sorğu")
     if user.verification_token != data.code:
+        log_activity(db, action="verify_failed", email=data.email, request=request)
         raise HTTPException(status_code=400, detail="Kod yanlışdır")
     user.is_verified = True
     user.verification_token = None
     db.commit()
+    log_activity(db, action="register", user_id=user.id, email=user.email, request=request)
     token = create_access_token({"sub": str(user.id)})
     return TokenResponse(access_token=token)
