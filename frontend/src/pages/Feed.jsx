@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { Heart, ThumbsDown, MessageCircle, Send, Pin, TrendingUp, Image as ImageIcon, Film, Flag, X, ChevronDown, ChevronUp, Trash2, UserPlus, UserCheck } from "lucide-react";
+import { Heart, ThumbsDown, MessageCircle, Send, Pin, TrendingUp, Image as ImageIcon, Film, Flag, X, ChevronDown, ChevronUp, Trash2, UserPlus, UserCheck, ChevronLeft, ChevronRight } from "lucide-react";
 import api from "../api/client";
 import UserAvatar from "../components/UserAvatar";
 import { formatBakuDate, formatBakuHM } from "../utils/time";
@@ -8,10 +8,40 @@ import { useDarkClasses } from "../hooks/useDarkClasses";
 import { toast } from "../components/Toast";
 import { useLang } from "../hooks/useLang";
 
+function ImageCarousel({ images, dark }) {
+  const [idx, setIdx] = useState(0);
+  if (!images?.length) return null;
+  if (images.length === 1) return (
+    <img src={images[0]} alt="post" className="w-full max-h-[500px] object-cover" />
+  );
+  return (
+    <div className="relative select-none">
+      <img src={images[idx]} alt={`post-${idx}`} className="w-full max-h-[500px] object-cover" />
+      <button onClick={() => setIdx(i => (i - 1 + images.length) % images.length)}
+        className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center transition">
+        <ChevronLeft size={16} />
+      </button>
+      <button onClick={() => setIdx(i => (i + 1) % images.length)}
+        className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center transition">
+        <ChevronRight size={16} />
+      </button>
+      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
+        {images.map((_, i) => (
+          <button key={i} onClick={() => setIdx(i)}
+            className={`w-2 h-2 rounded-full transition-all ${i === idx ? "bg-white scale-125" : "bg-white/50"}`} />
+        ))}
+      </div>
+      <span className="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-0.5 rounded-full">
+        {idx + 1}/{images.length}
+      </span>
+    </div>
+  );
+}
+
 export default function Feed() {
   const [posts, setPosts] = useState([]);
   const [newPost, setNewPost] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
+  const [imageUrls, setImageUrls] = useState([]);
   const [videoUrl, setVideoUrl] = useState("");
   const [showDislikes, setShowDislikes] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -72,7 +102,30 @@ export default function Feed() {
     } catch (err) {}
   };
 
-  const handleMediaPick = async (e) => {
+  const handleImagePick = async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    if (imageUrls.length + files.length > 10) {
+      toast.error("Maksimum 10 şəkil əlavə edə bilərsiniz");
+      return;
+    }
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      files.forEach(f => formData.append("files", f));
+      const res = await api.post("/upload/multiple", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      setImageUrls(prev => [...prev, ...res.data.urls]);
+      setVideoUrl("");
+    } catch (err) {
+      toast.error(err.response?.data?.detail || "Şəkil yüklənmədi");
+    }
+    setUploading(false);
+    e.target.value = "";
+  };
+
+  const handleVideoPick = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploading(true);
@@ -82,15 +135,10 @@ export default function Feed() {
       const res = await api.post("/upload", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      if (res.data.resource_type === "video") {
-        setVideoUrl(res.data.url);
-        setImageUrl("");
-      } else {
-        setImageUrl(res.data.url);
-        setVideoUrl("");
-      }
+      setVideoUrl(res.data.url);
+      setImageUrls([]);
     } catch (err) {
-      toast.error(err.response?.data?.detail || "Fayl yüklənmədi");
+      toast.error(err.response?.data?.detail || "Video yüklənmədi");
     }
     setUploading(false);
     e.target.value = "";
@@ -98,17 +146,17 @@ export default function Feed() {
 
   const handlePost = async (e) => {
     e.preventDefault();
-    if (!newPost.trim() && !imageUrl && !videoUrl) return;
+    if (!newPost.trim() && !imageUrls.length && !videoUrl) return;
     setPosting(true);
     try {
       await api.post("/posts", {
         content: newPost.trim() || "",
-        image_url: imageUrl || null,
+        images: imageUrls,
         video_url: videoUrl || null,
         show_dislikes: showDislikes,
       });
       setNewPost("");
-      setImageUrl("");
+      setImageUrls([]);
       setVideoUrl("");
       setShowDislikes(true);
       loadFeed();
@@ -227,10 +275,24 @@ export default function Feed() {
               className={`w-full p-3 border-0 resize-none focus:outline-none ${d.textSecondary} ${d.dark ? "placeholder-gray-500 bg-transparent" : "placeholder-gray-300"} text-[15px] leading-relaxed`}
               rows={3}
             />
-            {imageUrl && (
-              <div className={`relative mt-2 rounded-xl overflow-hidden border ${d.border}`}>
-                <img src={imageUrl} alt="preview" className="w-full max-h-96 object-cover" />
-                <button type="button" onClick={() => setImageUrl("")} className="absolute top-2 right-2 w-8 h-8 bg-black/60 hover:bg-black/80 text-white rounded-full flex items-center justify-center transition"><X size={16} /></button>
+            {imageUrls.length > 0 && (
+              <div className="mt-2 grid grid-cols-3 gap-2">
+                {imageUrls.map((url, i) => (
+                  <div key={i} className={`relative rounded-xl overflow-hidden border ${d.border} aspect-square`}>
+                    <img src={url} alt={`preview-${i}`} className="w-full h-full object-cover" />
+                    <button type="button" onClick={() => setImageUrls(prev => prev.filter((_, j) => j !== i))}
+                      className="absolute top-1 right-1 w-6 h-6 bg-black/60 hover:bg-black/80 text-white rounded-full flex items-center justify-center transition">
+                      <X size={12} />
+                    </button>
+                  </div>
+                ))}
+                {imageUrls.length < 10 && (
+                  <label className={`flex flex-col items-center justify-center rounded-xl border-2 border-dashed ${d.dark ? "border-gray-600 text-gray-500 hover:border-blue-500" : "border-gray-200 text-gray-300 hover:border-blue-400"} aspect-square cursor-pointer transition`}>
+                    <ImageIcon size={20} />
+                    <span className="text-xs mt-1">Əlavə et</span>
+                    <input type="file" accept="image/*" multiple onChange={handleImagePick} disabled={uploading} className="hidden" />
+                  </label>
+                )}
               </div>
             )}
             {videoUrl && (
@@ -245,12 +307,12 @@ export default function Feed() {
         <div className={`flex items-center justify-between mt-3 pt-4 border-t ${d.borderLight}`}>
           <div className="flex items-center gap-1">
             <label className="flex items-center gap-2 text-sm text-blue-600 font-medium cursor-pointer hover:bg-blue-50/10 px-3 py-2 rounded-xl transition">
-              <ImageIcon size={16} /> Şəkil
-              <input type="file" accept="image/*" onChange={handleMediaPick} disabled={uploading} className="hidden" />
+              <ImageIcon size={16} /> Şəkil {imageUrls.length > 0 && <span className="bg-blue-100 text-blue-600 text-xs px-1.5 py-0.5 rounded-full">{imageUrls.length}</span>}
+              <input type="file" accept="image/*" multiple onChange={handleImagePick} disabled={uploading} className="hidden" />
             </label>
             <label className="flex items-center gap-2 text-sm text-blue-600 font-medium cursor-pointer hover:bg-blue-50/10 px-3 py-2 rounded-xl transition">
               <Film size={16} /> Video
-              <input type="file" accept="video/mp4,video/webm,video/quicktime" onChange={handleMediaPick} disabled={uploading} className="hidden" />
+              <input type="file" accept="video/mp4,video/webm,video/quicktime" onChange={handleVideoPick} disabled={uploading} className="hidden" />
             </label>
             {uploading && <span className={`text-xs ${d.textFaint} ml-2`}>Yüklənir...</span>}
           </div>
@@ -259,7 +321,7 @@ export default function Feed() {
               <input type="checkbox" checked={showDislikes} onChange={(e) => setShowDislikes(e.target.checked)} className="w-4 h-4 text-blue-600 rounded border-gray-300" />
               <ThumbsDown size={14} /> göstər
             </label>
-            <button type="submit" disabled={(!newPost.trim() && !imageUrl && !videoUrl) || posting || uploading} className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-2.5 rounded-xl font-semibold hover:shadow-lg hover:shadow-blue-200 transition-all duration-300 flex items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed disabled:shadow-none text-sm">
+            <button type="submit" disabled={(!newPost.trim() && !imageUrls.length && !videoUrl) || posting || uploading} className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-2.5 rounded-xl font-semibold hover:shadow-lg hover:shadow-blue-200 transition-all duration-300 flex items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed disabled:shadow-none text-sm">
               <Send size={15} /> {posting ? "..." : t("feed_share")}
             </button>
           </div>
@@ -329,7 +391,11 @@ export default function Feed() {
             </div>
 
             {post.content && <p className={`${d.textSecondary} leading-relaxed mb-4 text-[15px] whitespace-pre-wrap`}>{post.content}</p>}
-            {post.image_url && <div className={`mb-4 rounded-xl overflow-hidden border ${d.border}`}><img src={post.image_url} alt="post" className="w-full max-h-[500px] object-cover" /></div>}
+            {(post.images?.length > 0 || post.image_url) && (
+              <div className={`mb-4 rounded-xl overflow-hidden border ${d.border}`}>
+                <ImageCarousel images={post.images?.length > 0 ? post.images : [post.image_url]} dark={d.dark} />
+              </div>
+            )}
             {post.video_url && <div className={`mb-4 rounded-xl overflow-hidden border ${d.border} bg-black`}><video src={post.video_url} controls className="w-full max-h-[500px]" /></div>}
 
             <div className={`flex items-center gap-1 pt-3 border-t ${d.borderLight}`}>

@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session, joinedload, subqueryload
 from sqlalchemy import func as sa_func
 from pydantic import BaseModel
 import httpx
+import json
 from app.services.database import get_db
 from app.services.auth import get_current_user
 from app.services.notifier import create_notification
@@ -60,6 +61,7 @@ Yalnız hazır postu yaz, heç bir izahat əlavə etmə."""
 class PostCreate(BaseModel):
     content: str | None = None
     image_url: str | None = None
+    images: list[str] = []
     video_url: str | None = None
     show_dislikes: bool = True
 
@@ -76,6 +78,7 @@ class PostResponse(BaseModel):
     id: int
     content: str | None
     image_url: str | None
+    images: list[str]
     video_url: str | None
     is_pinned: bool
     show_dislikes: bool
@@ -93,11 +96,25 @@ class PostResponse(BaseModel):
         from_attributes = True
 
 
+def _parse_images(image_url):
+    if not image_url:
+        return [], None
+    if image_url.startswith("["):
+        try:
+            imgs = json.loads(image_url)
+            return imgs, None
+        except Exception:
+            pass
+    return [], image_url
+
+
 def _build_post_response(post, current_user_id, user_liked_ids, user_disliked_ids):
+    images, single_url = _parse_images(post.image_url)
     return PostResponse(
         id=post.id,
         content=post.content,
-        image_url=post.image_url,
+        image_url=single_url,
+        images=images,
         video_url=post.video_url,
         is_pinned=post.is_pinned,
         show_dislikes=post.show_dislikes if post.show_dislikes is not None else True,
@@ -137,9 +154,13 @@ def get_feed(db: Session = Depends(get_db), current_user: User = Depends(get_cur
 @router.post("", response_model=dict)
 def create_post(data: PostCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     content = data.content.strip() if data.content else None
-    if not content and not data.image_url and not data.video_url:
+    if data.images:
+        stored_image = json.dumps(data.images)
+    else:
+        stored_image = data.image_url
+    if not content and not stored_image and not data.video_url:
         raise HTTPException(status_code=400, detail="Post boş ola bilməz")
-    post = Post(author_id=current_user.id, content=content, image_url=data.image_url, video_url=data.video_url, show_dislikes=data.show_dislikes)
+    post = Post(author_id=current_user.id, content=content, image_url=stored_image, video_url=data.video_url, show_dislikes=data.show_dislikes)
     db.add(post)
     db.commit()
     return {"message": "Post yaradıldı", "id": post.id}
