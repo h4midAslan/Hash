@@ -43,7 +43,7 @@ Yalnız hazır postu yaz, heç bir izahat əlavə etmə."""
     try:
         async with httpx.AsyncClient(timeout=30) as client:
             res = await client.post(
-                f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key={settings.GEMINI_API_KEY}",
+                f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={settings.GEMINI_API_KEY}",
                 json={"contents": [{"parts": [{"text": prompt}]}]},
             )
             if res.status_code != 200:
