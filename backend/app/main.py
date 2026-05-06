@@ -71,3 +71,19 @@ async def global_exception_handler(request: Request, exc: Exception):
 @app.api_route("/", methods=["GET", "HEAD"])
 def root():
     return {"message": "Hash API işləyir"}
+
+
+@app.get("/health")
+def health():
+    from sqlalchemy import text
+    from app.services.database import engine
+    try:
+        with engine.connect() as conn:
+            result = conn.execute(text("SELECT current_database(), version()"))
+            row = result.fetchone()
+            cols = conn.execute(text(
+                "SELECT column_name FROM information_schema.columns WHERE table_name='users' ORDER BY ordinal_position"
+            )).fetchall()
+            return {"db": "ok", "database": row[0], "users_columns": [c[0] for c in cols]}
+    except Exception as e:
+        return {"db": "error", "detail": str(e)}
