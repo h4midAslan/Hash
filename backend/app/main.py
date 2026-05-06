@@ -64,7 +64,8 @@ app.include_router(notifications.router)
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
-    return JSONResponse(status_code=500, content={"detail": "Daxili server xətası"})
+    print(f"UNHANDLED ERROR: {type(exc).__name__}: {exc}")
+    return JSONResponse(status_code=500, content={"detail": "Daxili server xətası", "error": str(exc)})
 
 
 @app.api_route("/", methods=["GET", "HEAD"])
