@@ -93,56 +93,15 @@ def manual_refresh(
 
 @router.get("/test-scrape")
 def test_scrape():
-    import requests as req
-    from bs4 import BeautifulSoup
-
-    HEADERS = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0.0.0 Safari/537.36",
-        "Accept-Language": "en-US,en;q=0.9",
+    from app.services.hackathon_scraper import scrape_devpost, scrape_hackathon_com
+    devpost = scrape_devpost()
+    hcom = scrape_hackathon_com()
+    return {
+        "devpost_count": len(devpost),
+        "devpost": devpost[:3],
+        "hackathon_com_count": len(hcom),
+        "hackathon_com": hcom[:3],
     }
-
-    results = {}
-
-    # Devpost
-    try:
-        r = req.get("https://devpost.com/hackathons?status=open", headers=HEADERS, timeout=12)
-        soup = BeautifulSoup(r.text, "lxml")
-        cards = soup.select("article.hackathon-tile")
-        results["devpost"] = {
-            "status": r.status_code,
-            "cards_found": len(cards),
-            "html_snippet": r.text[:300],
-        }
-    except Exception as e:
-        results["devpost"] = {"error": str(e)}
-
-    # MLH
-    try:
-        r = req.get("https://mlh.io/seasons/2026/events", headers=HEADERS, timeout=12)
-        soup = BeautifulSoup(r.text, "lxml")
-        events = soup.select(".event")
-        results["mlh"] = {
-            "status": r.status_code,
-            "events_found": len(events),
-            "html_snippet": r.text[:300],
-        }
-    except Exception as e:
-        results["mlh"] = {"error": str(e)}
-
-    # Edumap
-    try:
-        r = req.get("https://edumap.az/musabiqeler", headers=HEADERS, timeout=12)
-        soup = BeautifulSoup(r.text, "lxml")
-        links = soup.find_all("a", href=True)
-        results["edumap"] = {
-            "status": r.status_code,
-            "links_found": len(links),
-            "html_snippet": r.text[:300],
-        }
-    except Exception as e:
-        results["edumap"] = {"error": str(e)}
-
-    return results
 
 
 @router.get("/status")

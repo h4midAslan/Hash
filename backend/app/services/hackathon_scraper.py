@@ -1,23 +1,18 @@
 """
-Hackathon scraper: Devpost (açıq), MLH, edumap.az
-Keçmiş tarixli nəticələr avtomatik süzülür.
+Hackathon scraper — Devpost JSON API + Hackathon.com API
+HTML scraping işləmir (JS-rendered / Cloudflare).
 """
 import re
-import time
 import logging
 from datetime import datetime
 
 import requests
-from bs4 import BeautifulSoup
 
 log = logging.getLogger(__name__)
 
 HEADERS = {
-    "User-Agent": (
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/124.0.0.0 Safari/537.36"
-    ),
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0.0.0 Safari/537.36",
+    "Accept": "application/json, text/html,*/*",
     "Accept-Language": "en-US,en;q=0.9",
 }
 
@@ -37,17 +32,15 @@ def parse_deadline(text: str) -> datetime | None:
         return None
     text = text.strip()
 
-    m = re.search(
-        r"(\d{1,2})\s+(january|february|march|april|may|june|july|august|"
-        r"september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sep|oct|nov|dec)"
-        r"\s+(\d{4})", text, re.IGNORECASE
-    )
+    # ISO format: "2026-05-30T00:00:00.000Z"
+    m = re.match(r"(\d{4})-(\d{2})-(\d{2})", text)
     if m:
         try:
-            return datetime(int(m.group(3)), MONTHS_EN[m.group(2).lower()], int(m.group(1)))
+            return datetime(int(m.group(1)), int(m.group(2)), int(m.group(3)))
         except Exception:
             pass
 
+    # "May 30, 2026"
     m = re.search(
         r"(january|february|march|april|may|june|july|august|"
         r"september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sep|oct|nov|dec)"
@@ -59,17 +52,15 @@ def parse_deadline(text: str) -> datetime | None:
         except Exception:
             pass
 
-    m = re.search(r"(\d{4})[\/\-\.](\d{1,2})[\/\-\.](\d{1,2})", text)
+    # "30 May 2026"
+    m = re.search(
+        r"(\d{1,2})\s+(january|february|march|april|may|june|july|august|"
+        r"september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sep|oct|nov|dec)"
+        r"\s+(\d{4})", text, re.IGNORECASE
+    )
     if m:
         try:
-            return datetime(int(m.group(1)), int(m.group(2)), int(m.group(3)))
-        except Exception:
-            pass
-
-    m = re.search(r"(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})", text)
-    if m:
-        try:
-            return datetime(int(m.group(3)), int(m.group(2)), int(m.group(1)))
+            return datetime(int(m.group(3)), MONTHS_EN[m.group(2).lower()], int(m.group(1)))
         except Exception:
             pass
 
@@ -84,147 +75,101 @@ def is_expired(deadline_str: str) -> bool:
 
 
 def scrape_devpost() -> list[dict]:
+    """Devpost-un gizli JSON API-si."""
     results = []
-    url = "https://devpost.com/hackathons?challenge_type=online&open_to=public&status=open&order_by=deadline"
     try:
-        r = requests.get(url, headers=HEADERS, timeout=15)
-        soup = BeautifulSoup(r.text, "lxml")
-        for card in soup.select("article.hackathon-tile")[:12]:
-            title_el = card.select_one("h3")
-            link_el = card.select_one("a.tile-anchor")
-            deadline_el = card.select_one(".submission-period") or card.select_one("time")
-            prize_el = card.select_one(".prize-amount")
+        r = requests.get(
+            "https://devpost.com/api/hackathons",
+            params={
+                "challenge_type": "online",
+                "status": "open",
+                "order_by": "deadline",
+                "per_page": 20,
+            },
+            headers={**HEADERS, "Accept": "application/json"},
+            timeout=15,
+        )
+        if r.status_code != 200:
+            print(f"[HACKATHON] Devpost API status: {r.status_code}", flush=True)
+            return []
 
-            if not title_el or not link_el:
+        data = r.json()
+        hackathons = data.get("hackathons", [])
+        print(f"[HACKATHON] Devpost API returned {len(hackathons)} items", flush=True)
+
+        for h in hackathons:
+            title = h.get("title", "").strip()
+            url = h.get("url", "")
+            if not url.startswith("http"):
+                url = "https://devpost.com" + url
+
+            deadline_raw = h.get("submission_period_dates", "") or h.get("ends_at", "")
+            prize = h.get("prize_amount", "") or ""
+            desc = f"Mükafat: {prize}" if prize else h.get("tagline", "Beynəlxalq online hackathon")
+
+            if is_expired(deadline_raw):
                 continue
 
-            title = title_el.get_text(strip=True)
-            href = link_el.get("href", "")
-            if not href.startswith("http"):
-                href = "https://devpost.com" + href
-
-            deadline_text = deadline_el.get_text(strip=True) if deadline_el else ""
-            prize = prize_el.get_text(strip=True) if prize_el else ""
-            desc = f"Mükafat: {prize}" if prize else "Beynəlxalq online hackathon"
-
-            if is_expired(deadline_text):
-                continue
+            dt = parse_deadline(deadline_raw)
+            deadline_str = dt.strftime("%d.%m.%Y") if dt else deadline_raw[:50]
 
             results.append({
                 "title": title[:120],
-                "url": href,
-                "description": desc[:300],
-                "deadline": deadline_text[:100],
+                "url": url,
+                "description": str(desc)[:300],
+                "deadline": deadline_str,
                 "trusted": True,
             })
-        log.info(f"Devpost: {len(results)} nəticə")
+
+        print(f"[HACKATHON] Devpost active: {len(results)}", flush=True)
     except Exception as e:
-        log.warning(f"Devpost error: {e}")
+        print(f"[HACKATHON] Devpost error: {e}", flush=True)
     return results
 
 
-def scrape_mlh() -> list[dict]:
+def scrape_hackathon_com() -> list[dict]:
+    """hackathon.com açıq API."""
     results = []
     try:
-        r = requests.get("https://mlh.io/seasons/2026/events", headers=HEADERS, timeout=15)
-        soup = BeautifulSoup(r.text, "lxml")
-        for ev in soup.select(".event")[:10]:
-            name_el = ev.select_one(".event-name h3") or ev.select_one("h3")
-            link_el = ev.select_one("a.event-link") or ev.select_one("a")
-            date_el = ev.select_one(".event-date")
+        r = requests.get(
+            "https://hackathon.com/api/v1/hackathons",
+            params={"status": "open", "limit": 15},
+            headers={**HEADERS, "Accept": "application/json"},
+            timeout=12,
+        )
+        if r.status_code != 200:
+            print(f"[HACKATHON] hackathon.com status: {r.status_code}", flush=True)
+            return []
 
-            if not name_el or not link_el:
+        data = r.json()
+        items = data if isinstance(data, list) else data.get("data", data.get("hackathons", []))
+        print(f"[HACKATHON] hackathon.com returned {len(items)} items", flush=True)
+
+        for h in items:
+            title = h.get("title") or h.get("name", "")
+            url = h.get("url") or h.get("link", "")
+            deadline_raw = h.get("deadline") or h.get("end_date", "")
+            desc = h.get("description") or h.get("tagline", "")
+
+            if not title or not url:
+                continue
+            if is_expired(deadline_raw):
                 continue
 
-            title = name_el.get_text(strip=True)
-            href = link_el.get("href", "")
-            deadline_text = date_el.get_text(strip=True) if date_el else ""
-
-            if is_expired(deadline_text):
-                continue
+            dt = parse_deadline(deadline_raw)
+            deadline_str = dt.strftime("%d.%m.%Y") if dt else deadline_raw[:50]
 
             results.append({
-                "title": title[:120],
-                "url": href,
-                "description": "MLH tərəfindən dəstəklənən hackathon",
-                "deadline": deadline_text[:100],
+                "title": str(title)[:120],
+                "url": str(url),
+                "description": str(desc)[:300],
+                "deadline": deadline_str,
                 "trusted": True,
             })
-        log.info(f"MLH: {len(results)} nəticə")
+
+        print(f"[HACKATHON] hackathon.com active: {len(results)}", flush=True)
     except Exception as e:
-        log.warning(f"MLH error: {e}")
-    return results
-
-
-RELEVANCE_KW = [
-    "hackathon", "hakaton", "yarış", "müsabiqə", "competition",
-    "challenge", "startup", "olimpiada", "grant", "bootcamp",
-    "ideathon", "datathon", "olympiad", "innovation",
-]
-
-
-def scrape_edumap() -> list[dict]:
-    results = []
-    pages = [
-        "https://edumap.az/musabiqeler",
-        "https://edumap.az/kateqoriya/tedbirler",
-    ]
-    seen = set(pages)
-
-    for page_url in pages:
-        try:
-            r = requests.get(page_url, headers=HEADERS, timeout=12)
-            soup = BeautifulSoup(r.text, "lxml")
-
-            for a in soup.find_all("a", href=True):
-                text = a.get_text(strip=True)
-                href = a["href"]
-                if not text or len(text) < 8:
-                    continue
-                if not any(kw in text.lower() for kw in RELEVANCE_KW):
-                    continue
-
-                if href.startswith("/") and "/" not in href[1:]:
-                    full = "https://edumap.az" + href
-                elif href.startswith("http"):
-                    full = href
-                else:
-                    continue
-
-                if full in seen:
-                    continue
-                seen.add(full)
-
-                deadline_str = ""
-                desc = ""
-                try:
-                    ar = requests.get(full, headers=HEADERS, timeout=8)
-                    asoup = BeautifulSoup(ar.text, "lxml")
-                    body = asoup.get_text(" ", strip=True)[:2000]
-                    dt = parse_deadline(body)
-                    if dt:
-                        if dt < TODAY:
-                            continue
-                        deadline_str = dt.strftime("%d.%m.%Y")
-                    desc_el = (asoup.find("meta", {"name": "description"}) or
-                               asoup.find("meta", property="og:description"))
-                    desc = desc_el.get("content", "").strip() if desc_el else ""
-                except Exception:
-                    pass
-
-                results.append({
-                    "title": text[:120],
-                    "url": full,
-                    "description": desc[:300],
-                    "deadline": deadline_str,
-                    "trusted": True,
-                })
-                time.sleep(0.5)
-
-        except Exception as e:
-            log.warning(f"Edumap error {page_url}: {e}")
-
-    log.info(f"Edumap: {len(results)} nəticə")
+        print(f"[HACKATHON] hackathon.com error: {e}", flush=True)
     return results
 
 
@@ -232,11 +177,11 @@ def scrape_hackathons() -> list[dict]:
     seen: set[str] = set()
     all_items: list[dict] = []
 
-    for item in scrape_devpost() + scrape_mlh() + scrape_edumap():
+    for item in scrape_devpost() + scrape_hackathon_com():
         if item["url"] not in seen:
             seen.add(item["url"])
             all_items.append(item)
 
     all_items.sort(key=lambda x: (not x["trusted"], x["title"].lower()))
-    log.info(f"Cəmi {len(all_items)} unikal nəticə")
+    print(f"[HACKATHON] Cəmi {len(all_items)} unikal nəticə", flush=True)
     return all_items
