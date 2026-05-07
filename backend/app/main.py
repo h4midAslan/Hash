@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
-from app.api.routes import auth, users, posts, connections, messages, admin, certificates, upload, projects, events, articles, notifications
+from app.api.routes import auth, users, posts, connections, messages, admin, certificates, upload, projects, events, articles, notifications, hackathons
 from alembic.config import Config
 from alembic import command
 
@@ -16,7 +16,21 @@ def run_migrations():
     except Exception as e:
         print(f"Migration xətası (davam edir): {e}")
 
+
+def ensure_tables():
+    from app.services.database import engine
+    from app.models.base import Base
+    import app.models.article
+    import app.models.hackathon
+    try:
+        Base.metadata.create_all(bind=engine, checkfirst=True)
+        print("ensure_tables: OK")
+    except Exception as e:
+        print(f"ensure_tables xətası: {e}")
+
+
 run_migrations()
+ensure_tables()
 
 limiter = Limiter(key_func=get_remote_address)
 app = FastAPI(title="Hash API", version="1.0.0")
@@ -53,6 +67,7 @@ app.include_router(projects.router)
 app.include_router(events.router)
 app.include_router(articles.router)
 app.include_router(notifications.router)
+app.include_router(hackathons.router)
 
 
 @app.exception_handler(Exception)

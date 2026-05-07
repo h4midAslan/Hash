@@ -7,6 +7,7 @@ import { formatBakuDate, formatBakuHM } from "../utils/time";
 import { useDarkClasses } from "../hooks/useDarkClasses";
 import { toast } from "../components/Toast";
 import { useLang } from "../hooks/useLang";
+import HackathonWidget from "../components/HackathonWidget";
 
 function ImageCarousel({ images, dark }) {
   const [idx, setIdx] = useState(0);
@@ -248,7 +249,9 @@ export default function Feed() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto py-8 px-4">
+    <div className="max-w-5xl mx-auto py-8 px-4">
+      <div className="flex gap-6">
+      <div className="flex-1 min-w-0">
       {user && (
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -484,6 +487,13 @@ export default function Feed() {
           <p className={`${d.textFaint} text-sm mt-2 max-w-xs mx-auto`}>{t("feed_empty_sub")}</p>
         </div>
       )}
+      </div>
+      <aside className="w-72 shrink-0 hidden lg:block">
+        <div className="sticky top-20">
+          <HackathonWidget isAdmin={user?.is_admin} />
+        </div>
+      </aside>
+      </div>
     </div>
   );
 }
