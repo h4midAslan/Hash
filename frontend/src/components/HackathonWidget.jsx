@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ExternalLink, RefreshCw, Trophy, Star } from "lucide-react";
+import { ExternalLink, RefreshCw, Star } from "lucide-react";
 import api from "../api/client";
 import { useDarkClasses } from "../hooks/useDarkClasses";
 
@@ -36,9 +36,6 @@ export default function HackathonWidget({ isAdmin = false }) {
     <div className={`rounded-2xl border p-4 ${d.card}`}>
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 bg-gradient-to-br from-amber-400 to-orange-500 rounded-lg flex items-center justify-center">
-            <Trophy size={14} className="text-white" />
-          </div>
           <span className={`font-semibold text-sm ${d.text}`}>Hackathon & Yarışlar</span>
         </div>
         {isAdmin && (
