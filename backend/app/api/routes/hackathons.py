@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.models.hackathon import Hackathon
-from app.services.database import get_db
+from app.services.database import get_db, SessionLocal
 from app.services.auth import get_current_user
 from app.models.user import User
 
@@ -26,10 +26,12 @@ class HackathonOut(BaseModel):
         from_attributes = True
 
 
-def _do_refresh(db: Session):
+def _do_refresh():
+    # Background task üçün öz session-unu açır — request session-undan asılı deyil
     from app.services.hackathon_scraper import scrape_hackathons
     import logging
     log = logging.getLogger(__name__)
+    db = SessionLocal()
     try:
         log.info("Hackathon scraping başladı...")
         items = scrape_hackathons()
@@ -41,6 +43,8 @@ def _do_refresh(db: Session):
     except Exception as e:
         log.error(f"Scraping xətası: {e}")
         db.rollback()
+    finally:
+        db.close()
 
 
 @router.get("", response_model=list[HackathonOut])
@@ -56,7 +60,7 @@ def get_hackathons(
         > CACHE_TTL_HOURS * 3600
     )
     if cache_stale:
-        background_tasks.add_task(_do_refresh, db)
+        background_tasks.add_task(_do_refresh)
 
     return (
         db.query(Hackathon)
@@ -74,5 +78,5 @@ def manual_refresh(
 ):
     if not current_user.is_admin:
         raise HTTPException(status_code=403, detail="Yalnız adminlər yeniləyə bilər")
-    background_tasks.add_task(_do_refresh, db)
+    background_tasks.add_task(_do_refresh)
     return {"detail": "Yeniləmə başladı, bir neçə dəqiqə gözləyin."}
