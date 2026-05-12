@@ -251,174 +251,106 @@ export default function Feed() {
     <div className="max-w-6xl mx-auto py-8 px-4">
       <div className="flex gap-5">
 
-      {/* ── LEFT: Campus ID Card ── */}
+      {/* ── LEFT: Profile Sidebar ── */}
       {user && (
-        <aside className="w-56 shrink-0 hidden lg:block">
-          <div className="sticky top-20 space-y-3">
+        <aside className="w-60 shrink-0 hidden lg:block">
+          <div className="sticky top-20 rounded-2xl overflow-hidden"
+            style={{
+              background: d.dark
+                ? "rgba(255,255,255,0.04)"
+                : "rgba(255,255,255,0.85)",
+              border: d.dark
+                ? "1px solid rgba(255,255,255,0.08)"
+                : "1px solid rgba(0,0,0,0.08)",
+              backdropFilter: "blur(16px)",
+              boxShadow: d.dark
+                ? "0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)"
+                : "0 4px 24px rgba(0,0,0,0.08)",
+            }}>
 
-            {/* ID Card */}
-            <div className="rounded-2xl overflow-hidden relative"
-              style={{
-                background: d.dark
-                  ? "linear-gradient(160deg, rgba(0,18,36,0.95) 0%, rgba(2,26,50,0.9) 100%)"
-                  : "linear-gradient(160deg, #f8faff 0%, #eef3ff 100%)",
-                border: d.dark
-                  ? "1px solid rgba(0,200,255,0.18)"
-                  : "1px solid rgba(37,99,235,0.15)",
-                boxShadow: d.dark
-                  ? "0 0 0 1px rgba(0,200,255,0.06), 0 8px 32px rgba(0,0,0,0.5)"
-                  : "0 4px 24px rgba(37,99,235,0.08)",
-              }}>
+            {/* Cover */}
+            <div className="relative">
+              <div className="h-14"
+                style={{ background: "linear-gradient(135deg,#2563eb,#7c3aed)" }} />
+              <div className="absolute -bottom-6 left-4"
+                style={{ filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.4))" }}>
+                <UserAvatar
+                  user={{ full_name: user.full_name, profile_picture: user.profile_picture }}
+                  size="lg"
+                />
+              </div>
+            </div>
 
-              {/* Scan line animation */}
-              <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl">
-                <div style={{
-                  position: "absolute", top: 0, left: 0, right: 0, height: "1px",
-                  background: d.dark ? "rgba(0,200,255,0.3)" : "rgba(37,99,235,0.2)",
-                  animation: "scanline 4s linear infinite",
-                }} />
+            {/* Info */}
+            <div className="pt-9 px-4 pb-4">
+              <Link to={`/profile/${user.id}`}>
+                <h3 className="font-bold text-sm leading-tight transition"
+                  style={{ color: d.dark ? "#f1f5f9" : "#0f172a" }}>
+                  {user.full_name}
+                </h3>
+              </Link>
+
+              {user.headline && (
+                <p className="text-xs mt-1 leading-snug"
+                  style={{ color: d.dark ? "#94a3b8" : "#475569" }}>
+                  {user.headline}
+                </p>
+              )}
+
+              {(user.faculty || user.major) && (
+                <p className="text-xs mt-1"
+                  style={{ color: d.dark ? "#64748b" : "#94a3b8" }}>
+                  {[user.major, user.faculty].filter(Boolean).join(" · ")}
+                </p>
+              )}
+
+              {user.course && (
+                <p className="text-xs mt-0.5"
+                  style={{ color: d.dark ? "#64748b" : "#94a3b8" }}>
+                  {user.course}-ci kurs · MAA
+                </p>
+              )}
+
+              {user.is_open_for_team && (
+                <div className="mt-2 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full"
+                  style={{ background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.2)" }}>
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-xs font-medium text-emerald-500">Komanda üçün açıq</span>
+                </div>
+              )}
+
+              <div className="my-3"
+                style={{ height: 1, background: d.dark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.07)" }} />
+
+              {/* Stats */}
+              <div className="space-y-2 mb-3">
+                <Link to="/connections" className="flex items-center justify-between group">
+                  <span className="text-xs transition group-hover:text-blue-400"
+                    style={{ color: d.dark ? "#94a3b8" : "#64748b" }}>Bağlantılar</span>
+                  <span className="text-xs font-bold text-blue-500">{connectedIds.size}</span>
+                </Link>
+                <Link to={`/profile/${user.id}`} className="flex items-center justify-between group">
+                  <span className="text-xs transition group-hover:text-blue-400"
+                    style={{ color: d.dark ? "#94a3b8" : "#64748b" }}>Profilim</span>
+                  <span className="text-xs font-semibold text-blue-500 opacity-0 group-hover:opacity-100 transition">Bax →</span>
+                </Link>
               </div>
 
-              {/* Header bar */}
-              <div className="px-4 py-2.5 flex items-center justify-between"
-                style={{
-                  background: d.dark
-                    ? "rgba(0,200,255,0.06)"
-                    : "rgba(37,99,235,0.06)",
-                  borderBottom: d.dark
-                    ? "1px solid rgba(0,200,255,0.1)"
-                    : "1px solid rgba(37,99,235,0.1)",
-                }}>
-                <span className="text-[9px] font-bold tracking-[0.2em] uppercase"
-                  style={{ color: d.dark ? "#00c8ff" : "#2563eb", fontFamily: "monospace" }}>
-                  MAA · HASH
-                </span>
-                <div className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full animate-pulse"
-                    style={{ background: "#22c55e", boxShadow: "0 0 6px #22c55e" }} />
-                  <span className="text-[8px] font-mono"
-                    style={{ color: d.dark ? "#22c55e" : "#16a34a" }}>ONLINE</span>
-                </div>
-              </div>
-
-              {/* Avatar + name */}
-              <div className="px-4 pt-4 pb-3">
-                <div className="flex items-start gap-3 mb-3">
-                  {/* Hex-framed avatar */}
-                  <div className="relative shrink-0">
-                    <div style={{
-                      width: 52, height: 52,
-                      borderRadius: "30% 70% 70% 30% / 30% 30% 70% 70%",
-                      padding: 2,
-                      background: d.dark
-                        ? "linear-gradient(135deg,#00c8ff,#0066ff)"
-                        : "linear-gradient(135deg,#2563eb,#7c3aed)",
-                    }}>
-                      <div style={{ borderRadius: "inherit", overflow: "hidden", width: "100%", height: "100%" }}>
-                        <UserAvatar
-                          user={{ full_name: user.full_name, profile_picture: user.profile_picture }}
-                          size="lg"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="min-w-0">
-                    <Link to={`/profile/${user.id}`}>
-                      <p className="text-sm font-bold leading-tight truncate hover:underline"
-                        style={{ color: d.dark ? "#e0f2fe" : "#0f172a" }}>
-                        {user.full_name}
-                      </p>
-                    </Link>
-                    {user.course && (
-                      <p className="text-[10px] font-mono mt-0.5"
-                        style={{ color: d.dark ? "#00c8ff" : "#2563eb" }}>
-                        KURS-{user.course} · MAA
-                      </p>
-                    )}
-                    {user.major && (
-                      <p className="text-[10px] mt-0.5 truncate"
-                        style={{ color: d.dark ? "#64748b" : "#94a3b8" }}>
-                        {user.major}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                {user.is_open_for_team && (
-                  <div className="mb-3 flex items-center gap-1.5 px-2 py-1 rounded-lg"
-                    style={{
-                      background: "rgba(34,197,94,0.08)",
-                      border: "1px solid rgba(34,197,94,0.2)",
-                    }}>
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-                    <span className="text-[10px] font-semibold text-emerald-500 tracking-wide">Komanda axtarır</span>
-                  </div>
-                )}
-
-                {/* Stats row */}
-                <div className="grid grid-cols-2 gap-2 mb-3">
-                  {[
-                    { label: "Bağlantı", val: connectedIds.size, to: "/connections" },
-                    { label: "Profilim", val: "→", to: `/profile/${user.id}` },
-                  ].map(({ label, val, to }) => (
-                    <Link key={to} to={to}
-                      className="flex flex-col items-center py-2 rounded-xl transition-all"
-                      style={{
-                        background: d.dark ? "rgba(255,255,255,0.03)" : "rgba(37,99,235,0.04)",
-                        border: d.dark ? "1px solid rgba(255,255,255,0.06)" : "1px solid rgba(37,99,235,0.08)",
-                      }}
-                      onMouseEnter={e => e.currentTarget.style.borderColor = d.dark ? "rgba(0,200,255,0.3)" : "rgba(37,99,235,0.3)"}
-                      onMouseLeave={e => e.currentTarget.style.borderColor = d.dark ? "rgba(255,255,255,0.06)" : "rgba(37,99,235,0.08)"}>
-                      <span className="text-sm font-bold"
-                        style={{ color: d.dark ? "#00c8ff" : "#2563eb" }}>{val}</span>
-                      <span className="text-[9px] font-mono uppercase tracking-wide"
-                        style={{ color: d.dark ? "#475569" : "#94a3b8" }}>{label}</span>
-                    </Link>
-                  ))}
-                </div>
-
-                {/* Profile completion bar */}
-                {(() => {
-                  const fields = [user.full_name, user.headline, user.major, user.skills, user.profile_picture, user.github_url];
-                  const filled = fields.filter(Boolean).length;
-                  const pct = Math.round((filled / fields.length) * 100);
-                  return (
-                    <div className="mb-3">
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-[9px] font-mono uppercase tracking-wider"
-                          style={{ color: d.dark ? "#475569" : "#94a3b8" }}>Profil dolğunluğu</span>
-                        <span className="text-[9px] font-mono font-bold"
-                          style={{ color: d.dark ? "#00c8ff" : "#2563eb" }}>{pct}%</span>
-                      </div>
-                      <div className="h-1 rounded-full overflow-hidden"
-                        style={{ background: d.dark ? "rgba(255,255,255,0.06)" : "rgba(37,99,235,0.1)" }}>
-                        <div className="h-full rounded-full transition-all duration-700"
-                          style={{
-                            width: `${pct}%`,
-                            background: d.dark
-                              ? "linear-gradient(90deg,#00c8ff,#0066ff)"
-                              : "linear-gradient(90deg,#2563eb,#7c3aed)",
-                            boxShadow: d.dark ? "0 0 8px rgba(0,200,255,0.5)" : "none",
-                          }} />
-                      </div>
-                    </div>
-                  );
-                })()}
-              </div>
+              <div className="my-3"
+                style={{ height: 1, background: d.dark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.07)" }} />
 
               {/* Skills */}
               {user.skills && (
-                <div className="px-4 pb-3">
-                  <p className="text-[9px] font-mono uppercase tracking-[0.15em] mb-2"
-                    style={{ color: d.dark ? "#475569" : "#94a3b8" }}>// Bacarıqlar</p>
-                  <div className="flex flex-wrap gap-1">
-                    {user.skills.split(",").slice(0, 4).map(s => s.trim()).filter(Boolean).map(s => (
-                      <span key={s} className="text-[10px] px-2 py-0.5 rounded font-mono"
+                <div className="mb-3">
+                  <p className="text-xs font-semibold mb-2 uppercase tracking-wider"
+                    style={{ color: d.dark ? "#475569" : "#94a3b8" }}>Bacarıqlar</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {user.skills.split(",").slice(0, 5).map(s => s.trim()).filter(Boolean).map(s => (
+                      <span key={s} className="text-xs px-2 py-0.5 rounded-full"
                         style={{
-                          background: d.dark ? "rgba(0,200,255,0.08)" : "rgba(37,99,235,0.07)",
-                          border: d.dark ? "1px solid rgba(0,200,255,0.2)" : "1px solid rgba(37,99,235,0.15)",
-                          color: d.dark ? "#67e8f9" : "#2563eb",
+                          background: d.dark ? "rgba(99,102,241,0.12)" : "rgba(99,102,241,0.08)",
+                          border: "1px solid rgba(99,102,241,0.25)",
+                          color: d.dark ? "#a5b4fc" : "#6366f1",
                         }}>
                         {s}
                       </span>
@@ -427,74 +359,60 @@ export default function Feed() {
                 </div>
               )}
 
+              {/* Nav links */}
+              <div className="space-y-0.5">
+                {[
+                  { to: "/articles",    icon: BookOpen,      label: "Məqalələr" },
+                  { to: "/connections", icon: Users,         label: "Şəbəkəm" },
+                  { to: "/messages",    icon: MessageCircle, label: "Mesajlar" },
+                ].map(({ to, icon: Icon, label }) => (
+                  <Link key={to} to={to}
+                    className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-xs font-medium transition-all"
+                    style={{ color: d.dark ? "#64748b" : "#94a3b8" }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.background = d.dark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)";
+                      e.currentTarget.style.color = d.dark ? "#e2e8f0" : "#1e293b";
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.background = "transparent";
+                      e.currentTarget.style.color = d.dark ? "#64748b" : "#94a3b8";
+                    }}>
+                    <Icon size={13} />
+                    {label}
+                  </Link>
+                ))}
+              </div>
+
               {/* Social links */}
               {(user.github_url || user.linkedin_url) && (
-                <div className="px-4 pb-4 flex gap-2">
-                  {user.github_url && (
-                    <a href={user.github_url} target="_blank" rel="noreferrer"
-                      className="flex-1 text-center text-[10px] py-1 rounded-lg font-mono font-medium transition"
-                      style={{
-                        background: d.dark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)",
-                        border: d.dark ? "1px solid rgba(255,255,255,0.1)" : "1px solid rgba(0,0,0,0.1)",
-                        color: d.dark ? "#94a3b8" : "#475569",
-                      }}>
-                      GitHub
-                    </a>
-                  )}
-                  {user.linkedin_url && (
-                    <a href={user.linkedin_url} target="_blank" rel="noreferrer"
-                      className="flex-1 text-center text-[10px] py-1 rounded-lg font-mono font-medium transition"
-                      style={{
-                        background: d.dark ? "rgba(0,119,181,0.1)" : "rgba(0,119,181,0.06)",
-                        border: "1px solid rgba(0,119,181,0.25)",
-                        color: "#0077b5",
-                      }}>
-                      LinkedIn
-                    </a>
-                  )}
-                </div>
+                <>
+                  <div className="my-3"
+                    style={{ height: 1, background: d.dark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.07)" }} />
+                  <div className="flex gap-2">
+                    {user.github_url && (
+                      <a href={user.github_url} target="_blank" rel="noreferrer"
+                        className="text-xs px-2.5 py-1 rounded-lg font-medium transition"
+                        style={{
+                          border: "1px solid rgba(255,255,255,0.1)",
+                          color: d.dark ? "#94a3b8" : "#64748b",
+                        }}>
+                        GitHub
+                      </a>
+                    )}
+                    {user.linkedin_url && (
+                      <a href={user.linkedin_url} target="_blank" rel="noreferrer"
+                        className="text-xs px-2.5 py-1 rounded-lg font-medium transition"
+                        style={{
+                          border: "1px solid rgba(99,102,241,0.25)",
+                          color: d.dark ? "#a5b4fc" : "#6366f1",
+                        }}>
+                        LinkedIn
+                      </a>
+                    )}
+                  </div>
+                </>
               )}
             </div>
-
-            {/* Quick nav — separate mini card */}
-            <div className="rounded-xl overflow-hidden"
-              style={{
-                background: d.dark ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.8)",
-                border: d.dark ? "1px solid rgba(255,255,255,0.07)" : "1px solid rgba(0,0,0,0.07)",
-              }}>
-              {[
-                { to: "/articles",    icon: BookOpen,      label: "Məqalələr",  code: "ART" },
-                { to: "/connections", icon: Users,         label: "Şəbəkəm",    code: "NET" },
-                { to: "/search",      icon: TrendingUp,    label: "Kəşf et",    code: "EXP" },
-              ].map(({ to, icon: Icon, label, code }, i, arr) => (
-                <Link key={to} to={to}
-                  className="flex items-center gap-3 px-3 py-2.5 transition-all group"
-                  style={{
-                    borderBottom: i < arr.length - 1
-                      ? d.dark ? "1px solid rgba(255,255,255,0.05)" : "1px solid rgba(0,0,0,0.05)"
-                      : "none",
-                  }}
-                  onMouseEnter={e => {
-                    e.currentTarget.style.background = d.dark ? "rgba(0,200,255,0.05)" : "rgba(37,99,235,0.05)";
-                  }}
-                  onMouseLeave={e => {
-                    e.currentTarget.style.background = "transparent";
-                  }}>
-                  <span className="text-[9px] font-mono w-6"
-                    style={{ color: d.dark ? "#334155" : "#cbd5e1" }}>{code}</span>
-                  <Icon size={13} style={{ color: d.dark ? "#475569" : "#94a3b8", flexShrink: 0 }} />
-                  <span className="text-xs font-medium flex-1 transition"
-                    style={{ color: d.dark ? "#64748b" : "#94a3b8" }}
-                    onMouseEnter={e => e.style && (e.style.color = d.dark ? "#e0f2fe" : "#1e293b")}
-                    >
-                    {label}
-                  </span>
-                  <span className="text-[10px] opacity-0 group-hover:opacity-100 transition"
-                    style={{ color: d.dark ? "#00c8ff" : "#2563eb" }}>›</span>
-                </Link>
-              ))}
-            </div>
-
           </div>
         </aside>
       )}
