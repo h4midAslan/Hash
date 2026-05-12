@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { Heart, ThumbsDown, MessageCircle, Send, Pin, TrendingUp, Image as ImageIcon, Film, Flag, X, ChevronDown, ChevronUp, Trash2, UserPlus, UserCheck, ChevronLeft, ChevronRight, BookOpen } from "lucide-react";
+import { Heart, ThumbsDown, MessageCircle, Send, Pin, TrendingUp, Image as ImageIcon, Film, Flag, X, ChevronDown, ChevronUp, Trash2, UserPlus, UserCheck, ChevronLeft, ChevronRight, BookOpen, Users } from "lucide-react";
 import api from "../api/client";
 import UserAvatar from "../components/UserAvatar";
 import { formatBakuDate, formatBakuHM } from "../utils/time";
@@ -248,8 +248,146 @@ export default function Feed() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto py-8 px-4">
-      <div className="flex gap-6">
+    <div className="max-w-6xl mx-auto py-8 px-4">
+      <div className="flex gap-5">
+
+      {/* ── LEFT: Profile Sidebar ── */}
+      {user && (
+        <aside className="w-64 shrink-0 hidden lg:block">
+          <div className={`rounded-2xl overflow-hidden border ${d.dark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200"} shadow-sm sticky top-20`}>
+
+            {/* Cover + Avatar */}
+            <div className="relative">
+              <div className="h-16 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600" />
+              <div className="absolute -bottom-7 left-4">
+                <UserAvatar
+                  user={{ full_name: user.full_name, profile_picture: user.profile_picture }}
+                  size="lg"
+                  className="ring-2 ring-white dark:ring-gray-900"
+                />
+              </div>
+            </div>
+
+            {/* Info */}
+            <div className="pt-10 px-4 pb-4">
+              <Link to={`/profile/${user.id}`}>
+                <h3 className={`font-bold text-sm leading-tight hover:text-blue-600 transition ${d.text}`}>
+                  {user.full_name}
+                </h3>
+              </Link>
+
+              {user.headline && (
+                <p className={`text-xs mt-1 leading-snug ${d.textSecondary}`}>
+                  {user.headline}
+                </p>
+              )}
+
+              {(user.faculty || user.major) && (
+                <p className={`text-xs mt-1 ${d.textFaint}`}>
+                  {[user.major, user.faculty].filter(Boolean).join(" · ")}
+                </p>
+              )}
+
+              {user.course && (
+                <p className={`text-xs mt-0.5 ${d.textFaint}`}>
+                  {user.course}-ci kurs · MAA
+                </p>
+              )}
+
+              {/* Open for team badge */}
+              {user.is_open_for_team && (
+                <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">Komanda üçün açıq</span>
+                </div>
+              )}
+
+              <hr className={`my-3 ${d.dark ? "border-gray-800" : "border-gray-100"}`} />
+
+              {/* Stats */}
+              <div className="space-y-2">
+                <Link to="/connections" className={`flex items-center justify-between group`}>
+                  <span className={`text-xs ${d.textSecondary} group-hover:text-blue-600 transition`}>Bağlantılar</span>
+                  <span className="text-xs font-bold text-blue-600">{connectedIds.size}</span>
+                </Link>
+                <Link to={`/profile/${user.id}`} className="flex items-center justify-between group">
+                  <span className={`text-xs ${d.textSecondary} group-hover:text-blue-600 transition`}>Profil</span>
+                  <span className={`text-xs font-semibold ${d.textFaint} group-hover:text-blue-600 transition`}>Bax →</span>
+                </Link>
+              </div>
+
+              <hr className={`my-3 ${d.dark ? "border-gray-800" : "border-gray-100"}`} />
+
+              {/* Skills */}
+              {user.skills && (
+                <div className="mb-3">
+                  <p className={`text-xs font-semibold mb-2 ${d.textFaint} uppercase tracking-wide`}>Bacarıqlar</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {user.skills.split(",").slice(0, 5).map(s => s.trim()).filter(Boolean).map(s => (
+                      <span key={s} className={`text-xs px-2 py-0.5 rounded-full
+                        ${d.dark ? "bg-blue-500/10 text-blue-400 border border-blue-500/20"
+                                 : "bg-blue-50 text-blue-700 border border-blue-100"}`}>
+                        {s}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Links */}
+              <div className="space-y-1">
+                <Link to="/articles"
+                  className={`flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-xs font-medium transition
+                    ${d.dark ? "text-gray-400 hover:bg-gray-800 hover:text-white"
+                             : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"}`}>
+                  <BookOpen size={14} />
+                  Məqalələr
+                </Link>
+                <Link to="/connections"
+                  className={`flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-xs font-medium transition
+                    ${d.dark ? "text-gray-400 hover:bg-gray-800 hover:text-white"
+                             : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"}`}>
+                  <Users size={14} />
+                  Şəbəkəm
+                </Link>
+                <Link to="/messages"
+                  className={`flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-xs font-medium transition
+                    ${d.dark ? "text-gray-400 hover:bg-gray-800 hover:text-white"
+                             : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"}`}>
+                  <MessageCircle size={14} />
+                  Mesajlar
+                </Link>
+              </div>
+
+              {/* Social links */}
+              {(user.github_url || user.linkedin_url) && (
+                <>
+                  <hr className={`my-3 ${d.dark ? "border-gray-800" : "border-gray-100"}`} />
+                  <div className="flex gap-2">
+                    {user.github_url && (
+                      <a href={user.github_url} target="_blank" rel="noreferrer"
+                        className={`text-xs px-2.5 py-1 rounded-lg border transition font-medium
+                          ${d.dark ? "border-gray-700 text-gray-400 hover:border-gray-600 hover:text-white"
+                                   : "border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-800"}`}>
+                        GitHub
+                      </a>
+                    )}
+                    {user.linkedin_url && (
+                      <a href={user.linkedin_url} target="_blank" rel="noreferrer"
+                        className={`text-xs px-2.5 py-1 rounded-lg border transition font-medium
+                          ${d.dark ? "border-gray-700 text-gray-400 hover:border-blue-500 hover:text-blue-400"
+                                   : "border-gray-200 text-gray-500 hover:border-blue-300 hover:text-blue-600"}`}>
+                        LinkedIn
+                      </a>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </aside>
+      )}
+
       <div className="flex-1 min-w-0">
       {user && (
         <div className="flex items-center justify-between mb-6">
