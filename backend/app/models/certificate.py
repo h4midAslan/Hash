@@ -12,7 +12,7 @@ class Certificate(Base):
     name = Column(String(255), nullable=False)
     issuer = Column(String(255), nullable=False)
     issue_date = Column(Date)
-    credential_url = Column(String(500))
+    credential_url = Column(String(500))\n    image_url = Column(String(500))
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     user = relationship("User", backref="certificates_list")

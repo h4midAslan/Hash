@@ -15,6 +15,7 @@ class CertificateCreate(BaseModel):
     issuer: str
     issue_date: date | None = None
     credential_url: str | None = None
+    image_url: str | None = None
 
 
 class CertificateResponse(BaseModel):
@@ -24,6 +25,7 @@ class CertificateResponse(BaseModel):
     issuer: str
     issue_date: date | None
     credential_url: str | None
+    image_url: str | None
 
     class Config:
         from_attributes = True
@@ -37,6 +39,7 @@ def add_certificate(data: CertificateCreate, db: Session = Depends(get_db), curr
         issuer=data.issuer,
         issue_date=data.issue_date,
         credential_url=data.credential_url,
+        image_url=data.image_url,
     )
     db.add(cert)
     db.commit()

@@ -115,7 +115,8 @@ export default function Profile() {
   const [form, setForm] = useState({});
   const [certificates, setCertificates] = useState([]);
   const [projects, setProjects] = useState([]);
-  const [certForm, setCertForm] = useState({ name: "", issuer: "", issue_date: "", credential_url: "" });
+  const [certForm, setCertForm] = useState({ name: "", issuer: "", issue_date: "", credential_url: "", image_url: "" });
+  const [certImageUploading, setCertImageUploading] = useState(false);
   const [projForm, setProjForm] = useState({ title: "", description: "", github_url: "", technologies: "" });
   const [showCertForm, setShowCertForm] = useState(false);
   const [showProjForm, setShowProjForm] = useState(false);
@@ -230,14 +231,29 @@ export default function Profile() {
     setUploadingPic(false);
   };
 
+  const handleCertImagePick = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setCertImageUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await api.post("/upload", formData, { headers: { "Content-Type": "multipart/form-data" } });
+      setCertForm(prev => ({ ...prev, image_url: res.data.url }));
+    } catch {}
+    setCertImageUploading(false);
+    e.target.value = "";
+  };
+
   const handleAddCert = async () => {
     try {
       await api.post("/certificates", {
         ...certForm,
         issue_date: certForm.issue_date || null,
         credential_url: certForm.credential_url || null,
+        image_url: certForm.image_url || null,
       });
-      setCertForm({ name: "", issuer: "", issue_date: "", credential_url: "" });
+      setCertForm({ name: "", issuer: "", issue_date: "", credential_url: "", image_url: "" });
       setShowCertForm(false);
       loadCertificates();
     } catch (err) {}
@@ -552,6 +568,21 @@ export default function Profile() {
                       <input type="url" placeholder="Doğrulama linki" value={certForm.credential_url} onChange={(e) => setCertForm({ ...certForm, credential_url: e.target.value })} style={S.input} />
                     </div>
                   </div>
+                  <div style={{ marginBottom: 8 }}>
+                    <label style={{ fontSize: 11, color: "#666", display: "block", marginBottom: 4 }}>Sertifikat şəkli (istəyə bağlı)</label>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <label style={{ ...S.btnGhost, padding: "5px 10px", fontSize: 12, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 4 }}>
+                        <input type="file" accept="image/*" onChange={handleCertImagePick} style={{ display: "none" }} />
+                        {certImageUploading ? "Yüklənir..." : "Şəkil seç"}
+                      </label>
+                      {certForm.image_url && (
+                        <img src={certForm.image_url} alt="cert" style={{ height: 40, border: "1px solid #d4d4d4", objectFit: "cover" }} />
+                      )}
+                      {certForm.image_url && (
+                        <button onClick={() => setCertForm(prev => ({ ...prev, image_url: "" }))} style={{ ...S.btnDanger, padding: "4px 6px" }}>✕</button>
+                      )}
+                    </div>
+                  </div>
                   <div style={{ display: "flex", gap: 8 }}>
                     <button onClick={handleAddCert} disabled={!certForm.name || !certForm.issuer} style={{ ...S.btnPrimary, opacity: (!certForm.name || !certForm.issuer) ? 0.4 : 1 }}>Əlavə et</button>
                     <button onClick={() => setShowCertForm(false)} style={S.btnGhost}>Ləğv et</button>
@@ -562,18 +593,25 @@ export default function Profile() {
               {certificates.length > 0 ? (
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {certificates.map((cert) => (
-                    <div key={cert.id} style={{ border: "1px solid #d4d4d4", padding: "10px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", background: "#fff" }}>
-                      <div style={{ flex: 1 }}>
-                        <p style={{ margin: "0 0 2px 0", fontSize: 13, fontWeight: 600, color: "#1a1a1a" }}>{cert.name}</p>
-                        <p style={{ margin: 0, fontSize: 11, color: "#999" }}>{cert.issuer}{cert.issue_date && ` · ${cert.issue_date}`}</p>
-                      </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        {cert.credential_url && (
-                          <a href={cert.credential_url} target="_blank" rel="noopener noreferrer" style={{ color: "#1a4a8a", lineHeight: 1 }}><ExternalLink size={15} /></a>
-                        )}
-                        {isOwn && (
-                          <button onClick={() => handleDeleteCert(cert.id)} style={S.btnDanger}><Trash2 size={15} /></button>
-                        )}
+                    <div key={cert.id} style={{ border: "1px solid #d4d4d4", background: "#fff" }}>
+                      {cert.image_url && (
+                        <a href={cert.image_url} target="_blank" rel="noopener noreferrer">
+                          <img src={cert.image_url} alt={cert.name} style={{ width: "100%", maxHeight: 180, objectFit: "cover", display: "block", borderBottom: "1px solid #d4d4d4" }} />
+                        </a>
+                      )}
+                      <div style={{ padding: "10px 14px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                        <div style={{ flex: 1 }}>
+                          <p style={{ margin: "0 0 2px 0", fontSize: 13, fontWeight: 600, color: "#1a1a1a" }}>{cert.name}</p>
+                          <p style={{ margin: 0, fontSize: 11, color: "#999" }}>{cert.issuer}{cert.issue_date && ` · ${cert.issue_date}`}</p>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          {cert.credential_url && (
+                            <a href={cert.credential_url} target="_blank" rel="noopener noreferrer" style={{ color: "#1a4a8a", lineHeight: 1 }}><ExternalLink size={15} /></a>
+                          )}
+                          {isOwn && (
+                            <button onClick={() => handleDeleteCert(cert.id)} style={S.btnDanger}><Trash2 size={15} /></button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}
