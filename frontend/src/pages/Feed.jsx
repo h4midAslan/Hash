@@ -59,12 +59,15 @@ export default function Feed() {
   const [loading, setLoading] = useState(true);
   const [connectedIds, setConnectedIds] = useState(new Set());
   const [pendingIds, setPendingIds] = useState(new Set());
+  const [suggested, setSuggested] = useState([]);
+  const [suggestedPending, setSuggestedPending] = useState(new Set());
   const { t } = useLang();
 
   useEffect(() => {
     loadFeed().finally(() => setLoading(false));
     loadUser();
     loadConnections();
+    api.get("/connections/suggested").then(r => setSuggested(r.data)).catch(() => {});
   }, []);
 
   const loadConnections = async () => {
@@ -202,8 +205,20 @@ export default function Feed() {
     color: active ? color : "#666",
   });
 
+  const handleSuggestedConnect = async (userId) => {
+    setSuggestedPending(prev => new Set([...prev, userId]));
+    try {
+      await api.post(`/connections/${userId}`);
+      toast.success("Bağlantı istəyi göndərildi!");
+    } catch (err) {
+      setSuggestedPending(prev => { const s = new Set(prev); s.delete(userId); return s; });
+      toast.error(err.response?.data?.detail || "Xəta baş verdi");
+    }
+  };
+
   return (
-    <div style={{ maxWidth: 720, margin: "0 auto", padding: "20px 12px" }}>
+    <div style={{ maxWidth: 960, margin: "0 auto", padding: "20px 12px", display: "flex", gap: 20, alignItems: "flex-start" }}>
+    <div style={{ flex: 1, minWidth: 0 }}>
 
       {/* Header */}
       {user && (
@@ -459,6 +474,50 @@ export default function Feed() {
           </div>
         </div>
       )}
+    </div>
+
+    {/* Suggested Profiles sidebar */}
+    {suggested.length > 0 && (
+      <div style={{ width: 240, flexShrink: 0, position: "sticky", top: 68 }}>
+        <div style={{ background: "#fff", border: "1px solid #d4d4d4", padding: "14px 16px" }}>
+          <p style={{ fontSize: 11, fontWeight: 700, color: "#666", textTransform: "uppercase", letterSpacing: "0.05em", margin: "0 0 12px" }}>
+            Tanıya bilərsən
+          </p>
+          <div>
+            {suggested.map(s => {
+              const sent = suggestedPending.has(s.id);
+              return (
+                <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 12 }}>
+                  <Link to={`/profile/${s.id}`} style={{ width: 36, height: 36, background: "#1a4a8a", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 14, textDecoration: "none", flexShrink: 0, overflow: "hidden" }}>
+                    {s.profile_picture
+                      ? <img src={s.profile_picture} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      : s.full_name?.charAt(0)
+                    }
+                  </Link>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <Link to={`/profile/${s.id}`} style={{ fontSize: 12, fontWeight: 600, color: "#1a1a1a", textDecoration: "none", display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {s.full_name}
+                    </Link>
+                    {s.mutual_count > 0
+                      ? <p style={{ fontSize: 11, color: "#888", margin: 0 }}>{s.mutual_count} ümumi bağlantı</p>
+                      : <p style={{ fontSize: 11, color: "#aaa", margin: 0 }}>{s.major || "Hash istifadəçisi"}</p>
+                    }
+                  </div>
+                  <button
+                    onClick={() => !sent && handleSuggestedConnect(s.id)}
+                    disabled={sent}
+                    style={{ flexShrink: 0, background: sent ? "#f0f0f0" : "#f0f5ff", color: sent ? "#999" : "#1a4a8a", border: `1px solid ${sent ? "#ddd" : "#c8d8f0"}`, padding: "3px 8px", fontSize: 11, cursor: sent ? "default" : "pointer", display: "flex", alignItems: "center", gap: 3 }}
+                  >
+                    {sent ? <UserCheck size={12} /> : <UserPlus size={12} />}
+                    {sent ? "Göndərildi" : "Əlaqə"}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    )}
     </div>
   );
 }
