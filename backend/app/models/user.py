@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, Date
 from sqlalchemy.sql import func
 from app.models.base import Base
 
@@ -27,6 +27,8 @@ class User(Base):
     is_active = Column(Boolean, default=True)
     is_verified = Column(Boolean, default=False)
     verification_token = Column(String(255), nullable=True)
+    current_streak = Column(Integer, default=0)
+    last_active_date = Column(Date, nullable=True)
     last_seen = Column(DateTime(timezone=True), server_default=func.now())
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())

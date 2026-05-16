@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone, timedelta, date
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
@@ -8,6 +8,7 @@ from slowapi.util import get_remote_address
 from app.services.database import get_db
 from app.services.auth import get_current_user, verify_password, hash_password
 from app.models.user import User
+from app.models.profile_view import ProfileView
 
 router = APIRouter(prefix="/api/users", tags=["users"])
 limiter = Limiter(key_func=get_remote_address)
@@ -32,6 +33,7 @@ class UserResponse(BaseModel):
     is_open_for_team: bool
     is_admin: bool
     last_seen: datetime | None = None
+    current_streak: int = 0
 
     class Config:
         from_attributes = True
@@ -73,10 +75,20 @@ class HeartbeatRequest(BaseModel):
 
 @router.post("/me/heartbeat")
 def heartbeat(data: HeartbeatRequest, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    from datetime import datetime, timezone
-    current_user.last_seen = datetime.now(timezone.utc)
+    now = datetime.now(timezone.utc)
+    today = now.date()
+    current_user.last_seen = now
+
+    last = current_user.last_active_date
+    if last is None or last < today - timedelta(days=1):
+        current_user.current_streak = 1
+    elif last == today - timedelta(days=1):
+        current_user.current_streak = (current_user.current_streak or 0) + 1
+    # if last == today: streak unchanged
+
+    current_user.last_active_date = today
     db.commit()
-    return {"ok": True}
+    return {"ok": True, "streak": current_user.current_streak}
 
 
 class ChangePasswordRequest(BaseModel):
@@ -128,9 +140,41 @@ def search_users(
     return query.limit(50).all()
 
 
+@router.get("/me/profile-views")
+def get_my_profile_views(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    week_ago = date.today() - timedelta(days=7)
+    rows = (
+        db.query(ProfileView)
+        .filter(ProfileView.viewed_id == current_user.id, ProfileView.date >= week_ago)
+        .order_by(ProfileView.date.desc())
+        .all()
+    )
+    seen = set()
+    viewers = []
+    for r in rows:
+        if r.viewer_id not in seen:
+            seen.add(r.viewer_id)
+            u = db.query(User).filter(User.id == r.viewer_id).first()
+            if u:
+                viewers.append({"id": u.id, "full_name": u.full_name, "major": u.major, "profile_picture": u.profile_picture})
+    return {"total_week": len(seen), "viewers": viewers[:10]}
+
+
 @router.get("/{user_id}", response_model=UserResponse)
 def get_user(user_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="İstifadəçi tapılmadı")
+
+    if user_id != current_user.id:
+        today = date.today()
+        exists = db.query(ProfileView).filter(
+            ProfileView.viewer_id == current_user.id,
+            ProfileView.viewed_id == user_id,
+            ProfileView.date == today,
+        ).first()
+        if not exists:
+            db.add(ProfileView(viewer_id=current_user.id, viewed_id=user_id, date=today))
+            db.commit()
+
     return user

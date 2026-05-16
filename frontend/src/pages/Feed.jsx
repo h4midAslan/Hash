@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Heart, ThumbsDown, MessageCircle, Send, Pin, Image as ImageIcon, Film, Flag, X, ChevronDown, ChevronUp, Trash2, UserPlus, UserCheck, ChevronLeft, ChevronRight, BookOpen, TrendingUp } from "lucide-react";
 import api from "../api/client";
@@ -62,6 +62,8 @@ export default function Feed() {
   const [pendingIds, setPendingIds] = useState(new Set());
   const [suggested, setSuggested] = useState([]);
   const [suggestedPending, setSuggestedPending] = useState(new Set());
+  const [newPostCount, setNewPostCount] = useState(0);
+  const latestPostIdRef = useRef(null);
   const { t } = useLang();
   const isMobile = useIsMobile();
 
@@ -70,6 +72,18 @@ export default function Feed() {
     loadUser();
     loadConnections();
     api.get("/connections/suggested").then(r => setSuggested(r.data)).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const res = await api.get("/posts?limit=1");
+        if (res.data.length > 0 && latestPostIdRef.current !== null && res.data[0].id !== latestPostIdRef.current) {
+          setNewPostCount(prev => prev + 1);
+        }
+      } catch {}
+    }, 60000);
+    return () => clearInterval(interval);
   }, []);
 
   const loadConnections = async () => {
@@ -96,7 +110,14 @@ export default function Feed() {
   };
 
   const loadFeed = async () => {
-    try { const res = await api.get("/posts"); setPosts(res.data); } catch {}
+    try {
+      const res = await api.get("/posts");
+      setPosts(res.data);
+      if (res.data.length > 0) {
+        latestPostIdRef.current = res.data[0].id;
+      }
+      setNewPostCount(0);
+    } catch {}
   };
 
   const handleImagePick = async (e) => {
@@ -329,6 +350,13 @@ export default function Feed() {
       {/* Posts */}
       {!loading && (
         <div>
+          {newPostCount > 0 && (
+            <div
+              onClick={() => { loadFeed(); window.scrollTo(0, 0); }}
+              style={{ background: "#1a4a8a", color: "#fff", textAlign: "center", padding: "8px", fontSize: 13, fontWeight: 600, cursor: "pointer", marginBottom: 10 }}>
+              ↑ {newPostCount} yeni post var
+            </div>
+          )}
           {posts.map(post => (
             <div key={post.id} style={card}>
               {/* Post header */}

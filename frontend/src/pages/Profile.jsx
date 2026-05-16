@@ -127,6 +127,8 @@ export default function Profile() {
   const [msgSent, setMsgSent] = useState("");
   const [inbox, setInbox] = useState([]);
   const [showInbox, setShowInbox] = useState(false);
+  const [profileViews, setProfileViews] = useState(null); // { total_week: int, viewers: [] }
+  const [streak, setStreak] = useState(0);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -135,6 +137,10 @@ export default function Profile() {
     loadProjects();
     loadUserPosts();
     loadTemplates();
+    if (!id) {
+      api.get("/users/me/profile-views").then(r => setProfileViews(r.data)).catch(() => {});
+      api.get("/users/me").then(r => setStreak(r.data.current_streak || 0)).catch(() => {});
+    }
   }, [id]);
 
   const loadProfile = async () => {
@@ -422,6 +428,35 @@ export default function Profile() {
 
           <div style={{ height: 20 }} />
         </div>
+
+        {/* Profile Views & Streak */}
+        {isOwn && profileViews !== null && (
+          <div style={{ background: "#fff", border: "1px solid #d4d4d4", padding: "14px 18px", marginBottom: 12, display: "flex", gap: 24, alignItems: "center", flexWrap: "wrap" }}>
+            <div>
+              <p style={{ fontSize: 22, fontWeight: 700, color: "#1a4a8a", margin: 0 }}>{profileViews.total_week}</p>
+              <p style={{ fontSize: 12, color: "#666", margin: "2px 0 0" }}>Bu həftə profil baxışı</p>
+            </div>
+            {streak > 1 && (
+              <div>
+                <p style={{ fontSize: 22, fontWeight: 700, color: "#e67e22", margin: 0 }}>🔥 {streak}</p>
+                <p style={{ fontSize: 12, color: "#666", margin: "2px 0 0" }}>Günlük streak</p>
+              </div>
+            )}
+            {profileViews.viewers.length > 0 && (
+              <div style={{ flex: 1, minWidth: 200 }}>
+                <p style={{ fontSize: 11, color: "#999", margin: "0 0 6px", fontWeight: 600, textTransform: "uppercase" }}>Son baxanlar</p>
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  {profileViews.viewers.slice(0, 5).map(v => (
+                    <a key={v.id} href={`/profile/${v.id}`} title={v.full_name}
+                      style={{ width: 32, height: 32, background: "#1a4a8a", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 13, textDecoration: "none", overflow: "hidden", flexShrink: 0 }}>
+                      {v.profile_picture ? <img src={v.profile_picture} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : v.full_name?.charAt(0)}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Edit Form */}
         {editing && (
