@@ -14,6 +14,7 @@ from app.models.certificate import Certificate
 from app.models.project import Project
 from app.models.notification import Notification
 from app.models.article import Article, ArticleLike, ArticleComment
+from app.models.event import Event
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
@@ -186,6 +187,7 @@ def delete_user(user_id: int, db: Session = Depends(get_db), admin: User = Depen
     db.query(Message).filter(
         (Message.sender_id == user_id) | (Message.receiver_id == user_id)
     ).delete(synchronize_session=False)
+    db.query(Event).filter(Event.created_by == user_id).delete(synchronize_session=False)
 
     db.delete(user)
     db.commit()
