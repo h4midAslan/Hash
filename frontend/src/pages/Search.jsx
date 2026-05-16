@@ -4,6 +4,7 @@ import { Search as SearchIcon, UserPlus, Users, SlidersHorizontal, X } from "luc
 import api from "../api/client";
 import { toast } from "../components/Toast";
 import { useLang } from "../hooks/useLang";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 const COURSES = [
   { val: 1, label: "I" },
@@ -104,6 +105,7 @@ export default function Search() {
   const [pendingIds, setPendingIds]   = useState(new Set());
   const [focusedInput, setFocusedInput] = useState(null);
   const { t } = useLang();
+  const isMobile = useIsMobile();
   const debounceRef = useRef(null);
 
   useEffect(() => {
@@ -153,7 +155,7 @@ export default function Search() {
   };
 
   return (
-    <div style={S.page}>
+    <div style={{ ...S.page, padding: isMobile ? "12px 10px" : S.page.padding }}>
       <div style={{ marginBottom: 20 }}>
         <h2 style={S.heading}>{t("search_title")}</h2>
         <p style={S.subtitle}>{t("search_subtitle")}</p>
@@ -162,8 +164,8 @@ export default function Search() {
       <form onSubmit={handleSearch} style={S.formCard}>
 
         {/* Search inputs row */}
-        <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
-          <div style={S.inputWrap}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 10 }}>
+          <div style={{ ...S.inputWrap, flexBasis: isMobile ? "100%" : undefined }}>
             <span style={S.inputIcon}><SearchIcon size={13} /></span>
             <input
               type="text"
@@ -175,7 +177,7 @@ export default function Search() {
               onBlur={() => setFocusedInput(null)}
             />
           </div>
-          <div style={S.inputWrap}>
+          <div style={{ ...S.inputWrap, flexBasis: isMobile ? "100%" : undefined }}>
             <span style={{ ...S.inputIcon, fontSize: 13, fontWeight: 700 }}>#</span>
             <input
               type="text"

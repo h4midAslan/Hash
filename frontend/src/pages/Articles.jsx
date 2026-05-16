@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Heart, MessageCircle, Clock, PenSquare, BookOpen, Home, FileText } from "lucide-react";
 import api from "../api/client";
 import UserAvatar from "../components/UserAvatar";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 function timeAgo(dateStr) {
   const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000);
@@ -78,6 +79,7 @@ export default function Articles() {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState("all"); // "all" | "mine"
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     Promise.all([
@@ -103,7 +105,7 @@ export default function Articles() {
   ];
 
   return (
-    <div style={{ maxWidth: 720, margin: "0 auto", padding: "20px 12px" }}>
+    <div style={{ maxWidth: 720, margin: "0 auto", padding: isMobile ? "12px 10px" : "20px 12px" }}>
 
       {/* Top bar: tabs + new article button */}
       <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 20 }}>

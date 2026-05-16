@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { ExternalLink, RefreshCw, Trophy, Calendar } from "lucide-react";
 import api from "../api/client";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 function HackathonCard({ item }) {
+  const isMobile = useIsMobile();
   return (
     <a
       href={item.url}
@@ -18,6 +20,9 @@ function HackathonCard({ item }) {
         marginBottom: 8,
         textDecoration: "none",
         color: "inherit",
+        width: "100%",
+        boxSizing: "border-box",
+        minWidth: isMobile ? 0 : 280,
       }}
     >
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -56,6 +61,7 @@ export default function Hackathons() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [me, setMe] = useState(null);
+  const isMobile = useIsMobile();
 
   const load = async () => {
     try {
@@ -84,10 +90,10 @@ export default function Hackathons() {
   };
 
   return (
-    <div style={{ maxWidth: 720, margin: "0 auto", padding: "20px 12px" }}>
+    <div style={{ maxWidth: 720, margin: "0 auto", padding: isMobile ? "12px 10px" : "20px 12px" }}>
 
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 20 }}>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 10, marginBottom: 20 }}>
         <div>
           <h1 style={{ fontSize: 22, fontWeight: 700, color: "#1a1a1a", margin: 0 }}>
             Hackathon & Yarışlar

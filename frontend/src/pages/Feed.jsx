@@ -6,6 +6,7 @@ import UserAvatar from "../components/UserAvatar";
 import { formatBakuDate, formatBakuHM } from "../utils/time";
 import { toast } from "../components/Toast";
 import { useLang } from "../hooks/useLang";
+import useIsMobile from "../hooks/useIsMobile";
 
 const C = {
   border:   "1px solid #d4d4d4",
@@ -62,6 +63,7 @@ export default function Feed() {
   const [suggested, setSuggested] = useState([]);
   const [suggestedPending, setSuggestedPending] = useState(new Set());
   const { t } = useLang();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     loadFeed().finally(() => setLoading(false));
@@ -196,7 +198,7 @@ export default function Feed() {
     setReporting(false);
   };
 
-  const card = { background: C.bg, border: C.border, marginBottom: 10, padding: "16px 18px" };
+  const card = { background: C.bg, border: C.border, marginBottom: 10, padding: isMobile ? "12px 10px" : "16px 18px" };
   const btn = (active, color = C.primary) => ({
     display: "inline-flex", alignItems: "center", gap: 5,
     padding: "5px 12px", fontSize: 12, cursor: "pointer",
@@ -217,7 +219,7 @@ export default function Feed() {
   };
 
   return (
-    <div style={{ maxWidth: 960, margin: "0 auto", padding: "20px 12px", display: "flex", gap: 20, alignItems: "flex-start" }}>
+    <div style={{ maxWidth: 960, margin: "0 auto", padding: isMobile ? "12px 10px" : "20px 12px", display: "flex", flexDirection: isMobile ? "column" : "row", gap: 20, alignItems: "flex-start" }}>
     <div style={{ flex: 1, minWidth: 0 }}>
 
       {/* Header */}
@@ -478,7 +480,7 @@ export default function Feed() {
 
     {/* Suggested Profiles sidebar */}
     {suggested.length > 0 && (
-      <div style={{ width: 240, flexShrink: 0, position: "sticky", top: 68 }}>
+      <div style={{ width: 240, flexShrink: 0, position: "sticky", top: 68, display: isMobile ? "none" : "block" }}>
         <div style={{ background: "#fff", border: "1px solid #d4d4d4", padding: "14px 16px" }}>
           <p style={{ fontSize: 11, fontWeight: 700, color: "#666", textTransform: "uppercase", letterSpacing: "0.05em", margin: "0 0 12px" }}>
             Tanıya bilərsən

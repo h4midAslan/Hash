@@ -89,7 +89,7 @@ export default function Register() {
   const specializations = form.faculty ? faculties[form.faculty] || [] : [];
 
   const pageWrap = { minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#f2f2f2", padding: "0 16px" };
-  const card = { background: "#fff", border: "1px solid #d4d4d4", padding: "24px 24px" };
+  const card = { background: "#fff", border: "1px solid #d4d4d4", padding: "24px 24px", boxSizing: "border-box" };
   const inp = { width: "100%", padding: "8px 10px", border: "1px solid #ccc", fontSize: 13, color: "#1a1a1a", outline: "none", boxSizing: "border-box" };
   const lbl = { display: "block", fontSize: 12, fontWeight: 600, color: "#333", marginBottom: 4 };
   const errBox = { background: "#fff0f0", color: "#c0392b", border: "1px solid #f5c6cb", padding: "8px 12px", fontSize: 12, marginBottom: 14 };

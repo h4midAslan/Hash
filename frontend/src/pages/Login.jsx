@@ -37,7 +37,7 @@ export default function Login() {
           <p style={{ fontSize: 13, color: "#666", marginTop: 4 }}>Hesabına daxil ol</p>
         </div>
 
-        <div style={{ background: "#fff", border: "1px solid #d4d4d4", padding: "24px 24px" }}>
+        <div style={{ background: "#fff", border: "1px solid #d4d4d4", padding: "24px 24px", boxSizing: "border-box" }}>
           {error && (
             <div style={{ background: "#fff0f0", color: "#c0392b", border: "1px solid #f5c6cb", padding: "8px 12px", fontSize: 12, marginBottom: 14 }}>
               {error}

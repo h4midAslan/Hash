@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "../components/Toast";
+import { useIsMobile } from "../hooks/useIsMobile";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
@@ -62,6 +63,7 @@ function MenuBar({ editor }) {
 export default function ArticleEditor() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
   const [coverImage, setCoverImage] = useState("");
@@ -124,8 +126,8 @@ export default function ArticleEditor() {
 
   return (
     <div style={{ minHeight: "100vh", background: "#f2f2f2" }}>
-      <div style={{ maxWidth: 720, margin: "0 auto", padding: "20px 12px" }}>
-        <div style={{ background: "#fff", border: "1px solid #d4d4d4", padding: "24px 28px" }}>
+      <div style={{ maxWidth: 720, margin: "0 auto", padding: isMobile ? "12px 10px" : "20px 12px" }}>
+        <div style={{ background: "#fff", border: "1px solid #d4d4d4", padding: isMobile ? "16px 14px" : "24px 28px" }}>
 
           {/* Nav row */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>

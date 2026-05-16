@@ -5,6 +5,7 @@ import { Edit3, Save, X, BookOpen, Award, GraduationCap, Sparkles, Plus, Trash2,
 import api from "../api/client";
 import UserAvatar from "../components/UserAvatar";
 import { formatBakuDate, formatBakuHM } from "../utils/time";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 const API_BASE = import.meta.env.VITE_API_URL?.replace("/api", "") || "http://localhost:8000";
 
@@ -107,6 +108,7 @@ const S = {
 
 export default function Profile() {
   const { id } = useParams();
+  const isMobile = useIsMobile();
   const [user, setUser] = useState(null);
   const [isOwn, setIsOwn] = useState(!id);
   const [editing, setEditing] = useState(false);
@@ -320,11 +322,11 @@ export default function Profile() {
 
   return (
     <div style={{ background: "#f2f2f2", minHeight: "100vh" }}>
-      <div style={S.page}>
+      <div style={{ ...S.page, padding: isMobile ? "12px 10px" : S.page.padding }}>
 
         {/* Profile Header Card */}
         <div style={S.card}>
-          <div style={{ padding: "20px 20px 0 20px", display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
+          <div style={{ padding: isMobile ? "16px 14px 0 14px" : "20px 20px 0 20px", display: "flex", flexDirection: isMobile ? "column" : "row", alignItems: isMobile ? "center" : "flex-start", justifyContent: "space-between", gap: 16 }}>
             {/* Avatar */}
             <div style={{ position: "relative", flexShrink: 0 }}>
               <div
@@ -359,7 +361,7 @@ export default function Profile() {
             </div>
 
             {/* Name / Info */}
-            <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ flex: 1, minWidth: 0, textAlign: isMobile ? "center" : "left", width: isMobile ? "100%" : undefined }}>
               <h2 style={{ ...S.heading, fontSize: 18, margin: "0 0 2px 0" }}>{user.full_name}</h2>
               <p style={{ ...S.faint, margin: "0 0 6px 0" }}>{user.email}</p>
               {user.major && (
@@ -376,21 +378,21 @@ export default function Profile() {
             </div>
 
             {/* Action buttons */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end", flexShrink: 0 }}>
+            <div style={{ display: "flex", flexDirection: isMobile ? "row" : "column", gap: 6, alignItems: isMobile ? "stretch" : "flex-end", flexShrink: 0, width: isMobile ? "100%" : undefined, justifyContent: isMobile ? "center" : undefined }}>
               {isOwn ? (
                 <>
                   <button
                     onClick={() => setEditing(!editing)}
-                    style={S.btnGhost}
+                    style={{ ...S.btnGhost, flex: isMobile ? 1 : undefined }}
                   >
                     {editing ? <><X size={13} style={{ verticalAlign: "middle", marginRight: 4 }} />Ləğv et</> : <><Edit3 size={13} style={{ verticalAlign: "middle", marginRight: 4 }} />Redaktə</>}
                   </button>
-                  <button onClick={loadInbox} style={S.btnGhost}>
+                  <button onClick={loadInbox} style={{ ...S.btnGhost, flex: isMobile ? 1 : undefined }}>
                     <Inbox size={13} style={{ verticalAlign: "middle", marginRight: 4 }} />Gələn qutusu
                   </button>
                 </>
               ) : (
-                <button onClick={() => setShowQuickMsg(true)} style={S.btnGhost}>
+                <button onClick={() => setShowQuickMsg(true)} style={{ ...S.btnGhost, width: isMobile ? "100%" : undefined }}>
                   <Mail size={13} style={{ verticalAlign: "middle", marginRight: 4 }} />Mesaj
                 </button>
               )}
@@ -399,7 +401,7 @@ export default function Profile() {
 
           {/* Completion bar */}
           {isOwn && completionPercent < 100 && (
-            <div style={{ margin: "16px 20px 0 20px", padding: "12px 14px", background: "#fafafa", border: "1px solid #e0e0e0" }}>
+            <div style={{ margin: isMobile ? "12px 14px 0 14px" : "16px 20px 0 20px", padding: "12px 14px", background: "#fafafa", border: "1px solid #e0e0e0" }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
                 <span style={{ fontSize: 11, color: "#666", fontWeight: 600 }}>Profil tamamlanması</span>
                 <span style={{ fontSize: 11, color: "#1a4a8a", fontWeight: 700 }}>{completionPercent}%</span>
@@ -545,7 +547,7 @@ export default function Profile() {
                   <div style={{ marginBottom: 8 }}>
                     <input type="text" placeholder="Sertifikat adı" value={certForm.name} onChange={(e) => setCertForm({ ...certForm, name: e.target.value })} style={{ ...S.input, marginBottom: 8 }} />
                     <input type="text" placeholder="Verən təşkilat (məsələn: Google, ISC2)" value={certForm.issuer} onChange={(e) => setCertForm({ ...certForm, issuer: e.target.value })} style={{ ...S.input, marginBottom: 8 }} />
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
+                    <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 8, marginBottom: 8 }}>
                       <input type="date" value={certForm.issue_date} onChange={(e) => setCertForm({ ...certForm, issue_date: e.target.value })} style={S.input} />
                       <input type="url" placeholder="Doğrulama linki" value={certForm.credential_url} onChange={(e) => setCertForm({ ...certForm, credential_url: e.target.value })} style={S.input} />
                     </div>
@@ -608,7 +610,7 @@ export default function Profile() {
                   <div style={{ marginBottom: 8 }}>
                     <input type="text" placeholder="Layihə adı" value={projForm.title} onChange={(e) => setProjForm({ ...projForm, title: e.target.value })} style={{ ...S.input, marginBottom: 8 }} />
                     <textarea placeholder="Qısa təsvir" value={projForm.description} onChange={(e) => setProjForm({ ...projForm, description: e.target.value })} rows={2} style={{ ...S.textarea, marginBottom: 8 }} />
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
+                    <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 8, marginBottom: 8 }}>
                       <input type="text" placeholder="Texnologiyalar (React, Python...)" value={projForm.technologies} onChange={(e) => setProjForm({ ...projForm, technologies: e.target.value })} style={S.input} />
                       <input type="url" placeholder="GitHub linki" value={projForm.github_url} onChange={(e) => setProjForm({ ...projForm, github_url: e.target.value })} style={S.input} />
                     </div>
@@ -721,7 +723,7 @@ export default function Profile() {
             onClick={() => !sendingMsg && setShowQuickMsg(false)}
           >
             <div
-              style={{ background: "#fff", border: "1px solid #d4d4d4", padding: 24, width: "100%", maxWidth: 420 }}
+              style={{ background: "#fff", border: "1px solid #d4d4d4", padding: isMobile ? 16 : 24, width: "100%", maxWidth: 420, boxSizing: "border-box" }}
               onClick={(e) => e.stopPropagation()}
             >
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
@@ -782,7 +784,7 @@ export default function Profile() {
             onClick={() => setShowInbox(false)}
           >
             <div
-              style={{ background: "#fff", border: "1px solid #d4d4d4", padding: 24, width: "100%", maxWidth: 420 }}
+              style={{ background: "#fff", border: "1px solid #d4d4d4", padding: isMobile ? 16 : 24, width: "100%", maxWidth: 420, boxSizing: "border-box" }}
               onClick={(e) => e.stopPropagation()}
             >
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>

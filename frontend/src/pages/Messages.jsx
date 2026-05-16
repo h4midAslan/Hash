@@ -4,6 +4,7 @@ import { Send, MessageCircle, ArrowLeft, Circle } from "lucide-react";
 import api from "../api/client";
 import { formatBakuHM, isActiveNow, formatLastSeen } from "../utils/time";
 import { useLang } from "../hooks/useLang";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 export default function Messages() {
   const [chats, setChats] = useState([]);
@@ -65,26 +66,28 @@ export default function Messages() {
   };
 
   const { t } = useLang();
+  const isMobile = useIsMobile();
 
   return (
-    <div style={{ maxWidth: 900, margin: "0 auto", padding: "32px 16px" }}>
-      <div style={{ marginBottom: 20 }}>
-        <h2 style={{ fontSize: 20, fontWeight: 700, color: "#1a1a1a", margin: 0 }}>{t("messages_title")}</h2>
-        <p style={{ fontSize: 13, color: "#999", marginTop: 4, marginBottom: 0 }}>{t("messages_subtitle")}</p>
-      </div>
+    <div style={{ maxWidth: isMobile ? "100%" : 900, margin: "0 auto", padding: isMobile ? "0" : "32px 16px" }}>
+      {!isMobile && (
+        <div style={{ marginBottom: 20 }}>
+          <h2 style={{ fontSize: 20, fontWeight: 700, color: "#1a1a1a", margin: 0 }}>{t("messages_title")}</h2>
+          <p style={{ fontSize: 13, color: "#999", marginTop: 4, marginBottom: 0 }}>{t("messages_subtitle")}</p>
+        </div>
+      )}
 
-      <div style={{ display: "flex", height: 560, border: "1px solid #d4d4d4", background: "#fff", overflow: "hidden" }}>
+      <div style={{ display: "flex", height: isMobile ? "calc(100vh - 60px)" : 560, border: isMobile ? "none" : "1px solid #d4d4d4", background: "#fff", overflow: "hidden" }}>
         {/* Chat list sidebar */}
         <div
           style={{
-            width: 260,
-            borderRight: "1px solid #d4d4d4",
+            width: isMobile ? "100%" : 260,
+            borderRight: isMobile ? "none" : "1px solid #d4d4d4",
             overflowY: "auto",
             flexShrink: 0,
-            display: activeChat ? "none" : "flex",
+            display: isMobile ? (activeChat ? "none" : "flex") : "flex",
             flexDirection: "column",
           }}
-          className="messages-sidebar"
         >
           <div style={{ padding: "12px 14px", borderBottom: "1px solid #d4d4d4" }}>
             <span style={{ fontSize: 11, fontWeight: 700, color: "#666", textTransform: "uppercase", letterSpacing: 1 }}>{t("messages_chats")}</span>
@@ -138,7 +141,7 @@ export default function Messages() {
         </div>
 
         {/* Message area */}
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
+        <div style={{ flex: 1, display: isMobile && !activeChat ? "none" : "flex", flexDirection: "column", minWidth: 0 }}>
           {activeChat ? (
             <>
               {/* Chat header */}
@@ -245,13 +248,6 @@ export default function Messages() {
         </div>
       </div>
 
-      <style>{`
-        @media (min-width: 768px) {
-          .messages-sidebar {
-            display: flex !important;
-          }
-        }
-      `}</style>
     </div>
   );
 }

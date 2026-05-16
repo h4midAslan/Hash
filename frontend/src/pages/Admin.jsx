@@ -8,6 +8,7 @@ import {
 import api from "../api/client";
 import { formatBakuDate, formatBakuTime, formatBakuHM } from "../utils/time";
 import { toast } from "../components/Toast";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 const C = {
   primary: "#1a4a8a",
@@ -22,6 +23,7 @@ const C = {
 };
 
 export default function Admin() {
+  const isMobile = useIsMobile();
   const [tab, setTab] = useState("dashboard");
   const [stats, setStats] = useState(null);
   const [users, setUsers] = useState([]);
@@ -210,7 +212,7 @@ export default function Admin() {
 
   return (
     <div style={{ minHeight: "calc(100vh - 64px)", background: C.bg }}>
-      <div style={{ maxWidth: 960, margin: "0 auto", padding: "20px 12px" }}>
+      <div style={{ maxWidth: 960, margin: "0 auto", padding: isMobile ? "12px 8px" : "20px 12px" }}>
 
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
@@ -247,7 +249,7 @@ export default function Admin() {
         </div>
 
         {/* Tabs — classic underline style */}
-        <div style={{ display: "flex", borderBottom: `2px solid ${C.border}`, marginBottom: 24 }}>
+        <div style={{ display: "flex", borderBottom: `2px solid ${C.border}`, marginBottom: 24, overflowX: "auto", whiteSpace: "nowrap" }}>
           {tabs.map(({ id, icon: Icon, label }) => (
             <button
               key={id}
@@ -274,20 +276,24 @@ export default function Admin() {
         {tab === "dashboard" && (
           <div>
             {stats && (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 20 }}>
-                <StatCard icon={Users} label="Ümumi istifadəçi" value={stats.total_users} />
-                <StatCard icon={UserCheck} label="Aktiv istifadəçi" value={stats.active_users}
-                  subtitle={stats.total_users > 0 ? `${Math.round((stats.active_users / stats.total_users) * 100)}% aktiv` : null} />
-                <StatCard icon={FileText} label="Ümumi post" value={stats.total_posts} />
-                <StatCard icon={Link2} label="Bağlantı istəyi" value={stats.total_connections} />
-                <StatCard icon={CheckCircle} label="Qəbul edilmiş" value={stats.accepted_connections}
-                  subtitle={stats.total_connections > 0 ? `${Math.round((stats.accepted_connections / stats.total_connections) * 100)}% qəbul` : null} />
-                <StatCard icon={MessageCircle} label="Ümumi mesaj" value={stats.total_messages} />
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginBottom: 20 }}>
+                {[
+                  { icon: Users, label: "Ümumi istifadəçi", value: stats.total_users },
+                  { icon: UserCheck, label: "Aktiv istifadəçi", value: stats.active_users, subtitle: stats.total_users > 0 ? `${Math.round((stats.active_users / stats.total_users) * 100)}% aktiv` : null },
+                  { icon: FileText, label: "Ümumi post", value: stats.total_posts },
+                  { icon: Link2, label: "Bağlantı istəyi", value: stats.total_connections },
+                  { icon: CheckCircle, label: "Qəbul edilmiş", value: stats.accepted_connections, subtitle: stats.total_connections > 0 ? `${Math.round((stats.accepted_connections / stats.total_connections) * 100)}% qəbul` : null },
+                  { icon: MessageCircle, label: "Ümumi mesaj", value: stats.total_messages },
+                ].map((card, i) => (
+                  <div key={i} style={{ flex: "1 1 calc(33% - 8px)", minWidth: isMobile ? "calc(45% - 6px)" : "calc(33% - 8px)" }}>
+                    <StatCard icon={card.icon} label={card.label} value={card.value} subtitle={card.subtitle} />
+                  </div>
+                ))}
               </div>
             )}
 
             {stats && (
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12 }}>
                 <div style={{ background: C.white, border: `1px solid ${C.border}`, padding: "16px 20px" }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
                     <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: C.text }}>Platform xülasəsi</h3>
@@ -476,7 +482,8 @@ export default function Admin() {
             </div>
 
             {/* User Table */}
-            <div style={{ background: C.white, border: `1px solid ${C.border}` }}>
+            <div style={{ overflowX: "auto" }}>
+            <div style={{ background: C.white, border: `1px solid ${C.border}`, minWidth: 600 }}>
               {/* Table header */}
               <div style={{
                 display: "grid", gridTemplateColumns: "3fr 2fr 1.5fr 1.5fr 1.5fr",
@@ -623,7 +630,7 @@ export default function Admin() {
                       borderBottom: `1px solid ${C.border}`,
                       borderTop: `1px solid ${C.border}`,
                     }}>
-                      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
+                      <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4, 1fr)", gap: 16 }}>
                         <div>
                           <p style={{ margin: "0 0 4px", fontSize: 11, color: C.faint }}>Email</p>
                           <p style={{ margin: 0, fontSize: 13, color: C.text, fontWeight: 600, display: "flex", alignItems: "center", gap: 5 }}>
@@ -678,6 +685,7 @@ export default function Admin() {
                   <p style={{ margin: "4px 0 0", color: C.faint, fontSize: 12 }}>Axtarış sorğunuzu dəyişin</p>
                 </div>
               )}
+            </div>
             </div>
           </div>
         )}
@@ -948,7 +956,7 @@ export default function Admin() {
               <select
                 value={logAction}
                 onChange={(e) => setLogAction(e.target.value)}
-                style={{ ...inputStyle, width: "auto", padding: "7px 10px" }}
+                style={{ ...inputStyle, width: isMobile ? "100%" : "auto", padding: "7px 10px" }}
               >
                 <option value="">Bütün əməliyyatlar</option>
                 <option value="login_success">Uğurlu giriş</option>
@@ -1000,7 +1008,8 @@ export default function Admin() {
 
             {/* Logs table */}
             {!loading && (
-              <div style={{ background: C.white, border: `1px solid ${C.border}` }}>
+              <div style={{ overflowX: "auto" }}>
+              <div style={{ background: C.white, border: `1px solid ${C.border}`, minWidth: 600 }}>
                 {/* Table header */}
                 <div style={{
                   display: "grid", gridTemplateColumns: "2fr 1.5fr 2fr 1.5fr 2fr",
@@ -1027,6 +1036,7 @@ export default function Admin() {
                     <p style={{ margin: "4px 0 0", color: C.faint, fontSize: 12 }}>Filtri dəyişin və ya yenilə</p>
                   </div>
                 )}
+              </div>
               </div>
             )}
           </div>
@@ -1109,6 +1119,8 @@ function StatCard({ icon: Icon, label, value, subtitle }) {
       background: "#ffffff",
       border: "1px solid #d4d4d4",
       padding: "14px 18px",
+      height: "100%",
+      boxSizing: "border-box",
     }}>
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 10 }}>
         <div style={{

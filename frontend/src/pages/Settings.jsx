@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Settings as SettingsIcon, Check, Moon, Sun, Image as ImageIcon, Globe, Lock, Eye, EyeOff } from "lucide-react";
 import { useLang, setLang } from "../hooks/useLang";
+import { useIsMobile } from "../hooks/useIsMobile";
 import api from "../api/client";
 import { toast } from "../components/Toast";
 
@@ -53,6 +54,7 @@ export default function Settings() {
   const [showNew, setShowNew] = useState(false);
   const [focusedInput, setFocusedInput] = useState(null);
   const { lang, t } = useLang();
+  const isMobile = useIsMobile();
 
   const handleChangePassword = async (e) => {
     e.preventDefault();
@@ -99,7 +101,7 @@ export default function Settings() {
   const submitDisabled = pwLoading || !pwForm.current || !pwForm.newPw || !pwForm.confirm;
 
   return (
-    <div style={{ maxWidth: 640, margin: "0 auto", padding: "32px 16px" }}>
+    <div style={{ maxWidth: 640, margin: "0 auto", padding: isMobile ? "12px 10px" : "32px 16px" }}>
       {/* Page Header */}
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 28 }}>
         <div style={{ background: "#1a4a8a", padding: 10, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -257,7 +259,7 @@ export default function Settings() {
           <ImageIcon size={15} color="#444" />
           <span>{t("settings_bg")}</span>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)", gap: 10 }}>
           {BG_OPTIONS.map((opt) => {
             const isActive = selected === opt.id;
             return (

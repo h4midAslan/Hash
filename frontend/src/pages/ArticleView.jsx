@@ -4,10 +4,12 @@ import { Heart, MessageCircle, Clock, Edit3, Trash2, Send, ChevronDown, ChevronU
 import api from "../api/client";
 import UserAvatar from "../components/UserAvatar";
 import { formatBakuDate, formatBakuHM } from "../utils/time";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 export default function ArticleView() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [article, setArticle] = useState(null);
   const [me, setMe] = useState(null);
   const [comments, setComments] = useState([]);
@@ -48,7 +50,7 @@ export default function ArticleView() {
   };
 
   if (!article) return (
-    <div style={{ maxWidth: 680, margin: "0 auto", padding: "32px 16px" }}>
+    <div style={{ maxWidth: isMobile ? "100%" : 680, margin: "0 auto", padding: isMobile ? "12px 10px" : "32px 16px" }}>
       {[240, 40, 24, 16, 16, 16, 16].map((h, i) => (
         <div key={i} style={{ height: h, background: "#e8e8e8", marginBottom: 12 }} />
       ))}
@@ -59,7 +61,7 @@ export default function ArticleView() {
 
   return (
     <div style={{ minHeight: "100vh", background: "#f2f2f2" }}>
-      <div style={{ maxWidth: 720, margin: "0 auto", padding: "20px 12px" }}>
+      <div style={{ maxWidth: isMobile ? "100%" : 720, margin: "0 auto", padding: isMobile ? "12px 10px" : "20px 12px" }}>
 
         {/* Back button */}
         <button
@@ -81,7 +83,7 @@ export default function ArticleView() {
             <img src={article.cover_image} alt="cover" style={{ width: "100%", height: 260, objectFit: "cover", display: "block" }} />
           )}
 
-          <div style={{ padding: "28px 32px" }}>
+          <div style={{ padding: isMobile ? "16px 14px" : "28px 32px" }}>
             <h1 style={{
               fontSize: 30, fontWeight: 700, color: "#1a1a1a", margin: "0 0 10px 0", lineHeight: 1.3,
               fontFamily: "Georgia, 'Times New Roman', serif",

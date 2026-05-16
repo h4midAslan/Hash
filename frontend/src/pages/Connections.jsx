@@ -4,6 +4,7 @@ import { Check, X, Users, Clock, UserCheck, UserMinus } from "lucide-react";
 import api from "../api/client";
 import { toast } from "../components/Toast";
 import { useLang } from "../hooks/useLang";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 const S = {
   page: { maxWidth: 720, margin: "0 auto", padding: "20px 12px" },
@@ -57,6 +58,7 @@ export default function Connections() {
   const [pending, setPending] = useState([]);
   const [tab, setTab] = useState("my");
   const { t } = useLang();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     loadConnections();
@@ -109,14 +111,14 @@ export default function Connections() {
   };
 
   return (
-    <div style={S.page}>
+    <div style={{ ...S.page, padding: isMobile ? "12px 10px" : S.page.padding }}>
       <div style={{ marginBottom: 20 }}>
         <h2 style={S.heading}>{t("connections_title")}</h2>
         <p style={S.subtitle}>{t("connections_subtitle")}</p>
       </div>
 
       {/* Underline tabs */}
-      <div style={S.tabBar}>
+      <div style={{ ...S.tabBar, overflowX: "auto" }}>
         <button onClick={() => setTab("my")} style={S.tab(tab === "my")}>
           <UserCheck size={15} /> {t("connections_yours")} ({connections.length})
         </button>
