@@ -22,7 +22,6 @@ def ensure_tables():
     from app.models.base import Base
     import app.models.article
     import app.models.hackathon
-    import app.models.profile_view
     try:
         Base.metadata.create_all(bind=engine, checkfirst=True)
         print("ensure_tables: OK")
