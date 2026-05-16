@@ -75,7 +75,7 @@ class TokenResponse(BaseModel):
 @router.post("/register")
 @limiter.limit("5/minute")
 def register(request: Request, data: RegisterRequest, db: Session = Depends(get_db)):
-    ALLOWED_DOMAINS = ("@naa.edu.az", "@student.naa.edu.az", "@unec.edu.az")
+    ALLOWED_DOMAINS = ("@naa.edu.az", "@student.naa.edu.az")
     if not any(data.email.endswith(d) for d in ALLOWED_DOMAINS):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
