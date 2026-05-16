@@ -55,7 +55,7 @@ def send_verification_code(to_email: str, code: str) -> bool:
             json={
                 "from": "Hash <noreply@hashcampus.site>",
                 "to": [to_email],
-                "subject": f"Təsdiq kodunuz: {code}",
+                "subject": "Hash - Email Təsdiqi",
                 "html": html,
                 "text": plain,
             },
