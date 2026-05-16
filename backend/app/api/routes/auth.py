@@ -75,10 +75,11 @@ class TokenResponse(BaseModel):
 @router.post("/register")
 @limiter.limit("5/minute")
 def register(request: Request, data: RegisterRequest, db: Session = Depends(get_db)):
-    if not (data.email.endswith("@naa.edu.az") or data.email.endswith("@student.naa.edu.az")):
+    ALLOWED_DOMAINS = ("@naa.edu.az", "@student.naa.edu.az", "@unec.edu.az")
+    if not any(data.email.endswith(d) for d in ALLOWED_DOMAINS):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Yalnız @naa.edu.az və ya @student.naa.edu.az email ilə qeydiyyat mümkündür"
+            detail="Yalnız @naa.edu.az, @student.naa.edu.az və ya @unec.edu.az email ilə qeydiyyat mümkündür"
         )
 
     if data.faculty not in FACULTY_SPECIALIZATIONS:
