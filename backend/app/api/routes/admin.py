@@ -13,6 +13,7 @@ from app.models.activity_log import ActivityLog
 from app.models.certificate import Certificate
 from app.models.project import Project
 from app.models.notification import Notification
+from app.models.article import Article, ArticleLike, ArticleComment
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
@@ -164,6 +165,13 @@ def delete_user(user_id: int, db: Session = Depends(get_db), admin: User = Depen
     db.query(PostDislike).filter(PostDislike.user_id == user_id).delete(synchronize_session=False)
     db.query(PostLike).filter(PostLike.user_id == user_id).delete(synchronize_session=False)
     db.query(Comment).filter(Comment.user_id == user_id).delete(synchronize_session=False)
+    db.query(ArticleLike).filter(ArticleLike.user_id == user_id).delete(synchronize_session=False)
+    db.query(ArticleComment).filter(ArticleComment.user_id == user_id).delete(synchronize_session=False)
+    articles = db.query(Article).filter(Article.author_id == user_id).all()
+    for article in articles:
+        db.query(ArticleLike).filter(ArticleLike.article_id == article.id).delete(synchronize_session=False)
+        db.query(ArticleComment).filter(ArticleComment.article_id == article.id).delete(synchronize_session=False)
+    db.query(Article).filter(Article.author_id == user_id).delete(synchronize_session=False)
     posts = db.query(Post).filter(Post.author_id == user_id).all()
     for post in posts:
         db.query(Notification).filter(Notification.post_id == post.id).delete(synchronize_session=False)
