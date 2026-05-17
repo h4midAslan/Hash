@@ -4,6 +4,7 @@ export default {
   nav_articles: "Articles",
   nav_search: "Search",
   nav_connections: "Connections",
+  nav_messages: "Messages",
   nav_profile: "Profile",
   nav_settings: "Settings",
   nav_admin: "Admin",

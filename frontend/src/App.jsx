@@ -14,7 +14,7 @@ const Search = lazy(() => import("./pages/Search"));
 const Connections = lazy(() => import("./pages/Connections"));
 const Admin = lazy(() => import("./pages/Admin"));
 const Settings = lazy(() => import("./pages/Settings"));
-// const Messages = lazy(() => import("./pages/Messages"));
+const Messages = lazy(() => import("./pages/Messages"));
 const Articles = lazy(() => import("./pages/Articles"));
 const ArticleEditor = lazy(() => import("./pages/ArticleEditor"));
 const ArticleView = lazy(() => import("./pages/ArticleView"));
@@ -127,7 +127,7 @@ export default function App() {
           <Route path="/profile/:id" element={<PrivateRoute><Profile /></PrivateRoute>} />
           <Route path="/search" element={<PrivateRoute><Search /></PrivateRoute>} />
           <Route path="/connections" element={<PrivateRoute><Connections /></PrivateRoute>} />
-          {/* <Route path="/messages" element={<PrivateRoute><Messages /></PrivateRoute>} /> */}
+          <Route path="/messages" element={<PrivateRoute><Messages /></PrivateRoute>} />
           <Route path="/articles" element={<PrivateRoute><Articles /></PrivateRoute>} />
           <Route path="/article/new" element={<PrivateRoute><ArticleEditor /></PrivateRoute>} />
           <Route path="/article/:id/edit" element={<PrivateRoute><ArticleEditor /></PrivateRoute>} />

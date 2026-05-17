@@ -4,6 +4,7 @@ export default {
   nav_articles: "Məqalələr",
   nav_search: "Axtar",
   nav_connections: "Bağlantılar",
+  nav_messages: "Mesajlar",
   nav_profile: "Profil",
   nav_settings: "Parametrlər",
   nav_admin: "Admin",
