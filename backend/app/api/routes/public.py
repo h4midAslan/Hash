@@ -10,13 +10,13 @@ router = APIRouter(prefix="/api/public", tags=["public"])
 
 @router.get("/profile/{identifier}")
 def get_public_profile(identifier: str, db: Session = Depends(get_db)):
-    # Resolve by username or numeric id
+    # Resolve by numeric id only (username lookup disabled until column is live)
     user = None
     try:
         uid = int(identifier)
-        user = db.query(User).filter(User.id == uid, User.is_active == True).first()
+        user = db.query(User).filter(User.id == uid).first()
     except ValueError:
-        user = db.query(User).filter(User.username == identifier.lower(), User.is_active == True).first()
+        pass  # username lookup re-enabled after DB migration
 
     if not user:
         raise HTTPException(status_code=404, detail="Profil tapılmadı")
