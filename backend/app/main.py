@@ -29,19 +29,18 @@ def ensure_tables():
     except Exception as e:
         print(f"ensure_tables xətası: {e}")
 
-    # Ensure columns that migrations may have missed
-    _safe_sql = [
+    # Ensure columns that migrations may have missed — each in its own transaction
+    _ddl = [
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS username VARCHAR(30)",
         "CREATE UNIQUE INDEX IF NOT EXISTS ix_users_username ON users (username)",
     ]
-    try:
-        with engine.connect() as conn:
-            for stmt in _safe_sql:
+    for stmt in _ddl:
+        try:
+            with engine.begin() as conn:
                 conn.execute(text(stmt))
-            conn.commit()
-        print("ensure_columns: OK")
-    except Exception as e:
-        print(f"ensure_columns xətası: {e}")
+            print(f"ensure_columns OK: {stmt[:60]}")
+        except Exception as e:
+            print(f"ensure_columns skip: {stmt[:60]} => {e}")
 
 
 run_migrations()
