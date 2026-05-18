@@ -29,6 +29,19 @@ def ensure_tables():
     except Exception as e:
         print(f"ensure_tables xətası: {e}")
 
+    # Fallback DDL: add columns that migrations may have missed
+    _missing_ddl = [
+        "ALTER TABLE certificates ADD COLUMN IF NOT EXISTS image_url VARCHAR(500)",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS username VARCHAR(30)",
+        "CREATE UNIQUE INDEX IF NOT EXISTS ix_users_username ON users (username)",
+    ]
+    for stmt in _missing_ddl:
+        try:
+            with engine.begin() as conn:
+                conn.execute(text(stmt))
+        except Exception as e:
+            print(f"DDL skip ({stmt[:50]}): {e}")
+
 
 
 run_migrations()

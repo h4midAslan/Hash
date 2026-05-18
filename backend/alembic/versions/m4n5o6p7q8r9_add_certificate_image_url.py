@@ -5,7 +5,6 @@ Revises: l3m4n5o6p7q8
 Create Date: 2026-05-17
 """
 from alembic import op
-import sqlalchemy as sa
 
 revision = 'm4n5o6p7q8r9'
 down_revision = 'l3m4n5o6p7q8'
@@ -14,12 +13,8 @@ depends_on = None
 
 
 def upgrade():
-    bind = op.get_bind()
-    inspector = sa.inspect(bind)
-    columns = [c['name'] for c in inspector.get_columns('certificates')]
-    if 'image_url' not in columns:
-        op.add_column('certificates', sa.Column('image_url', sa.String(500), nullable=True))
+    op.execute("ALTER TABLE certificates ADD COLUMN IF NOT EXISTS image_url VARCHAR(500)")
 
 
 def downgrade():
-    op.drop_column('certificates', 'image_url')
+    op.execute("ALTER TABLE certificates DROP COLUMN IF EXISTS image_url")
