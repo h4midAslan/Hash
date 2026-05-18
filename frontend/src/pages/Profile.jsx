@@ -66,7 +66,10 @@ export default function Profile() {
   const [uploadingPic, setUploadingPic] = useState(false);
   const [userPosts, setUserPosts] = useState([]);
   const [isConnected, setIsConnected] = useState(false);
+  const [cvParsing, setCvParsing] = useState(false);
+  const [cvPreview, setCvPreview] = useState(null);
   const fileInputRef = useRef(null);
+  const cvInputRef = useRef(null);
 
   useEffect(() => {
     loadProfile(); loadCertificates(); loadProjects(); loadUserPosts();
@@ -171,6 +174,75 @@ export default function Profile() {
     try { await api.delete(`/projects/${projId}`); loadProjects(); } catch {}
   };
 
+  const handleCvUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setCvParsing(true);
+    setCvPreview(null);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await api.post("/users/parse-cv", formData, { headers: { "Content-Type": "multipart/form-data" } });
+      setCvPreview(res.data);
+    } catch (err) {
+      toast.error(err.response?.data?.detail || "CV parse edilə bilmədi");
+    }
+    setCvParsing(false);
+    e.target.value = "";
+  };
+
+  const applyCvPreview = async () => {
+    if (!cvPreview) return;
+    const p = cvPreview;
+    const updated = {
+      full_name:    p.full_name    || form.full_name,
+      headline:     p.headline     || form.headline,
+      bio:          p.bio          || form.bio,
+      major:        p.major        || form.major,
+      skills:       p.skills?.length ? JSON.stringify(p.skills) : form.skills,
+      github_url:   p.github_url   || form.github_url,
+      linkedin_url: p.linkedin_url || form.linkedin_url,
+      website_url:  p.website_url  || form.website_url,
+    };
+    setForm(prev => ({ ...prev, ...updated }));
+
+    try {
+      await api.put("/users/me", updated);
+      loadProfile();
+    } catch {}
+
+    if (p.certificates?.length) {
+      for (const cert of p.certificates) {
+        try {
+          await api.post("/certificates", {
+            name: cert.name,
+            issuer: cert.issuer,
+            issue_date: cert.issue_date || null,
+          });
+        } catch {}
+      }
+      loadCertificates();
+    }
+
+    if (p.projects?.length) {
+      for (const proj of p.projects) {
+        try {
+          await api.post("/projects", {
+            title: proj.title,
+            description: proj.description || "",
+            github_url: proj.github_url || null,
+            technologies: proj.technologies || "",
+          });
+        } catch {}
+      }
+      loadProjects();
+    }
+
+    setCvPreview(null);
+    setEditing(false);
+    toast.success("Profil CV əsasında yeniləndi!");
+  };
+
   const handleSave = async () => {
     try {
       await api.put("/users/me", {
@@ -214,6 +286,7 @@ export default function Profile() {
   const completionBarColor = completionPercent < 50 ? "#e67e22" : completionPercent < 80 ? "#2980b9" : "#27ae60";
 
   return (
+    <>
     <div style={{ background: "#f2f2f2", minHeight: "100vh" }}>
       <div style={{ ...S.page, padding: isMobile ? "12px 10px" : S.page.padding }}>
 
@@ -236,6 +309,7 @@ export default function Profile() {
                 )}
               </div>
               {isOwn && <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" style={{ display: "none" }} onChange={handleUploadPic} />}
+              {isOwn && <input ref={cvInputRef} type="file" accept="application/pdf" style={{ display: "none" }} onChange={handleCvUpload} />}
             </div>
 
             {/* Name / Info */}
@@ -284,6 +358,14 @@ export default function Profile() {
                 <>
                   <button onClick={() => setEditing(!editing)} style={{ ...S.btnGhost, flex: isMobile ? 1 : undefined }}>
                     {editing ? <><X size={13} style={{ verticalAlign: "middle", marginRight: 4 }} />Ləğv et</> : <><Edit3 size={13} style={{ verticalAlign: "middle", marginRight: 4 }} />Redaktə</>}
+                  </button>
+                  <button
+                    onClick={() => cvInputRef.current?.click()}
+                    disabled={cvParsing}
+                    style={{ ...S.btnGhost, flex: isMobile ? 1 : undefined, opacity: cvParsing ? 0.6 : 1 }}
+                  >
+                    <FileText size={13} style={{ verticalAlign: "middle", marginRight: 4 }} />
+                    {cvParsing ? "Oxunur..." : "CV yüklə"}
                   </button>
                   <button onClick={() => navigate("/messages")} style={{ ...S.btnGhost, flex: isMobile ? 1 : undefined }}>
                     <Mail size={13} style={{ verticalAlign: "middle", marginRight: 4 }} />Mesajlar
@@ -629,5 +711,65 @@ export default function Profile() {
 
       </div>
     </div>
+
+    {/* ── CV PREVIEW MODAL ── */}
+    {cvPreview && (
+      <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 60, display: "flex", alignItems: "center", justifyContent: "center", padding: "16px" }} onClick={() => setCvPreview(null)}>
+        <div style={{ background: "#fff", border: "1px solid #d4d4d4", padding: 24, width: "100%", maxWidth: 540, maxHeight: "85vh", overflowY: "auto", boxSizing: "border-box" }} onClick={e => e.stopPropagation()}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
+            <div>
+              <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "#1a1a1a" }}>CV-dən çıxarılan məlumat</h3>
+              <p style={{ margin: "3px 0 0", fontSize: 12, color: "#999" }}>Aşağıdakı məlumatlar profilinizə əlavə ediləcək</p>
+            </div>
+            <button onClick={() => setCvPreview(null)} style={{ background: "none", border: "none", cursor: "pointer", color: "#666", padding: 4 }}><X size={18} /></button>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 10, fontSize: 13 }}>
+            {cvPreview.full_name && <div style={{ padding: "8px 12px", background: "#f9fafb", border: "1px solid #e5e7eb" }}><span style={{ color: "#666", fontSize: 11 }}>Ad Soyad</span><br /><strong>{cvPreview.full_name}</strong></div>}
+            {cvPreview.headline && <div style={{ padding: "8px 12px", background: "#f9fafb", border: "1px solid #e5e7eb" }}><span style={{ color: "#666", fontSize: 11 }}>Başlıq</span><br /><strong>{cvPreview.headline}</strong></div>}
+            {cvPreview.bio && <div style={{ padding: "8px 12px", background: "#f9fafb", border: "1px solid #e5e7eb" }}><span style={{ color: "#666", fontSize: 11 }}>Haqqında</span><br />{cvPreview.bio}</div>}
+            {cvPreview.major && <div style={{ padding: "8px 12px", background: "#f9fafb", border: "1px solid #e5e7eb" }}><span style={{ color: "#666", fontSize: 11 }}>İxtisas</span><br /><strong>{cvPreview.major}</strong></div>}
+            {cvPreview.skills?.length > 0 && (
+              <div style={{ padding: "8px 12px", background: "#f9fafb", border: "1px solid #e5e7eb" }}>
+                <span style={{ color: "#666", fontSize: 11 }}>Bacarıqlar</span><br />
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 4 }}>
+                  {cvPreview.skills.map((s, i) => <span key={i} style={{ background: "#eff6ff", border: "1px solid #bfdbfe", color: "#1d4ed8", fontSize: 11, padding: "2px 8px", borderRadius: 99 }}>{s}</span>)}
+                </div>
+              </div>
+            )}
+            {(cvPreview.github_url || cvPreview.linkedin_url || cvPreview.website_url) && (
+              <div style={{ padding: "8px 12px", background: "#f9fafb", border: "1px solid #e5e7eb" }}>
+                <span style={{ color: "#666", fontSize: 11 }}>Linklər</span><br />
+                <div style={{ marginTop: 4, display: "flex", flexDirection: "column", gap: 2 }}>
+                  {cvPreview.github_url && <span style={{ color: "#1a4a8a" }}>{cvPreview.github_url}</span>}
+                  {cvPreview.linkedin_url && <span style={{ color: "#1a4a8a" }}>{cvPreview.linkedin_url}</span>}
+                  {cvPreview.website_url && <span style={{ color: "#1a4a8a" }}>{cvPreview.website_url}</span>}
+                </div>
+              </div>
+            )}
+            {cvPreview.certificates?.length > 0 && (
+              <div style={{ padding: "8px 12px", background: "#f9fafb", border: "1px solid #e5e7eb" }}>
+                <span style={{ color: "#666", fontSize: 11 }}>Sertifikatlar ({cvPreview.certificates.length})</span>
+                {cvPreview.certificates.map((c, i) => <div key={i} style={{ marginTop: 4 }}><strong>{c.name}</strong> — {c.issuer}{c.issue_date ? ` (${c.issue_date})` : ""}</div>)}
+              </div>
+            )}
+            {cvPreview.projects?.length > 0 && (
+              <div style={{ padding: "8px 12px", background: "#f9fafb", border: "1px solid #e5e7eb" }}>
+                <span style={{ color: "#666", fontSize: 11 }}>Layihələr ({cvPreview.projects.length})</span>
+                {cvPreview.projects.map((p, i) => <div key={i} style={{ marginTop: 4 }}><strong>{p.title}</strong>{p.technologies ? ` — ${p.technologies}` : ""}</div>)}
+              </div>
+            )}
+          </div>
+
+          <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
+            <button onClick={applyCvPreview} style={{ ...S.btnPrimary, flex: 1 }}>
+              <Send size={13} style={{ verticalAlign: "middle", marginRight: 6 }} />Profilə tətbiq et
+            </button>
+            <button onClick={() => setCvPreview(null)} style={{ ...S.btnGhost }}>Ləğv et</button>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 }

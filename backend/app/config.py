@@ -13,6 +13,7 @@ class Settings(BaseSettings):
 
     RESEND_API_KEY: str = ""
     GEMINI_API_KEY: str = ""
+    GROQ_API_KEY: str = ""
     FRONTEND_URL: str = "http://localhost:5173"
 
     class Config:

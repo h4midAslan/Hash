@@ -1,5 +1,5 @@
 from datetime import datetime
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, File
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from pydantic import BaseModel
@@ -126,6 +126,26 @@ def search_users(
         query = query.filter(User.is_open_for_team == True)
 
     return query.limit(50).all()
+
+
+@router.post("/parse-cv")
+async def parse_cv_endpoint(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+):
+    if not file.filename.lower().endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="Yalnız PDF faylı qəbul edilir")
+    content = await file.read()
+    if len(content) > 10 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="Fayl 10 MB-dan böyük ola bilməz")
+    try:
+        from app.services.cv_parser import parse_cv
+        result = parse_cv(content)
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"CV parse xətası: {str(e)}")
 
 
 @router.get("/{user_id}", response_model=UserResponse)
