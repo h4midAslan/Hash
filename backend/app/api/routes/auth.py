@@ -72,9 +72,21 @@ class TokenResponse(BaseModel):
     token_type: str = "bearer"
 
 
+def _cleanup_unverified(db: Session):
+    """24 saatdan köhnə doğrulanmamış hesabları sil."""
+    from datetime import datetime, timezone, timedelta
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=24)
+    db.query(User).filter(
+        User.is_verified == False,
+        User.created_at < cutoff,
+    ).delete(synchronize_session=False)
+    db.commit()
+
+
 @router.post("/register")
 @limiter.limit("5/minute")
 def register(request: Request, data: RegisterRequest, db: Session = Depends(get_db)):
+    _cleanup_unverified(db)
     ALLOWED_DOMAINS = ("@naa.edu.az", "@student.naa.edu.az")
     if not any(data.email.endswith(d) for d in ALLOWED_DOMAINS):
         raise HTTPException(

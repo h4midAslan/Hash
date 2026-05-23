@@ -45,6 +45,7 @@ class AdminUserResponse(BaseModel):
     is_active: bool
     is_admin: bool
     is_open_for_team: bool
+    is_verified: bool
     created_at: str | None
 
     class Config:
@@ -113,6 +114,7 @@ def get_all_users(q: str = "", db: Session = Depends(get_db), admin: User = Depe
             is_active=u.is_active,
             is_admin=u.is_admin,
             is_open_for_team=u.is_open_for_team,
+            is_verified=u.is_verified,
             created_at=str(u.created_at) if u.created_at else None,
         )
         for u in users

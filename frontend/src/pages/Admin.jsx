@@ -558,15 +558,15 @@ export default function Admin() {
                       <span style={{
                         display: "inline-flex", alignItems: "center", gap: 5,
                         fontSize: 11, padding: "3px 8px", fontWeight: 600,
-                        background: user.is_active ? "#f0faf0" : "#fff5f5",
-                        color: user.is_active ? C.success : C.danger,
-                        border: `1px solid ${user.is_active ? "#b6e2b6" : "#fca5a5"}`,
+                        background: !user.is_verified ? "#fffbeb" : user.is_active ? "#f0faf0" : "#fff5f5",
+                        color: !user.is_verified ? "#92400e" : user.is_active ? C.success : C.danger,
+                        border: `1px solid ${!user.is_verified ? "#fcd34d" : user.is_active ? "#b6e2b6" : "#fca5a5"}`,
                       }}>
                         <span style={{
                           width: 6, height: 6, borderRadius: "50%",
-                          background: user.is_active ? C.success : C.danger, display: "inline-block",
+                          background: !user.is_verified ? "#f59e0b" : user.is_active ? C.success : C.danger, display: "inline-block",
                         }} />
-                        {user.is_active ? "Aktiv" : "Bloklanıb"}
+                        {!user.is_verified ? "Təsdiqlənməyib" : user.is_active ? "Aktiv" : "Bloklanıb"}
                       </span>
                     </div>
 
