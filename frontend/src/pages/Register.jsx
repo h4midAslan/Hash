@@ -122,6 +122,9 @@ export default function Register() {
                 {loading ? "Yoxlanılır..." : "Təsdiqlə"}
               </button>
             </form>
+            <div style={{ background: "#fffbeb", border: "1px solid #fde68a", padding: "10px 12px", marginTop: 14, fontSize: 12, color: "#92400e", lineHeight: 1.6 }}>
+              <strong>Vacib qeyd:</strong> Universitetin daxili təhlükəsizlik filtrlərinə görə təsdiqləmə kodu <strong>Spam</strong> (Gərəksizlər) və ya <strong>Junk</strong> qovluğuna düşə bilər. Zəhmət olmasa, həmin qovluğu yoxlayın və maili <em>"Spam deyil" (Not Junk)</em> olaraq qeyd edin.
+            </div>
             <p style={{ textAlign: "center", marginTop: 12, fontSize: 12, color: "#999" }}>
               Kod gəlmədi?{" "}
               <button onClick={resendCode} style={{ background: "none", border: "none", color: "#1a4a8a", fontWeight: 600, cursor: "pointer", fontSize: 12, padding: 0 }}>
