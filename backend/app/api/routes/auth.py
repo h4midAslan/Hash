@@ -87,16 +87,16 @@ def _cleanup_unverified(db: Session):
 @limiter.limit("5/minute")
 def register(request: Request, data: RegisterRequest, db: Session = Depends(get_db)):
     _cleanup_unverified(db)
-    NAA_DOMAINS = ("@naa.edu.az", "@student.naa.edu.az")
-    if any(data.email.endswith(d) for d in NAA_DOMAINS):
+    if data.email.endswith("@naa.edu.az"):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="MAA tələbələri üçün qeydiyyat admin tərəfindən aparılır. Admin ilə əlaqə saxlayın."
+            detail="@naa.edu.az ilə qeydiyyat bağlıdır. Admin ilə əlaqə saxlayın."
         )
-    raise HTTPException(
-        status_code=status.HTTP_400_BAD_REQUEST,
-        detail="Hal-hazırda özünü qeydiyyat bağlıdır. Admin ilə əlaqə saxlayın."
-    )
+    if not data.email.endswith("@student.naa.edu.az"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Yalnız @student.naa.edu.az email ilə qeydiyyat mümkündür"
+        )
 
     if data.faculty not in FACULTY_SPECIALIZATIONS:
         raise HTTPException(
