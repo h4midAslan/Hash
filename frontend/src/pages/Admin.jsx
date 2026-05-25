@@ -127,6 +127,16 @@ export default function Admin() {
     setLoading(false);
   };
 
+  const verifyUser = async (userId) => {
+    try {
+      await api.patch(`/admin/users/${userId}/verify`);
+      toast.success("İstifadəçi təsdiqləndi!");
+      loadUsers();
+    } catch (err) {
+      toast.error(err.response?.data?.detail || "Xəta baş verdi");
+    }
+  };
+
   const toggleActive = async (userId) => {
     try {
       await api.patch(`/admin/users/${userId}/toggle-active`);
@@ -610,6 +620,15 @@ export default function Admin() {
                       >
                         <Eye size={14} />
                       </button>
+                      {!user.is_verified && (
+                        <button
+                          onClick={() => verifyUser(user.id)}
+                          style={{ ...flatBtnStyle("#f0fdf4", "#15803d"), padding: "5px 8px", border: "1px solid #86efac" }}
+                          title="Təsdiqlə"
+                        >
+                          <CheckCircle size={14} />
+                        </button>
+                      )}
                       <button
                         onClick={() => toggleActive(user.id)}
                         style={{

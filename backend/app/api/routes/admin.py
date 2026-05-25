@@ -135,6 +135,17 @@ def toggle_user_active(user_id: int, db: Session = Depends(get_db), admin: User 
     return {"message": f"{'Aktiv edildi' if user.is_active else 'Blok edildi'}", "is_active": user.is_active}
 
 
+@router.patch("/users/{user_id}/verify")
+def verify_user(user_id: int, db: Session = Depends(get_db), admin: User = Depends(get_admin_user)):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="İstifadəçi tapılmadı")
+    user.is_verified = True
+    user.verification_token = None
+    db.commit()
+    return {"message": "Təsdiqləndi"}
+
+
 @router.patch("/users/{user_id}/toggle-admin")
 def toggle_user_admin(user_id: int, db: Session = Depends(get_db), admin: User = Depends(get_admin_user)):
     if user_id == admin.id:
