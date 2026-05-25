@@ -7,17 +7,39 @@ import { formatBakuDate, formatBakuHM } from "../utils/time";
 import { toast } from "../components/Toast";
 import { useLang } from "../hooks/useLang";
 import { useIsMobile } from "../hooks/useIsMobile";
+import { useDarkMode } from "../hooks/useTheme";
 
-const C = {
-  border:   "1px solid #d4d4d4",
-  bg:       "#ffffff",
-  bgPage:   "#f2f2f2",
-  text:     "#1a1a1a",
-  muted:    "#666",
-  faint:    "#999",
-  primary:  "#1a4a8a",
-  btnPrimary: { background: "#1a4a8a", color: "#fff", border: "1px solid #1a4a8a" },
-  btnGhost:   { background: "#fff", color: "#444", border: "1px solid #ccc" },
+const COLORS = {
+  light: {
+    border:     "1px solid #d4d4d4",
+    bg:         "#ffffff",
+    text:       "#1a1a1a",
+    muted:      "#666",
+    faint:      "#999",
+    primary:    "#1a4a8a",
+    divider:    "#ebebeb",
+    commentBg:  "#f7f7f7",
+    commentBorder: "#e8e8e8",
+    commentText: "#333",
+    sidebarBg:  "#fff",
+    btnPrimary: { background: "#1a4a8a", color: "#fff", border: "1px solid #1a4a8a" },
+    btnGhost:   { background: "#fff", color: "#444", border: "1px solid #ccc" },
+  },
+  dark: {
+    border:     "1px solid #374151",
+    bg:         "#1f2937",
+    text:       "#f3f4f6",
+    muted:      "#9ca3af",
+    faint:      "#6b7280",
+    primary:    "#60a5fa",
+    divider:    "#374151",
+    commentBg:  "#111827",
+    commentBorder: "#374151",
+    commentText: "#d1d5db",
+    sidebarBg:  "#1f2937",
+    btnPrimary: { background: "#2563eb", color: "#fff", border: "1px solid #2563eb" },
+    btnGhost:   { background: "#374151", color: "#d1d5db", border: "1px solid #4b5563" },
+  },
 };
 
 function ImageCarousel({ images }) {
@@ -64,6 +86,8 @@ export default function Feed() {
   const [suggestedPending, setSuggestedPending] = useState(new Set());
   const { t } = useLang();
   const isMobile = useIsMobile();
+  const dark = useDarkMode();
+  const C = dark ? COLORS.dark : COLORS.light;
 
   useEffect(() => {
     loadFeed().finally(() => setLoading(false));
@@ -202,9 +226,9 @@ export default function Feed() {
   const btn = (active, color = C.primary) => ({
     display: "inline-flex", alignItems: "center", gap: 5,
     padding: "5px 12px", fontSize: 12, cursor: "pointer",
-    border: `1px solid ${active ? color : "#ddd"}`,
-    background: active ? `${color}18` : "#fff",
-    color: active ? color : "#666",
+    border: `1px solid ${active ? color : (dark ? "#4b5563" : "#ddd")}`,
+    background: active ? `${color}28` : (dark ? "#374151" : "#fff"),
+    color: active ? color : C.muted,
   });
 
   const handleSuggestedConnect = async (userId) => {
@@ -229,7 +253,7 @@ export default function Feed() {
             <h1 style={{ fontSize: 17, fontWeight: 700, color: C.text, margin: 0 }}>{t("feed_title")}</h1>
             <p style={{ fontSize: 12, color: C.muted, margin: "3px 0 0" }}>{t("feed_placeholder")}</p>
           </div>
-          <Link to="/articles" style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", fontSize: 12, color: "#444", border: "1px solid #ccc", background: "#fff", textDecoration: "none" }}>
+          <Link to="/articles" style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", fontSize: 12, color: C.muted, border: C.border, background: C.bg, textDecoration: "none" }}>
             <BookOpen size={13} /> Məqalələr
           </Link>
         </div>
@@ -246,7 +270,7 @@ export default function Feed() {
               value={newPost}
               onChange={e => setNewPost(e.target.value)}
               placeholder={t("feed_textarea")}
-              style={{ width: "100%", border: "none", borderBottom: "1px solid #e0e0e0", outline: "none", fontSize: 13, color: C.text, resize: "none", background: "transparent", padding: "4px 0", lineHeight: 1.6, boxSizing: "border-box" }}
+              style={{ width: "100%", border: "none", borderBottom: `1px solid ${C.divider}`, outline: "none", fontSize: 13, color: C.text, resize: "none", background: "transparent", padding: "4px 0", lineHeight: 1.6, boxSizing: "border-box" }}
               rows={3}
             />
 
@@ -282,7 +306,7 @@ export default function Feed() {
           </div>
         </div>
 
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 12, paddingTop: 10, borderTop: "1px solid #ebebeb" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 12, paddingTop: 10, borderTop: `1px solid ${C.divider}` }}>
           <div style={{ display: "flex", gap: 6 }}>
             <label style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 10px", fontSize: 12, color: C.primary, border: "1px solid #c8d8f0", background: "#f0f5ff", cursor: "pointer" }}>
               <ImageIcon size={13} /> Şəkil {imageUrls.length > 0 && <span style={{ background: "#1a4a8a", color: "#fff", fontSize: 10, padding: "1px 5px", borderRadius: 8 }}>{imageUrls.length}</span>}
@@ -383,7 +407,7 @@ export default function Feed() {
               )}
 
               {/* Actions */}
-              <div style={{ display: "flex", alignItems: "center", gap: 4, paddingTop: 8, borderTop: "1px solid #ebebeb" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 4, paddingTop: 8, borderTop: `1px solid ${C.divider}` }}>
                 <button onClick={() => handleLike(post.id)} style={btn(post.is_liked, "#dc2626")}>
                   <Heart size={14} fill={post.is_liked ? "currentColor" : "none"} /> {post.like_count}
                 </button>
@@ -405,7 +429,7 @@ export default function Feed() {
 
               {/* Comments */}
               {openComments[post.id] && (
-                <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid #ebebeb" }}>
+                <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.divider}` }}>
                   <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
                     <input
                       type="text"
@@ -413,9 +437,9 @@ export default function Feed() {
                       onChange={e => setCommentText({ ...commentText, [post.id]: e.target.value })}
                       onKeyDown={e => e.key === "Enter" && submitComment(post.id)}
                       placeholder={t("feed_comment_placeholder")}
-                      style={{ flex: 1, padding: "6px 10px", border: "1px solid #ccc", fontSize: 12, color: C.text, outline: "none" }}
-                      onFocus={e => e.target.style.borderColor = "#1a4a8a"}
-                      onBlur={e => e.target.style.borderColor = "#ccc"}
+                      style={{ flex: 1, padding: "6px 10px", border: C.border, fontSize: 12, color: C.text, background: C.bg, outline: "none" }}
+                      onFocus={e => e.target.style.borderColor = C.primary}
+                      onBlur={e => e.target.style.borderColor = dark ? "#374151" : "#ccc"}
                     />
                     <button onClick={() => submitComment(post.id)} disabled={!commentText[post.id]?.trim()}
                       style={{ ...C.btnPrimary, display: "inline-flex", alignItems: "center", padding: "6px 12px", fontSize: 12, cursor: "pointer", opacity: !commentText[post.id]?.trim() ? 0.4 : 1 }}>
@@ -430,12 +454,12 @@ export default function Feed() {
                         <Link to={`/profile/${c.user_id}`} style={{ width: 30, height: 30, background: "#1a4a8a", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 11, fontWeight: 700, textDecoration: "none", flexShrink: 0 }}>
                           {c.user_name?.charAt(0)}
                         </Link>
-                        <div style={{ flex: 1, background: "#f7f7f7", border: "1px solid #e8e8e8", padding: "7px 10px" }}>
+                        <div style={{ flex: 1, background: C.commentBg, border: `1px solid ${C.commentBorder}`, padding: "7px 10px" }}>
                           <div style={{ display: "flex", gap: 8, marginBottom: 3, alignItems: "center" }}>
                             <Link to={`/profile/${c.user_id}`} style={{ fontSize: 12, fontWeight: 600, color: C.text, textDecoration: "none" }}>{c.user_name}</Link>
                             <span style={{ fontSize: 10, color: C.faint }}>{formatBakuHM(c.created_at)}</span>
                           </div>
-                          <p style={{ fontSize: 12, color: "#333", margin: 0 }}>{c.content}</p>
+                          <p style={{ fontSize: 12, color: C.commentText, margin: 0 }}>{c.content}</p>
                         </div>
                       </div>
                     ))}
@@ -460,11 +484,11 @@ export default function Feed() {
       {reportPostId && (
         <div onClick={() => !reporting && setReportPostId(null)}
           style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 16px" }}>
-          <div onClick={e => e.stopPropagation()} style={{ background: "#fff", border: C.border, maxWidth: 400, width: "100%", padding: "20px 22px" }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: C.bg, border: C.border, maxWidth: 400, width: "100%", padding: "20px 22px" }}>
             <h3 style={{ fontSize: 14, fontWeight: 700, color: C.text, margin: "0 0 4px" }}>Postu şikayət et</h3>
             <p style={{ fontSize: 11, color: C.muted, margin: "0 0 12px" }}>Admin yoxladıqdan sonra tədbir görüləcək</p>
             <textarea value={reportReason} onChange={e => setReportReason(e.target.value)} placeholder="Səbəb (istəyə bağlı)..."
-              style={{ width: "100%", border: "1px solid #ccc", padding: "8px 10px", fontSize: 12, resize: "none", outline: "none", boxSizing: "border-box" }} rows={3} maxLength={300} />
+              style={{ width: "100%", border: C.border, background: C.commentBg, color: C.text, padding: "8px 10px", fontSize: 12, resize: "none", outline: "none", boxSizing: "border-box" }} rows={3} maxLength={300} />
             <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 12 }}>
               <button onClick={() => { setReportPostId(null); setReportReason(""); }} disabled={reporting}
                 style={{ ...C.btnGhost, display: "inline-flex", padding: "6px 14px", fontSize: 12, cursor: "pointer" }}>Ləğv et</button>
@@ -481,8 +505,8 @@ export default function Feed() {
     {/* Suggested Profiles sidebar */}
     {suggested.length > 0 && (
       <div style={{ width: 240, flexShrink: 0, position: "sticky", top: 68, display: isMobile ? "none" : "block" }}>
-        <div style={{ background: "#fff", border: "1px solid #d4d4d4", padding: "14px 16px" }}>
-          <p style={{ fontSize: 11, fontWeight: 700, color: "#666", textTransform: "uppercase", letterSpacing: "0.05em", margin: "0 0 12px" }}>
+        <div style={{ background: C.sidebarBg, border: C.border, padding: "14px 16px" }}>
+          <p style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.05em", margin: "0 0 12px" }}>
             Tanıya bilərsən
           </p>
           <div>
@@ -497,7 +521,7 @@ export default function Feed() {
                     }
                   </Link>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <Link to={`/profile/${s.id}`} style={{ fontSize: 12, fontWeight: 600, color: "#1a1a1a", textDecoration: "none", display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    <Link to={`/profile/${s.id}`} style={{ fontSize: 12, fontWeight: 600, color: C.text, textDecoration: "none", display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {s.full_name}
                     </Link>
                     {s.mutual_count > 0
@@ -508,7 +532,7 @@ export default function Feed() {
                   <button
                     onClick={() => !sent && handleSuggestedConnect(s.id)}
                     disabled={sent}
-                    style={{ flexShrink: 0, background: sent ? "#f0f0f0" : "#f0f5ff", color: sent ? "#999" : "#1a4a8a", border: `1px solid ${sent ? "#ddd" : "#c8d8f0"}`, padding: "3px 8px", fontSize: 11, cursor: sent ? "default" : "pointer", display: "flex", alignItems: "center", gap: 3 }}
+                    style={{ flexShrink: 0, background: sent ? (dark ? "#374151" : "#f0f0f0") : (dark ? "#1e3a5f" : "#f0f5ff"), color: sent ? C.faint : C.primary, border: `1px solid ${sent ? (dark ? "#4b5563" : "#ddd") : (dark ? "#2563eb" : "#c8d8f0")}`, padding: "3px 8px", fontSize: 11, cursor: sent ? "default" : "pointer", display: "flex", alignItems: "center", gap: 3 }}
                   >
                     {sent ? <UserCheck size={12} /> : <UserPlus size={12} />}
                     {sent ? "Göndərildi" : "Əlaqə"}
