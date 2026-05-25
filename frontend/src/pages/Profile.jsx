@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { toast } from "../components/Toast";
+import { useDarkMode } from "../hooks/useTheme";
 import {
   Edit3, Save, X, BookOpen, Award, GraduationCap, Sparkles, Plus, Trash2,
   ExternalLink, Camera, FolderGit2, Code2, Heart, ThumbsDown, MessageCircle,
@@ -23,22 +24,22 @@ import UserAvatar from "../components/UserAvatar";
 import { formatBakuDate, formatBakuHM } from "../utils/time";
 import { useIsMobile } from "../hooks/useIsMobile";
 
-const S = {
+const makeS = (dark) => ({
   page:        { maxWidth: 760, margin: "0 auto", padding: "20px 12px" },
-  card:        { background: "#ffffff", border: "1px solid #d4d4d4", marginBottom: 12 },
+  card:        { background: dark ? "#1f2937" : "#ffffff", border: dark ? "1px solid #374151" : "1px solid #d4d4d4", marginBottom: 12 },
   sectionPad:  { padding: "16px 20px" },
-  label:       { display: "block", fontSize: 12, fontWeight: 600, color: "#1a1a1a", marginBottom: 6 },
-  input:       { width: "100%", padding: "8px 10px", border: "1px solid #ccc", borderRadius: 2, fontSize: 14, color: "#1a1a1a", background: "#fff", outline: "none", boxSizing: "border-box" },
-  textarea:    { width: "100%", padding: "8px 10px", border: "1px solid #ccc", borderRadius: 2, fontSize: 14, color: "#1a1a1a", background: "#fff", outline: "none", resize: "vertical", boxSizing: "border-box" },
+  label:       { display: "block", fontSize: 12, fontWeight: 600, color: dark ? "#f3f4f6" : "#1a1a1a", marginBottom: 6 },
+  input:       { width: "100%", padding: "8px 10px", border: dark ? "1px solid #374151" : "1px solid #ccc", borderRadius: 2, fontSize: 14, color: dark ? "#f3f4f6" : "#1a1a1a", background: dark ? "#111827" : "#fff", outline: "none", boxSizing: "border-box" },
+  textarea:    { width: "100%", padding: "8px 10px", border: dark ? "1px solid #374151" : "1px solid #ccc", borderRadius: 2, fontSize: 14, color: dark ? "#f3f4f6" : "#1a1a1a", background: dark ? "#111827" : "#fff", outline: "none", resize: "vertical", boxSizing: "border-box" },
   btnPrimary:  { background: "#1a4a8a", color: "#fff", border: "1px solid #1a4a8a", padding: "7px 18px", fontSize: 13, fontWeight: 600, cursor: "pointer", borderRadius: 2 },
-  btnGhost:    { background: "#fff", color: "#333", border: "1px solid #ccc", padding: "7px 18px", fontSize: 13, fontWeight: 500, cursor: "pointer", borderRadius: 2 },
-  btnDanger:   { background: "transparent", border: "none", color: "#c0392b", cursor: "pointer", padding: 4, lineHeight: 1 },
-  sectionTitle:{ fontSize: 12, fontWeight: 600, color: "#666", textTransform: "uppercase", letterSpacing: "0.04em", display: "flex", alignItems: "center", gap: 6, marginBottom: 12 },
-  chip:        { border: "1px solid #ccc", padding: "2px 8px", fontSize: 11, color: "#333", background: "#fafafa", borderRadius: 2, display: "inline-block" },
-  muted:       { color: "#666", fontSize: 13 },
-  faint:       { color: "#999", fontSize: 12 },
-  heading:     { color: "#1a1a1a", fontWeight: 700 },
-};
+  btnGhost:    { background: dark ? "#1f2937" : "#fff", color: dark ? "#f3f4f6" : "#333", border: dark ? "1px solid #374151" : "1px solid #ccc", padding: "7px 18px", fontSize: 13, fontWeight: 500, cursor: "pointer", borderRadius: 2 },
+  btnDanger:   { background: "transparent", border: "none", color: "#f87171", cursor: "pointer", padding: 4, lineHeight: 1 },
+  sectionTitle:{ fontSize: 12, fontWeight: 600, color: dark ? "#9ca3af" : "#666", textTransform: "uppercase", letterSpacing: "0.04em", display: "flex", alignItems: "center", gap: 6, marginBottom: 12 },
+  chip:        { border: dark ? "1px solid #374151" : "1px solid #ccc", padding: "2px 8px", fontSize: 11, color: dark ? "#f3f4f6" : "#333", background: dark ? "#1f2937" : "#fafafa", borderRadius: 2, display: "inline-block" },
+  muted:       { color: dark ? "#9ca3af" : "#666", fontSize: 13 },
+  faint:       { color: dark ? "#6b7280" : "#999", fontSize: 12 },
+  heading:     { color: dark ? "#f3f4f6" : "#1a1a1a", fontWeight: 700 },
+});
 
 const TABS = [
   { key: "about",   label: "Xülasə",      icon: BookOpen },
@@ -51,6 +52,8 @@ export default function Profile() {
   const { id } = useParams();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const dark = useDarkMode();
+  const S = makeS(dark);
   const [user, setUser]         = useState(null);
   const [isOwn, setIsOwn]       = useState(!id);
   const [editing, setEditing]   = useState(false);
@@ -275,13 +278,13 @@ export default function Profile() {
     <div style={{ ...S.page, paddingTop: 40 }}>
       <div style={{ ...S.card, padding: 24 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 20 }}>
-          <div style={{ width: 72, height: 72, background: "#e8e8e8", border: "1px solid #d4d4d4" }} />
+          <div style={{ width: 72, height: 72, background: dark ? "#374151" : "#e8e8e8", border: dark ? "1px solid #374151" : "1px solid #d4d4d4" }} />
           <div style={{ flex: 1 }}>
-            <div style={{ height: 16, background: "#e8e8e8", width: 160, marginBottom: 8 }} />
-            <div style={{ height: 12, background: "#e8e8e8", width: 120 }} />
+            <div style={{ height: 16, background: dark ? "#374151" : "#e8e8e8", width: 160, marginBottom: 8 }} />
+            <div style={{ height: 12, background: dark ? "#374151" : "#e8e8e8", width: 120 }} />
           </div>
         </div>
-        {[1, 2, 3].map(i => <div key={i} style={{ height: 60, background: "#f0f0f0", border: "1px solid #e0e0e0", marginBottom: 8 }} />)}
+        {[1, 2, 3].map(i => <div key={i} style={{ height: 60, background: dark ? "#1f2937" : "#f0f0f0", border: dark ? "1px solid #374151" : "1px solid #e0e0e0", marginBottom: 8 }} />)}
       </div>
     </div>
   );
@@ -291,7 +294,7 @@ export default function Profile() {
 
   return (
     <>
-    <div style={{ background: "#f2f2f2", minHeight: "100vh" }}>
+    <div style={{ background: dark ? "#111827" : "#f2f2f2", minHeight: "100vh" }}>
       <div style={{ ...S.page, padding: isMobile ? "12px 10px" : S.page.padding }}>
 
         {/* ── HEADER CARD ── */}
@@ -320,12 +323,12 @@ export default function Profile() {
             <div style={{ flex: 1, minWidth: 0, textAlign: isMobile ? "center" : "left" }}>
               <h2 style={{ ...S.heading, fontSize: 18, margin: "0 0 2px 0" }}>{user.full_name}</h2>
               {user.headline && (
-                <p style={{ margin: "0 0 4px 0", fontSize: 14, color: "#444" }}>{user.headline}</p>
+                <p style={{ margin: "0 0 4px 0", fontSize: 14, color: dark ? "#9ca3af" : "#444" }}>{user.headline}</p>
               )}
               <p style={{ ...S.faint, margin: "0 0 6px 0" }}>{user.email}</p>
               {user.major && (
                 <p style={{ ...S.muted, margin: "0 0 6px 0" }}>
-                  <GraduationCap size={13} style={{ display: "inline", verticalAlign: "middle", marginRight: 4, color: "#666" }} />
+                  <GraduationCap size={13} style={{ display: "inline", verticalAlign: "middle", marginRight: 4, color: dark ? "#9ca3af" : "#666" }} />
                   {user.major}{user.course && ` · ${user.course}-ci kurs`}
                 </p>
               )}
@@ -333,24 +336,24 @@ export default function Profile() {
               {(user.github_url || user.linkedin_url || user.website_url) && (
                 <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: isMobile ? "center" : "flex-start", marginBottom: 6 }}>
                   {user.github_url && (
-                    <a href={user.github_url} target="_blank" rel="noreferrer" style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: "#444", textDecoration: "none" }}>
+                    <a href={user.github_url} target="_blank" rel="noreferrer" style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: dark ? "#9ca3af" : "#444", textDecoration: "none" }}>
                       <GithubIcon /> GitHub
                     </a>
                   )}
                   {user.linkedin_url && (
-                    <a href={user.linkedin_url} target="_blank" rel="noreferrer" style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: "#0077b5", textDecoration: "none" }}>
+                    <a href={user.linkedin_url} target="_blank" rel="noreferrer" style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: dark ? "#60a5fa" : "#0077b5", textDecoration: "none" }}>
                       <LinkedinIcon /> LinkedIn
                     </a>
                   )}
                   {user.website_url && (
-                    <a href={user.website_url} target="_blank" rel="noreferrer" style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: "#444", textDecoration: "none" }}>
+                    <a href={user.website_url} target="_blank" rel="noreferrer" style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: dark ? "#9ca3af" : "#444", textDecoration: "none" }}>
                       <Globe size={13} /> Website
                     </a>
                   )}
                 </div>
               )}
               {user.is_open_for_team && (
-                <span style={{ display: "inline-block", border: "1px solid #aac4e8", padding: "2px 10px", fontSize: 11, color: "#1a4a8a", background: "#edf3fb" }}>
+                <span style={{ display: "inline-block", border: dark ? "1px solid #374151" : "1px solid #aac4e8", padding: "2px 10px", fontSize: 11, color: dark ? "#60a5fa" : "#1a4a8a", background: dark ? "#1f2937" : "#edf3fb" }}>
                   Komanda üçün açıq
                 </span>
               )}
@@ -386,15 +389,15 @@ export default function Profile() {
 
           {/* Completion bar */}
           {isOwn && completionPercent < 100 && (
-            <div style={{ margin: isMobile ? "12px 14px 0 14px" : "16px 20px 0 20px", padding: "12px 14px", background: "#fafafa", border: "1px solid #e0e0e0" }}>
+            <div style={{ margin: isMobile ? "12px 14px 0 14px" : "16px 20px 0 20px", padding: "12px 14px", background: dark ? "#1f2937" : "#fafafa", border: dark ? "1px solid #374151" : "1px solid #e0e0e0" }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                <span style={{ fontSize: 11, color: "#666", fontWeight: 600 }}>Profil tamamlanması</span>
-                <span style={{ fontSize: 11, color: "#1a4a8a", fontWeight: 700 }}>{completionPercent}%</span>
+                <span style={{ fontSize: 11, color: dark ? "#9ca3af" : "#666", fontWeight: 600 }}>Profil tamamlanması</span>
+                <span style={{ fontSize: 11, color: "#60a5fa", fontWeight: 700 }}>{completionPercent}%</span>
               </div>
-              <div style={{ height: 4, background: "#e0e0e0" }}>
+              <div style={{ height: 4, background: dark ? "#374151" : "#e0e0e0" }}>
                 <div style={{ height: 4, background: completionBarColor, width: `${completionPercent}%`, transition: "width 0.4s" }} />
               </div>
-              <p style={{ fontSize: 11, color: "#999", marginTop: 6, marginBottom: 0 }}>
+              <p style={{ fontSize: 11, color: dark ? "#6b7280" : "#999", marginTop: 6, marginBottom: 0 }}>
                 {!user.headline && "başlıq, "}{!user.profile_picture && "profil şəkli, "}{!user.bio && "haqqında, "}{!user.skills && "bacarıqlar, "}
                 {certificates.length === 0 && "sertifikat, "}{projects.length === 0 && "layihə "}əlavə et
               </p>
@@ -402,7 +405,7 @@ export default function Profile() {
           )}
 
           {/* ── TABS ── */}
-          <div style={{ display: "flex", borderTop: "1px solid #e0e0e0", marginTop: 16 }}>
+          <div style={{ display: "flex", borderTop: dark ? "1px solid #374151" : "1px solid #e0e0e0", marginTop: 16 }}>
             {TABS.map(({ key, label, icon: Icon }) => {
               const count = key === "posts" ? userPosts.length : key === "projects" ? projects.length : key === "certs" ? certificates.length : null;
               return (
@@ -414,10 +417,10 @@ export default function Profile() {
                     padding: isMobile ? "10px 4px" : "12px 8px",
                     fontSize: isMobile ? 11 : 12,
                     fontWeight: activeTab === key ? 700 : 500,
-                    color: activeTab === key ? "#1a4a8a" : "#888",
+                    color: activeTab === key ? (dark ? "#60a5fa" : "#1a4a8a") : (dark ? "#9ca3af" : "#888"),
                     background: "none",
                     border: "none",
-                    borderBottom: activeTab === key ? "2px solid #1a4a8a" : "2px solid transparent",
+                    borderBottom: activeTab === key ? (dark ? "2px solid #60a5fa" : "2px solid #1a4a8a") : "2px solid transparent",
                     cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
@@ -429,7 +432,7 @@ export default function Profile() {
                   <Icon size={12} />
                   {label}
                   {count !== null && count > 0 && (
-                    <span style={{ fontSize: 10, background: activeTab === key ? "#1a4a8a" : "#ccc", color: "#fff", borderRadius: 10, padding: "0 5px", lineHeight: "16px" }}>{count}</span>
+                    <span style={{ fontSize: 10, background: activeTab === key ? (dark ? "#60a5fa" : "#1a4a8a") : (dark ? "#374151" : "#ccc"), color: "#fff", borderRadius: 10, padding: "0 5px", lineHeight: "16px" }}>{count}</span>
                   )}
                 </button>
               );
@@ -450,8 +453,8 @@ export default function Profile() {
                 </div>
                 <div>
                   <label style={S.label}>Username <span style={{ color: "#999", fontWeight: 400 }}>(hashcampus.site/u/...)</span></label>
-                  <div style={{ display: "flex", alignItems: "center", border: "1px solid #ccc", borderRadius: 2, overflow: "hidden" }}>
-                    <span style={{ padding: "8px 8px 8px 10px", fontSize: 13, color: "#999", background: "#f9f9f9", borderRight: "1px solid #ccc", whiteSpace: "nowrap" }}>u/</span>
+                  <div style={{ display: "flex", alignItems: "center", border: dark ? "1px solid #374151" : "1px solid #ccc", borderRadius: 2, overflow: "hidden" }}>
+                    <span style={{ padding: "8px 8px 8px 10px", fontSize: 13, color: dark ? "#6b7280" : "#999", background: dark ? "#1f2937" : "#f9f9f9", borderRight: dark ? "1px solid #374151" : "1px solid #ccc", whiteSpace: "nowrap" }}>u/</span>
                     <input
                       type="text"
                       value={form.username || ""}
@@ -509,11 +512,11 @@ export default function Profile() {
                 </div>
               </div>
 
-              <label style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", border: "1px solid #e0e0e0", background: "#fafafa", cursor: "pointer", marginBottom: 16 }}>
+              <label style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", border: dark ? "1px solid #374151" : "1px solid #e0e0e0", background: dark ? "#1f2937" : "#fafafa", cursor: "pointer", marginBottom: 16 }}>
                 <input type="checkbox" checked={form.is_open_for_team || false} onChange={e => setForm({ ...form, is_open_for_team: e.target.checked })} style={{ width: 15, height: 15 }} />
                 <div>
-                  <span style={{ fontSize: 13, fontWeight: 500, color: "#1a1a1a" }}>Komanda üçün açığam</span>
-                  <p style={{ fontSize: 11, color: "#999", margin: "2px 0 0 0" }}>Başqaları sizi komandaya dəvət edə bilər</p>
+                  <span style={{ fontSize: 13, fontWeight: 500, color: dark ? "#f3f4f6" : "#1a1a1a" }}>Komanda üçün açığam</span>
+                  <p style={{ fontSize: 11, color: dark ? "#6b7280" : "#999", margin: "2px 0 0 0" }}>Başqaları sizi komandaya dəvət edə bilər</p>
                 </div>
               </label>
 
@@ -567,7 +570,7 @@ export default function Profile() {
                         ? (() => { try { const p = JSON.parse(post.image_url); return Array.isArray(p) ? p : [post.image_url]; } catch { return [post.image_url]; } })()
                         : [];
                     return (
-                      <div key={post.id} style={{ border: "1px solid #d4d4d4", background: "#fff" }}>
+                      <div key={post.id} style={{ border: dark ? "1px solid #374151" : "1px solid #d4d4d4", background: dark ? "#1f2937" : "#fff" }}>
                         {imgs.length > 0 && (
                           <div style={{ display: "grid", gridTemplateColumns: imgs.length > 1 ? "1fr 1fr" : "1fr", gap: 2 }}>
                             {imgs.slice(0, 4).map((url, i) => (
@@ -583,12 +586,12 @@ export default function Profile() {
                         <div style={{ padding: "10px 14px" }}>
                           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
                             <div style={{ flex: 1 }}>
-                              {post.content && <p style={{ margin: "0 0 8px 0", fontSize: 13, color: "#333", whiteSpace: "pre-wrap", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{post.content}</p>}
+                              {post.content && <p style={{ margin: "0 0 8px 0", fontSize: 13, color: dark ? "#f3f4f6" : "#333", whiteSpace: "pre-wrap", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{post.content}</p>}
                               <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                                <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: "#999" }}><Heart size={11} /> {post.like_count}</span>
-                                {post.show_dislikes && <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: "#999" }}><ThumbsDown size={11} /> {post.dislike_count}</span>}
-                                <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: "#999" }}><MessageCircle size={11} /> {post.comment_count}</span>
-                                <span style={{ fontSize: 11, color: "#bbb" }}>{formatBakuDate(post.created_at)}</span>
+                                <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: dark ? "#9ca3af" : "#999" }}><Heart size={11} /> {post.like_count}</span>
+                                {post.show_dislikes && <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: dark ? "#9ca3af" : "#999" }}><ThumbsDown size={11} /> {post.dislike_count}</span>}
+                                <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: dark ? "#9ca3af" : "#999" }}><MessageCircle size={11} /> {post.comment_count}</span>
+                                <span style={{ fontSize: 11, color: dark ? "#6b7280" : "#bbb" }}>{formatBakuDate(post.created_at)}</span>
                               </div>
                             </div>
                             {isOwn && <button onClick={() => handleDeletePost(post.id)} style={{ ...S.btnDanger, marginLeft: 12 }}><Trash2 size={15} /></button>}
@@ -618,7 +621,7 @@ export default function Profile() {
                 )}
               </div>
               {isOwn && showProjForm && (
-                <div style={{ border: "1px solid #d4d4d4", padding: 14, marginBottom: 12, background: "#fafafa" }}>
+                <div style={{ border: dark ? "1px solid #374151" : "1px solid #d4d4d4", padding: 14, marginBottom: 12, background: dark ? "#1f2937" : "#fafafa" }}>
                   <input type="text" placeholder="Layihə adı" value={projForm.title} onChange={e => setProjForm({ ...projForm, title: e.target.value })} style={{ ...S.input, marginBottom: 8 }} />
                   <textarea placeholder="Qısa təsvir" value={projForm.description} onChange={e => setProjForm({ ...projForm, description: e.target.value })} rows={2} style={{ ...S.textarea, marginBottom: 8 }} />
                   <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 8, marginBottom: 8 }}>
@@ -634,11 +637,11 @@ export default function Profile() {
               {projects.length > 0 ? (
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {projects.map(proj => (
-                    <div key={proj.id} style={{ border: "1px solid #d4d4d4", padding: "12px 14px", background: "#fff" }}>
+                    <div key={proj.id} style={{ border: dark ? "1px solid #374151" : "1px solid #d4d4d4", padding: "12px 14px", background: dark ? "#1f2937" : "#fff" }}>
                       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
                         <div style={{ flex: 1 }}>
-                          <p style={{ margin: "0 0 4px 0", fontSize: 13, fontWeight: 600, color: "#1a1a1a" }}>{proj.title}</p>
-                          {proj.description && <p style={{ margin: "0 0 6px 0", fontSize: 12, color: "#666" }}>{proj.description}</p>}
+                          <p style={{ margin: "0 0 4px 0", fontSize: 13, fontWeight: 600, color: dark ? "#f3f4f6" : "#1a1a1a" }}>{proj.title}</p>
+                          {proj.description && <p style={{ margin: "0 0 6px 0", fontSize: 12, color: dark ? "#9ca3af" : "#666" }}>{proj.description}</p>}
                           {proj.technologies && (
                             <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
                               {proj.technologies.split(",").map((t, i) => <span key={i} style={S.chip}>{t.trim()}</span>)}
@@ -646,7 +649,7 @@ export default function Profile() {
                           )}
                         </div>
                         <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: 12 }}>
-                          {proj.github_url && <a href={proj.github_url} target="_blank" rel="noreferrer" style={{ color: "#666", lineHeight: 1 }}><Code2 size={15} /></a>}
+                          {proj.github_url && <a href={proj.github_url} target="_blank" rel="noreferrer" style={{ color: dark ? "#9ca3af" : "#666", lineHeight: 1 }}><Code2 size={15} /></a>}
                           {isOwn && <button onClick={() => handleDeleteProject(proj.id)} style={S.btnDanger}><Trash2 size={15} /></button>}
                         </div>
                       </div>
@@ -673,7 +676,7 @@ export default function Profile() {
                 )}
               </div>
               {isOwn && showCertForm && (
-                <div style={{ border: "1px solid #d4d4d4", padding: 14, marginBottom: 12, background: "#fafafa" }}>
+                <div style={{ border: dark ? "1px solid #374151" : "1px solid #d4d4d4", padding: 14, marginBottom: 12, background: dark ? "#1f2937" : "#fafafa" }}>
                   <input type="text" placeholder="Sertifikat adı" value={certForm.name} onChange={e => setCertForm({ ...certForm, name: e.target.value })} style={{ ...S.input, marginBottom: 8 }} />
                   <input type="text" placeholder="Verən təşkilat (Google, ISC2...)" value={certForm.issuer} onChange={e => setCertForm({ ...certForm, issuer: e.target.value })} style={{ ...S.input, marginBottom: 8 }} />
                   <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 8, marginBottom: 8 }}>
@@ -681,13 +684,13 @@ export default function Profile() {
                     <input type="url" placeholder="Doğrulama linki" value={certForm.credential_url} onChange={e => setCertForm({ ...certForm, credential_url: e.target.value })} style={S.input} />
                   </div>
                   <div style={{ marginBottom: 8 }}>
-                    <label style={{ fontSize: 11, color: "#666", display: "block", marginBottom: 4 }}>Sertifikat şəkli (istəyə bağlı)</label>
+                    <label style={{ fontSize: 11, color: dark ? "#9ca3af" : "#666", display: "block", marginBottom: 4 }}>Sertifikat şəkli (istəyə bağlı)</label>
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                       <label style={{ ...S.btnGhost, padding: "5px 10px", fontSize: 12, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 4 }}>
                         <input type="file" accept="image/*" onChange={handleCertImagePick} style={{ display: "none" }} />
                         {certImageUploading ? "Yüklənir..." : "Şəkil seç"}
                       </label>
-                      {certForm.image_url && <img src={certForm.image_url} alt="cert" style={{ height: 40, border: "1px solid #d4d4d4", objectFit: "cover" }} />}
+                      {certForm.image_url && <img src={certForm.image_url} alt="cert" style={{ height: 40, border: dark ? "1px solid #374151" : "1px solid #d4d4d4", objectFit: "cover" }} />}
                       {certForm.image_url && <button onClick={() => setCertForm(prev => ({ ...prev, image_url: "" }))} style={{ ...S.btnDanger, padding: "4px 6px" }}>✕</button>}
                     </div>
                   </div>
@@ -700,19 +703,19 @@ export default function Profile() {
               {certificates.length > 0 ? (
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {certificates.map(cert => (
-                    <div key={cert.id} style={{ border: "1px solid #d4d4d4", background: "#fff" }}>
+                    <div key={cert.id} style={{ border: dark ? "1px solid #374151" : "1px solid #d4d4d4", background: dark ? "#1f2937" : "#fff" }}>
                       {cert.image_url && cert.image_url.startsWith("http") && (
                         <a href={cert.image_url} target="_blank" rel="noreferrer">
-                          <img src={cert.image_url} alt={cert.name} style={{ width: "100%", maxHeight: 200, objectFit: "contain", display: "block", background: "#f5f5f5", borderBottom: "1px solid #d4d4d4" }} />
+                          <img src={cert.image_url} alt={cert.name} style={{ width: "100%", maxHeight: 200, objectFit: "contain", display: "block", background: dark ? "#111827" : "#f5f5f5", borderBottom: dark ? "1px solid #374151" : "1px solid #d4d4d4" }} />
                         </a>
                       )}
                       <div style={{ padding: "10px 14px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                         <div style={{ flex: 1 }}>
-                          <p style={{ margin: "0 0 2px 0", fontSize: 13, fontWeight: 600, color: "#1a1a1a" }}>{cert.name}</p>
-                          <p style={{ margin: 0, fontSize: 11, color: "#999" }}>{cert.issuer}{cert.issue_date && ` · ${cert.issue_date}`}</p>
+                          <p style={{ margin: "0 0 2px 0", fontSize: 13, fontWeight: 600, color: dark ? "#f3f4f6" : "#1a1a1a" }}>{cert.name}</p>
+                          <p style={{ margin: 0, fontSize: 11, color: dark ? "#6b7280" : "#999" }}>{cert.issuer}{cert.issue_date && ` · ${cert.issue_date}`}</p>
                         </div>
                         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                          {cert.credential_url && <a href={cert.credential_url} target="_blank" rel="noreferrer" style={{ color: "#1a4a8a", lineHeight: 1 }}><ExternalLink size={15} /></a>}
+                          {cert.credential_url && <a href={cert.credential_url} target="_blank" rel="noreferrer" style={{ color: dark ? "#60a5fa" : "#1a4a8a", lineHeight: 1 }}><ExternalLink size={15} /></a>}
                           {isOwn && <button onClick={() => handleDeleteCert(cert.id)} style={S.btnDanger}><Trash2 size={15} /></button>}
                         </div>
                       </div>
@@ -733,47 +736,47 @@ export default function Profile() {
     {/* ── CV PREVIEW MODAL ── */}
     {cvPreview && (
       <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 60, display: "flex", alignItems: "center", justifyContent: "center", padding: "16px" }} onClick={() => setCvPreview(null)}>
-        <div style={{ background: "#fff", border: "1px solid #d4d4d4", padding: 24, width: "100%", maxWidth: 540, maxHeight: "85vh", overflowY: "auto", boxSizing: "border-box" }} onClick={e => e.stopPropagation()}>
+        <div style={{ background: dark ? "#1f2937" : "#fff", border: dark ? "1px solid #374151" : "1px solid #d4d4d4", padding: 24, width: "100%", maxWidth: 540, maxHeight: "85vh", overflowY: "auto", boxSizing: "border-box" }} onClick={e => e.stopPropagation()}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
             <div>
-              <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "#1a1a1a" }}>CV-dən çıxarılan məlumat</h3>
-              <p style={{ margin: "3px 0 0", fontSize: 12, color: "#999" }}>Aşağıdakı məlumatlar profilinizə əlavə ediləcək</p>
+              <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: dark ? "#f3f4f6" : "#1a1a1a" }}>CV-dən çıxarılan məlumat</h3>
+              <p style={{ margin: "3px 0 0", fontSize: 12, color: dark ? "#6b7280" : "#999" }}>Aşağıdakı məlumatlar profilinizə əlavə ediləcək</p>
             </div>
-            <button onClick={() => setCvPreview(null)} style={{ background: "none", border: "none", cursor: "pointer", color: "#666", padding: 4 }}><X size={18} /></button>
+            <button onClick={() => setCvPreview(null)} style={{ background: "none", border: "none", cursor: "pointer", color: dark ? "#9ca3af" : "#666", padding: 4 }}><X size={18} /></button>
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 10, fontSize: 13 }}>
-            {cvPreview.full_name && <div style={{ padding: "8px 12px", background: "#f9fafb", border: "1px solid #e5e7eb" }}><span style={{ color: "#666", fontSize: 11 }}>Ad Soyad</span><br /><strong>{cvPreview.full_name}</strong></div>}
-            {cvPreview.headline && <div style={{ padding: "8px 12px", background: "#f9fafb", border: "1px solid #e5e7eb" }}><span style={{ color: "#666", fontSize: 11 }}>Başlıq</span><br /><strong>{cvPreview.headline}</strong></div>}
-            {cvPreview.bio && <div style={{ padding: "8px 12px", background: "#f9fafb", border: "1px solid #e5e7eb" }}><span style={{ color: "#666", fontSize: 11 }}>Haqqında</span><br />{cvPreview.bio}</div>}
-            {cvPreview.major && <div style={{ padding: "8px 12px", background: "#f9fafb", border: "1px solid #e5e7eb" }}><span style={{ color: "#666", fontSize: 11 }}>İxtisas</span><br /><strong>{cvPreview.major}</strong></div>}
+            {cvPreview.full_name && <div style={{ padding: "8px 12px", background: dark ? "#111827" : "#f9fafb", border: dark ? "1px solid #374151" : "1px solid #e5e7eb" }}><span style={{ color: dark ? "#9ca3af" : "#666", fontSize: 11 }}>Ad Soyad</span><br /><strong style={{ color: dark ? "#f3f4f6" : "inherit" }}>{cvPreview.full_name}</strong></div>}
+            {cvPreview.headline && <div style={{ padding: "8px 12px", background: dark ? "#111827" : "#f9fafb", border: dark ? "1px solid #374151" : "1px solid #e5e7eb" }}><span style={{ color: dark ? "#9ca3af" : "#666", fontSize: 11 }}>Başlıq</span><br /><strong style={{ color: dark ? "#f3f4f6" : "inherit" }}>{cvPreview.headline}</strong></div>}
+            {cvPreview.bio && <div style={{ padding: "8px 12px", background: dark ? "#111827" : "#f9fafb", border: dark ? "1px solid #374151" : "1px solid #e5e7eb", color: dark ? "#f3f4f6" : "inherit" }}><span style={{ color: dark ? "#9ca3af" : "#666", fontSize: 11 }}>Haqqında</span><br />{cvPreview.bio}</div>}
+            {cvPreview.major && <div style={{ padding: "8px 12px", background: dark ? "#111827" : "#f9fafb", border: dark ? "1px solid #374151" : "1px solid #e5e7eb" }}><span style={{ color: dark ? "#9ca3af" : "#666", fontSize: 11 }}>İxtisas</span><br /><strong style={{ color: dark ? "#f3f4f6" : "inherit" }}>{cvPreview.major}</strong></div>}
             {cvPreview.skills?.length > 0 && (
-              <div style={{ padding: "8px 12px", background: "#f9fafb", border: "1px solid #e5e7eb" }}>
-                <span style={{ color: "#666", fontSize: 11 }}>Bacarıqlar</span><br />
+              <div style={{ padding: "8px 12px", background: dark ? "#111827" : "#f9fafb", border: dark ? "1px solid #374151" : "1px solid #e5e7eb" }}>
+                <span style={{ color: dark ? "#9ca3af" : "#666", fontSize: 11 }}>Bacarıqlar</span><br />
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 4 }}>
                   {cvPreview.skills.map((s, i) => <span key={i} style={{ background: "#eff6ff", border: "1px solid #bfdbfe", color: "#1d4ed8", fontSize: 11, padding: "2px 8px", borderRadius: 99 }}>{s}</span>)}
                 </div>
               </div>
             )}
             {(cvPreview.github_url || cvPreview.linkedin_url || cvPreview.website_url) && (
-              <div style={{ padding: "8px 12px", background: "#f9fafb", border: "1px solid #e5e7eb" }}>
-                <span style={{ color: "#666", fontSize: 11 }}>Linklər</span><br />
+              <div style={{ padding: "8px 12px", background: dark ? "#111827" : "#f9fafb", border: dark ? "1px solid #374151" : "1px solid #e5e7eb" }}>
+                <span style={{ color: dark ? "#9ca3af" : "#666", fontSize: 11 }}>Linklər</span><br />
                 <div style={{ marginTop: 4, display: "flex", flexDirection: "column", gap: 2 }}>
-                  {cvPreview.github_url && <span style={{ color: "#1a4a8a" }}>{cvPreview.github_url}</span>}
-                  {cvPreview.linkedin_url && <span style={{ color: "#1a4a8a" }}>{cvPreview.linkedin_url}</span>}
-                  {cvPreview.website_url && <span style={{ color: "#1a4a8a" }}>{cvPreview.website_url}</span>}
+                  {cvPreview.github_url && <span style={{ color: dark ? "#60a5fa" : "#1a4a8a" }}>{cvPreview.github_url}</span>}
+                  {cvPreview.linkedin_url && <span style={{ color: dark ? "#60a5fa" : "#1a4a8a" }}>{cvPreview.linkedin_url}</span>}
+                  {cvPreview.website_url && <span style={{ color: dark ? "#60a5fa" : "#1a4a8a" }}>{cvPreview.website_url}</span>}
                 </div>
               </div>
             )}
             {cvPreview.certificates?.length > 0 && (
-              <div style={{ padding: "8px 12px", background: "#f9fafb", border: "1px solid #e5e7eb" }}>
-                <span style={{ color: "#666", fontSize: 11 }}>Sertifikatlar ({cvPreview.certificates.length})</span>
+              <div style={{ padding: "8px 12px", background: dark ? "#111827" : "#f9fafb", border: dark ? "1px solid #374151" : "1px solid #e5e7eb", color: dark ? "#f3f4f6" : "inherit" }}>
+                <span style={{ color: dark ? "#9ca3af" : "#666", fontSize: 11 }}>Sertifikatlar ({cvPreview.certificates.length})</span>
                 {cvPreview.certificates.map((c, i) => <div key={i} style={{ marginTop: 4 }}><strong>{c.name}</strong> — {c.issuer}{c.issue_date ? ` (${c.issue_date})` : ""}</div>)}
               </div>
             )}
             {cvPreview.projects?.length > 0 && (
-              <div style={{ padding: "8px 12px", background: "#f9fafb", border: "1px solid #e5e7eb" }}>
-                <span style={{ color: "#666", fontSize: 11 }}>Layihələr ({cvPreview.projects.length})</span>
+              <div style={{ padding: "8px 12px", background: dark ? "#111827" : "#f9fafb", border: dark ? "1px solid #374151" : "1px solid #e5e7eb", color: dark ? "#f3f4f6" : "inherit" }}>
+                <span style={{ color: dark ? "#9ca3af" : "#666", fontSize: 11 }}>Layihələr ({cvPreview.projects.length})</span>
                 {cvPreview.projects.map((p, i) => <div key={i} style={{ marginTop: 4 }}><strong>{p.title}</strong>{p.technologies ? ` — ${p.technologies}` : ""}</div>)}
               </div>
             )}

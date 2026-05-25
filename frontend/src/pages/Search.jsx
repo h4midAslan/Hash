@@ -5,6 +5,7 @@ import api from "../api/client";
 import { toast } from "../components/Toast";
 import { useLang } from "../hooks/useLang";
 import { useIsMobile } from "../hooks/useIsMobile";
+import { useDarkMode } from "../hooks/useTheme";
 
 const COURSES = [
   { val: 1, label: "I" },
@@ -13,31 +14,31 @@ const COURSES = [
   { val: 4, label: "IV" },
 ];
 
-const S = {
+const makeS = (dark) => ({
   page: { maxWidth: 720, margin: "0 auto", padding: "20px 12px" },
-  heading: { fontSize: 22, fontWeight: 700, color: "#1a1a1a", margin: 0 },
-  subtitle: { fontSize: 13, color: "#999", marginTop: 4 },
-  formCard: { background: "#ffffff", border: "1px solid #d4d4d4", padding: "16px", marginBottom: 20 },
+  heading: { fontSize: 22, fontWeight: 700, color: dark ? "#f3f4f6" : "#1a1a1a", margin: 0 },
+  subtitle: { fontSize: 13, color: dark ? "#6b7280" : "#999", marginTop: 4 },
+  formCard: { background: dark ? "#1f2937" : "#ffffff", border: dark ? "1px solid #374151" : "1px solid #d4d4d4", padding: "16px", marginBottom: 20 },
   inputWrap: { position: "relative", flex: 1 },
   input: (focused) => ({
     width: "100%",
-    border: `1px solid ${focused ? "#1a4a8a" : "#ccc"}`,
+    border: `1px solid ${focused ? "#60a5fa" : (dark ? "#374151" : "#ccc")}`,
     padding: "6px 10px 6px 32px",
     fontSize: 13,
     outline: "none",
     boxSizing: "border-box",
-    background: "#fff",
-    color: "#1a1a1a",
+    background: dark ? "#111827" : "#fff",
+    color: dark ? "#f3f4f6" : "#1a1a1a",
   }),
   inputIcon: {
     position: "absolute", left: 9, top: "50%", transform: "translateY(-50%)",
-    color: "#999", pointerEvents: "none", display: "flex", alignItems: "center",
+    color: dark ? "#6b7280" : "#999", pointerEvents: "none", display: "flex", alignItems: "center",
   },
   filterToggle: (active) => ({
     display: "flex", alignItems: "center", gap: 6, padding: "6px 10px",
-    border: `1px solid ${active ? "#1a4a8a" : "#ccc"}`,
-    background: active ? "#1a4a8a" : "#fff",
-    color: active ? "#fff" : "#444",
+    border: `1px solid ${active ? "#1a4a8a" : (dark ? "#374151" : "#ccc")}`,
+    background: active ? "#1a4a8a" : (dark ? "#111827" : "#fff"),
+    color: active ? "#fff" : (dark ? "#9ca3af" : "#444"),
     fontSize: 13, cursor: "pointer", position: "relative", flexShrink: 0,
   }),
   filterBadge: {
@@ -45,22 +46,22 @@ const S = {
     background: "#c0392b", color: "#fff", fontSize: 10, fontWeight: 700,
     borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
   },
-  filterPanel: { border: "1px solid #d4d4d4", background: "#f7f7f7", padding: 12, marginBottom: 10 },
-  filterLabel: { fontSize: 11, fontWeight: 600, color: "#666", textTransform: "uppercase", letterSpacing: "0.05em" },
-  clearBtn: { display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: "#1a4a8a", background: "none", border: "none", cursor: "pointer", padding: 0 },
+  filterPanel: { border: dark ? "1px solid #374151" : "1px solid #d4d4d4", background: dark ? "#111827" : "#f7f7f7", padding: 12, marginBottom: 10 },
+  filterLabel: { fontSize: 11, fontWeight: 600, color: dark ? "#9ca3af" : "#666", textTransform: "uppercase", letterSpacing: "0.05em" },
+  clearBtn: { display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: dark ? "#60a5fa" : "#1a4a8a", background: "none", border: "none", cursor: "pointer", padding: 0 },
   courseChip: (active) => ({
     width: 36, height: 30,
-    border: `1px solid ${active ? "#1a4a8a" : "#ccc"}`,
-    background: "#fff",
-    color: active ? "#1a4a8a" : "#666",
+    border: `1px solid ${active ? "#60a5fa" : (dark ? "#374151" : "#ccc")}`,
+    background: dark ? "#1f2937" : "#fff",
+    color: active ? (dark ? "#60a5fa" : "#1a4a8a") : (dark ? "#9ca3af" : "#666"),
     fontSize: 12, fontWeight: 700, cursor: "pointer",
   }),
   teamBtn: (active) => ({
     display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
     padding: "6px 12px",
-    border: `1px solid ${active ? "#27ae60" : "#ccc"}`,
-    background: active ? "#27ae60" : "#fff",
-    color: active ? "#fff" : "#666",
+    border: `1px solid ${active ? "#27ae60" : (dark ? "#374151" : "#ccc")}`,
+    background: active ? "#27ae60" : (dark ? "#1f2937" : "#fff"),
+    color: active ? "#fff" : (dark ? "#9ca3af" : "#666"),
     fontSize: 12, fontWeight: 600, cursor: "pointer", width: "100%",
   }),
   submitBtn: {
@@ -69,7 +70,7 @@ const S = {
     display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
   },
   userRow: {
-    background: "#ffffff", border: "1px solid #d4d4d4", padding: "10px 12px",
+    background: dark ? "#1f2937" : "#ffffff", border: dark ? "1px solid #374151" : "1px solid #d4d4d4", padding: "10px 12px",
     display: "flex", alignItems: "center", marginBottom: 6,
   },
   avatar: {
@@ -77,23 +78,25 @@ const S = {
     alignItems: "center", justifyContent: "center", color: "#fff",
     fontWeight: 700, fontSize: 18, flexShrink: 0, overflow: "hidden", textDecoration: "none",
   },
-  userName: { fontWeight: 600, fontSize: 13, color: "#1a1a1a", textDecoration: "none" },
-  userMeta: { fontSize: 12, color: "#999", marginTop: 2 },
+  userName: { fontWeight: 600, fontSize: 13, color: dark ? "#f3f4f6" : "#1a1a1a", textDecoration: "none" },
+  userMeta: { fontSize: 12, color: dark ? "#6b7280" : "#999", marginTop: 2 },
   skillChip: {
-    padding: "2px 6px", border: "1px solid #c0d4f0", background: "#eef4ff",
-    color: "#1a4a8a", fontSize: 11, marginRight: 4, marginTop: 4, display: "inline-block",
+    padding: "2px 6px", border: dark ? "1px solid #374151" : "1px solid #c0d4f0", background: dark ? "#1f2937" : "#eef4ff",
+    color: dark ? "#60a5fa" : "#1a4a8a", fontSize: 11, marginRight: 4, marginTop: 4, display: "inline-block",
   },
-  skillChipMore: { padding: "2px 4px", fontSize: 11, color: "#999", marginTop: 4, display: "inline-block" },
+  skillChipMore: { padding: "2px 4px", fontSize: 11, color: dark ? "#6b7280" : "#999", marginTop: 4, display: "inline-block" },
   teamBadge: { fontSize: 10, fontWeight: 600, color: "#27ae60", border: "1px solid #27ae60", padding: "1px 5px", marginLeft: 6 },
-  badgeConnected: { border: "1px solid #ccc", color: "#888", padding: "3px 8px", fontSize: 11, background: "#fff" },
-  badgePending: { border: "1px solid #e0a800", color: "#b8860b", padding: "3px 8px", fontSize: 11, background: "#fffbf0" },
-  connectBtn: { border: "1px solid #1a4a8a", color: "#1a4a8a", background: "#f0f5ff", padding: "5px 8px", cursor: "pointer", display: "flex", alignItems: "center" },
-  resultsCount: { fontSize: 13, color: "#666", marginBottom: 12 },
+  badgeConnected: { border: dark ? "1px solid #374151" : "1px solid #ccc", color: dark ? "#9ca3af" : "#888", padding: "3px 8px", fontSize: 11, background: dark ? "#1f2937" : "#fff" },
+  badgePending: { border: "1px solid #e0a800", color: "#b8860b", padding: "3px 8px", fontSize: 11, background: dark ? "#1f1a00" : "#fffbf0" },
+  connectBtn: { border: "1px solid #1a4a8a", color: dark ? "#60a5fa" : "#1a4a8a", background: dark ? "#1f2937" : "#f0f5ff", padding: "5px 8px", cursor: "pointer", display: "flex", alignItems: "center" },
+  resultsCount: { fontSize: 13, color: dark ? "#9ca3af" : "#666", marginBottom: 12 },
   emptyWrap: { textAlign: "center", padding: "60px 0" },
-  emptyIcon: { width: 52, height: 52, background: "#f0f0f0", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" },
-};
+  emptyIcon: { width: 52, height: 52, background: dark ? "#1f2937" : "#f0f0f0", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" },
+});
 
 export default function Search() {
+  const dark = useDarkMode();
+  const S = makeS(dark);
   const [query, setQuery]             = useState("");
   const [skill, setSkill]             = useState("");
   const [course, setCourse]           = useState(null);
@@ -155,7 +158,7 @@ export default function Search() {
   };
 
   return (
-    <div style={{ ...S.page, padding: isMobile ? "12px 10px" : S.page.padding }}>
+    <div style={{ ...S.page, padding: isMobile ? "12px 10px" : S.page.padding, minHeight: "100vh", background: dark ? "#111827" : undefined }}>
       <div style={{ marginBottom: 20 }}>
         <h2 style={S.heading}>{t("search_title")}</h2>
         <p style={S.subtitle}>{t("search_subtitle")}</p>
@@ -258,8 +261,8 @@ export default function Search() {
           <div
             key={user.id}
             style={S.userRow}
-            onMouseEnter={e => e.currentTarget.style.background = "#f7f9fc"}
-            onMouseLeave={e => e.currentTarget.style.background = "#ffffff"}
+            onMouseEnter={e => e.currentTarget.style.background = dark ? "#111827" : "#f7f9fc"}
+            onMouseLeave={e => e.currentTarget.style.background = dark ? "#1f2937" : "#ffffff"}
           >
             <Link to={`/profile/${user.id}`} style={S.avatar}>
               {user.profile_picture
@@ -310,8 +313,8 @@ export default function Search() {
           <div style={S.emptyIcon}>
             <Users size={22} color="#aaa" />
           </div>
-          <p style={{ fontSize: 14, fontWeight: 600, color: "#1a1a1a", margin: 0 }}>{t("search_empty")}</p>
-          <p style={{ fontSize: 12, color: "#999", marginTop: 4 }}>{t("search_empty_sub")}</p>
+          <p style={{ fontSize: 14, fontWeight: 600, color: dark ? "#f3f4f6" : "#1a1a1a", margin: 0 }}>{t("search_empty")}</p>
+          <p style={{ fontSize: 12, color: dark ? "#6b7280" : "#999", marginTop: 4 }}>{t("search_empty_sub")}</p>
         </div>
       )}
     </div>

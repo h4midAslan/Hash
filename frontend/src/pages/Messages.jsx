@@ -7,6 +7,7 @@ import { formatBakuHM, isActiveNow, formatLastSeen } from "../utils/time";
 import { useLang } from "../hooks/useLang";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { useDarkClasses } from "../hooks/useDarkClasses";
+import { useDarkMode } from "../hooks/useTheme";
 
 function Avatar({ name, picture, size = 40 }) {
   const colors = ["#1a4a8a", "#2563eb", "#7c3aed", "#0891b2", "#059669", "#d97706"];
@@ -47,6 +48,7 @@ export default function Messages() {
   const { t } = useLang();
   const isMobile = useIsMobile();
   const dc = useDarkClasses();
+  const dark = useDarkMode();
 
   // Keep ref in sync so WS handler never has stale activeChat
   useEffect(() => {

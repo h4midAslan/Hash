@@ -6,6 +6,7 @@ import { toast } from "../components/Toast";
 import { useLang } from "../hooks/useLang";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { useDarkClasses } from "../hooks/useDarkClasses";
+import { useDarkMode } from "../hooks/useTheme";
 
 const TABS = [
   { key: "my", icon: UserCheck, labelKey: "connections_yours" },
@@ -278,6 +279,7 @@ export default function Connections() {
   const { t } = useLang();
   const isMobile = useIsMobile();
   const dc = useDarkClasses();
+  const dark = useDarkMode();
 
   useEffect(() => {
     loadAll();

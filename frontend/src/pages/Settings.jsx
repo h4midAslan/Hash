@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Settings as SettingsIcon, Check, Moon, Sun, Image as ImageIcon, Globe, Lock, Eye, EyeOff } from "lucide-react";
 import { useLang, setLang } from "../hooks/useLang";
 import { useIsMobile } from "../hooks/useIsMobile";
+import { useDarkMode } from "../hooks/useTheme";
 import api from "../api/client";
 import { toast } from "../components/Toast";
 
@@ -16,36 +17,38 @@ const LANG_OPTIONS = [
   { id: "en", flag: "🇬🇧", labelKey: "settings_lang_en" },
 ];
 
-const sectionCard = {
-  background: "#ffffff",
-  border: "1px solid #d4d4d4",
+// These are computed inside the component using `dark`
+const makeSectionCard = (dark) => ({
+  background: dark ? "#1f2937" : "#ffffff",
+  border: dark ? "1px solid #374151" : "1px solid #d4d4d4",
   padding: "16px 18px",
   marginBottom: 12,
-};
+});
 
-const sectionLabel = {
+const makeSectionLabel = (dark) => ({
   fontSize: 14,
   fontWeight: 700,
-  color: "#222",
+  color: dark ? "#f3f4f6" : "#222",
   marginBottom: 12,
   display: "flex",
   alignItems: "center",
   gap: 8,
-};
+});
 
-const baseInput = {
+const makeBaseInput = (dark) => ({
   width: "100%",
   padding: "10px 12px",
-  border: "1px solid #ccc",
+  border: dark ? "1px solid #374151" : "1px solid #ccc",
   fontSize: 14,
-  color: "#1a1a1a",
-  background: "#fff",
+  color: dark ? "#f3f4f6" : "#1a1a1a",
+  background: dark ? "#111827" : "#fff",
   outline: "none",
   boxSizing: "border-box",
   borderRadius: 2,
-};
+});
 
 export default function Settings() {
+  const dark = useDarkMode();
   const [selected, setSelected] = useState(localStorage.getItem("bg_theme") || "default");
   const [darkMode, setDarkMode] = useState(localStorage.getItem("dark_mode") === "true");
   const [pwForm, setPwForm] = useState({ current: "", newPw: "", confirm: "" });
@@ -93,23 +96,27 @@ export default function Settings() {
     window.dispatchEvent(new Event("dark_mode_change"));
   };
 
+  const sectionCard = makeSectionCard(dark);
+  const sectionLabel = makeSectionLabel(dark);
+  const baseInput = makeBaseInput(dark);
+
   const inputStyle = (id) => ({
     ...baseInput,
-    borderColor: focusedInput === id ? "#1a4a8a" : "#ccc",
+    borderColor: focusedInput === id ? (dark ? "#60a5fa" : "#1a4a8a") : (dark ? "#374151" : "#ccc"),
   });
 
   const submitDisabled = pwLoading || !pwForm.current || !pwForm.newPw || !pwForm.confirm;
 
   return (
-    <div style={{ maxWidth: 640, margin: "0 auto", padding: isMobile ? "12px 10px" : "32px 16px" }}>
+    <div style={{ maxWidth: 640, margin: "0 auto", padding: isMobile ? "12px 10px" : "32px 16px", minHeight: "100vh", background: dark ? "#111827" : undefined }}>
       {/* Page Header */}
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 28 }}>
         <div style={{ background: "#1a4a8a", padding: 10, display: "flex", alignItems: "center", justifyContent: "center" }}>
           <SettingsIcon size={22} color="#fff" />
         </div>
         <div>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: "#1a1a1a", margin: 0 }}>{t("settings_title")}</h1>
-          <p style={{ fontSize: 13, color: "#999", margin: 0, marginTop: 2 }}>{t("settings_subtitle")}</p>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: dark ? "#f3f4f6" : "#1a1a1a", margin: 0 }}>{t("settings_title")}</h1>
+          <p style={{ fontSize: 13, color: dark ? "#6b7280" : "#999", margin: 0, marginTop: 2 }}>{t("settings_subtitle")}</p>
         </div>
       </div>
 
@@ -117,10 +124,10 @@ export default function Settings() {
       <div style={sectionCard}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            {darkMode ? <Moon size={18} color="#666" /> : <Sun size={18} color="#666" />}
+            {darkMode ? <Moon size={18} color={dark ? "#9ca3af" : "#666"} /> : <Sun size={18} color={dark ? "#9ca3af" : "#666"} />}
             <div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: "#222" }}>{t("settings_dark_mode")}</div>
-              <div style={{ fontSize: 12, color: "#999", marginTop: 2 }}>{t("settings_dark_desc")}</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: dark ? "#f3f4f6" : "#222" }}>{t("settings_dark_mode")}</div>
+              <div style={{ fontSize: 12, color: dark ? "#6b7280" : "#999", marginTop: 2 }}>{t("settings_dark_desc")}</div>
             </div>
           </div>
           <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
@@ -130,7 +137,7 @@ export default function Settings() {
               onChange={toggleDarkMode}
               style={{ width: 16, height: 16, accentColor: "#1a4a8a", cursor: "pointer" }}
             />
-            <span style={{ fontSize: 13, color: "#666" }}>{darkMode ? t("settings_on") || "On" : t("settings_off") || "Off"}</span>
+            <span style={{ fontSize: 13, color: dark ? "#9ca3af" : "#666" }}>{darkMode ? t("settings_on") || "On" : t("settings_off") || "Off"}</span>
           </label>
         </div>
       </div>
@@ -191,7 +198,7 @@ export default function Settings() {
             required
           />
           {pwForm.newPw && pwForm.confirm && pwForm.newPw !== pwForm.confirm && (
-            <p style={{ fontSize: 12, color: "#c0392b", margin: 0 }}>Şifrələr uyğun gəlmir</p>
+            <p style={{ fontSize: 12, color: dark ? "#f87171" : "#c0392b", margin: 0 }}>Şifrələr uyğun gəlmir</p>
           )}
           <button
             type="submit"
@@ -220,7 +227,7 @@ export default function Settings() {
           <Globe size={15} color="#444" />
           <span>{t("settings_lang")}</span>
         </div>
-        <p style={{ fontSize: 12, color: "#999", margin: 0, marginBottom: 12 }}>{t("settings_lang_desc")}</p>
+        <p style={{ fontSize: 12, color: dark ? "#6b7280" : "#999", margin: 0, marginBottom: 12 }}>{t("settings_lang_desc")}</p>
         <div style={{ display: "flex", gap: 10 }}>
           {LANG_OPTIONS.map((opt) => {
             const isActive = lang === opt.id;
@@ -235,9 +242,9 @@ export default function Settings() {
                   justifyContent: "center",
                   gap: 8,
                   padding: "10px 0",
-                  border: isActive ? "2px solid #1a4a8a" : "1px solid #d4d4d4",
-                  background: isActive ? "#eef3fb" : "#fff",
-                  color: isActive ? "#1a4a8a" : "#555",
+                  border: isActive ? (dark ? "2px solid #60a5fa" : "2px solid #1a4a8a") : (dark ? "1px solid #374151" : "1px solid #d4d4d4"),
+                  background: isActive ? (dark ? "#1f2937" : "#eef3fb") : (dark ? "#111827" : "#fff"),
+                  color: isActive ? (dark ? "#60a5fa" : "#1a4a8a") : (dark ? "#9ca3af" : "#555"),
                   fontSize: 13,
                   fontWeight: isActive ? 700 : 500,
                   cursor: "pointer",
@@ -267,7 +274,7 @@ export default function Settings() {
                 key={opt.id}
                 onClick={() => handleSelect(opt.id)}
                 style={{
-                  border: isActive ? "2px solid #1a4a8a" : "1px solid #d4d4d4",
+                  border: isActive ? (dark ? "2px solid #60a5fa" : "2px solid #1a4a8a") : (dark ? "1px solid #374151" : "1px solid #d4d4d4"),
                   background: "none",
                   padding: 0,
                   cursor: "pointer",
@@ -308,14 +315,14 @@ export default function Settings() {
                     </div>
                   )}
                 </div>
-                <div style={{ background: "#fff", padding: "6px 8px", borderTop: "1px solid #e5e5e5" }}>
-                  <span style={{ fontSize: 12, color: "#444", fontWeight: 500 }}>{t(opt.labelKey)}</span>
+                <div style={{ background: dark ? "#1f2937" : "#fff", padding: "6px 8px", borderTop: dark ? "1px solid #374151" : "1px solid #e5e5e5" }}>
+                  <span style={{ fontSize: 12, color: dark ? "#9ca3af" : "#444", fontWeight: 500 }}>{t(opt.labelKey)}</span>
                 </div>
               </button>
             );
           })}
         </div>
-        <p style={{ fontSize: 12, color: "#999", marginTop: 12, textAlign: "center" }}>{t("settings_bg_note")}</p>
+        <p style={{ fontSize: 12, color: dark ? "#6b7280" : "#999", marginTop: 12, textAlign: "center" }}>{t("settings_bg_note")}</p>
       </div>
     </div>
   );

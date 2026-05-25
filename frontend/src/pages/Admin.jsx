@@ -9,21 +9,22 @@ import api from "../api/client";
 import { formatBakuDate, formatBakuTime, formatBakuHM } from "../utils/time";
 import { toast } from "../components/Toast";
 import { useIsMobile } from "../hooks/useIsMobile";
-
-const C = {
-  primary: "#1a4a8a",
-  text: "#1a1a1a",
-  muted: "#666",
-  faint: "#999",
-  border: "#d4d4d4",
-  bg: "#f2f2f2",
-  white: "#ffffff",
-  danger: "#dc2626",
-  success: "#16a34a",
-};
+import { useDarkMode } from "../hooks/useTheme";
 
 export default function Admin() {
   const isMobile = useIsMobile();
+  const dark = useDarkMode();
+  const C = {
+    primary: "#1a4a8a",
+    text: dark ? "#f3f4f6" : "#1a1a1a",
+    muted: dark ? "#9ca3af" : "#666",
+    faint: dark ? "#6b7280" : "#999",
+    border: dark ? "#374151" : "#d4d4d4",
+    bg: dark ? "#111827" : "#f2f2f2",
+    white: dark ? "#1f2937" : "#ffffff",
+    danger: dark ? "#f87171" : "#dc2626",
+    success: dark ? "#34d399" : "#16a34a",
+  };
   const [tab, setTab] = useState("dashboard");
   const [stats, setStats] = useState(null);
   const [users, setUsers] = useState([]);
@@ -286,7 +287,7 @@ export default function Admin() {
                   { icon: MessageCircle, label: "Ümumi mesaj", value: stats.total_messages },
                 ].map((card, i) => (
                   <div key={i} style={{ flex: "1 1 calc(33% - 8px)", minWidth: isMobile ? "calc(45% - 6px)" : "calc(33% - 8px)" }}>
-                    <StatCard icon={card.icon} label={card.label} value={card.value} subtitle={card.subtitle} />
+                    <StatCard icon={card.icon} label={card.label} value={card.value} subtitle={card.subtitle} dark={dark} />
                   </div>
                 ))}
               </div>
@@ -297,12 +298,12 @@ export default function Admin() {
                 <div style={{ background: C.white, border: `1px solid ${C.border}`, padding: "16px 20px" }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
                     <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: C.text }}>Platform xülasəsi</h3>
-                    <Activity size={16} color={C.faint} />
+                    <Activity size={16} color={C.muted} />
                   </div>
-                  <OverviewRow label="Orta post/istifadəçi" value={stats.total_users > 0 ? (stats.total_posts / stats.total_users).toFixed(1) : "0"} />
-                  <OverviewRow label="Orta mesaj/istifadəçi" value={stats.total_users > 0 ? (stats.total_messages / stats.total_users).toFixed(1) : "0"} />
-                  <OverviewRow label="Orta bağlantı/istifadəçi" value={stats.total_users > 0 ? (stats.accepted_connections / stats.total_users).toFixed(1) : "0"} />
-                  <OverviewRow label="Bloklanmış istifadəçi" value={stats.total_users - stats.active_users} highlight={stats.total_users - stats.active_users > 0} />
+                  <OverviewRow label="Orta post/istifadəçi" value={stats.total_users > 0 ? (stats.total_posts / stats.total_users).toFixed(1) : "0"} dark={dark} />
+                  <OverviewRow label="Orta mesaj/istifadəçi" value={stats.total_users > 0 ? (stats.total_messages / stats.total_users).toFixed(1) : "0"} dark={dark} />
+                  <OverviewRow label="Orta bağlantı/istifadəçi" value={stats.total_users > 0 ? (stats.accepted_connections / stats.total_users).toFixed(1) : "0"} dark={dark} />
+                  <OverviewRow label="Bloklanmış istifadəçi" value={stats.total_users - stats.active_users} highlight={stats.total_users - stats.active_users > 0} dark={dark} />
                 </div>
 
                 <div style={{ background: C.white, border: `1px solid ${C.border}`, padding: "16px 20px" }}>
@@ -311,9 +312,9 @@ export default function Admin() {
                     <TrendingUp size={16} color={C.faint} />
                   </div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                    <QuickAction icon={Users} label="İstifadəçiləri idarə et" count={stats.total_users} onClick={() => setTab("users")} />
-                    <QuickAction icon={FileText} label="Postları idarə et" count={stats.total_posts} onClick={() => setTab("posts")} />
-                    <QuickAction icon={Ban} label="Bloklanmış hesablar" count={stats.total_users - stats.active_users} onClick={() => setTab("users")} warning={stats.total_users - stats.active_users > 0} />
+                    <QuickAction icon={Users} label="İstifadəçiləri idarə et" count={stats.total_users} onClick={() => setTab("users")} dark={dark} />
+                    <QuickAction icon={FileText} label="Postları idarə et" count={stats.total_posts} onClick={() => setTab("posts")} dark={dark} />
+                    <QuickAction icon={Ban} label="Bloklanmış hesablar" count={stats.total_users - stats.active_users} onClick={() => setTab("users")} warning={stats.total_users - stats.active_users > 0} dark={dark} />
                   </div>
                 </div>
               </div>
@@ -342,8 +343,8 @@ export default function Admin() {
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <div style={{
                   display: "flex", alignItems: "center", gap: 6,
-                  background: "#f0faf0", border: "1px solid #b6e2b6",
-                  padding: "5px 12px", fontSize: 13, fontWeight: 700, color: "#166534",
+                  background: dark ? "#052e16" : "#f0faf0", border: dark ? "1px solid #374151" : "1px solid #b6e2b6",
+                  padding: "5px 12px", fontSize: 13, fontWeight: 700, color: dark ? "#34d399" : "#166534",
                 }}>
                   <span style={{
                     width: 8, height: 8, background: "#16a34a", borderRadius: "50%",
@@ -396,8 +397,8 @@ export default function Admin() {
                       style={{
                         display: "flex", alignItems: "center", gap: 12,
                         padding: "12px 16px",
-                        background: idx % 2 === 0 ? C.white : "#f9f9f9",
-                        borderBottom: `1px solid #ebebeb`,
+                        background: idx % 2 === 0 ? C.white : (dark ? "#161d2a" : "#f9f9f9"),
+                        borderBottom: `1px solid ${C.border}`,
                       }}
                     >
                       <div style={{ position: "relative", flexShrink: 0 }}>
@@ -420,9 +421,9 @@ export default function Admin() {
                       </div>
                       <div style={{ textAlign: "right", flexShrink: 0 }}>
                         <span style={{
-                          fontSize: 11, fontWeight: 600, color: C.primary,
-                          background: "#eef3fa", padding: "3px 8px",
-                          border: `1px solid #c5d5ea`,
+                          fontSize: 11, fontWeight: 600, color: dark ? "#60a5fa" : C.primary,
+                          background: dark ? "#1f2937" : "#eef3fa", padding: "3px 8px",
+                          border: `1px solid ${dark ? "#374151" : "#c5d5ea"}`,
                         }}>{pageLabel}</span>
                         <p style={{ margin: "3px 0 0", fontSize: 11, color: C.faint }}>{seenLabel}</p>
                       </div>
@@ -487,7 +488,7 @@ export default function Admin() {
               {/* Table header */}
               <div style={{
                 display: "grid", gridTemplateColumns: "3fr 2fr 1.5fr 1.5fr 1.5fr",
-                padding: "8px 16px", background: "#f5f5f5",
+                padding: "8px 16px", background: dark ? "#111827" : "#f5f5f5",
                 borderBottom: `1px solid ${C.border}`,
                 fontSize: 11, fontWeight: 700, color: C.muted,
                 textTransform: "uppercase", letterSpacing: "0.05em",
@@ -515,8 +516,8 @@ export default function Admin() {
                     style={{
                       display: "grid", gridTemplateColumns: "3fr 2fr 1.5fr 1.5fr 1.5fr",
                       padding: "10px 16px", alignItems: "center",
-                      background: index % 2 === 0 ? C.white : "#f9f9f9",
-                      borderBottom: `1px solid #ebebeb`,
+                      background: index % 2 === 0 ? C.white : (dark ? "#161d2a" : "#f9f9f9"),
+                      borderBottom: `1px solid ${C.border}`,
                     }}
                   >
                     {/* User info */}
@@ -626,7 +627,7 @@ export default function Admin() {
                   {selectedUser?.id === user.id && (
                     <div style={{
                       padding: "14px 16px",
-                      background: "#f5f7fa",
+                      background: dark ? "#111827" : "#f5f7fa",
                       borderBottom: `1px solid ${C.border}`,
                       borderTop: `1px solid ${C.border}`,
                     }}>
@@ -659,15 +660,15 @@ export default function Admin() {
                       <div style={{ display: "flex", gap: 8, marginTop: 10, paddingTop: 10, borderTop: `1px solid ${C.border}` }}>
                         <span style={{
                           fontSize: 11, padding: "3px 8px", fontWeight: 600,
-                          background: user.is_open_for_team ? "#f0faf0" : "#f5f5f5",
+                          background: user.is_open_for_team ? (dark ? "#052e16" : "#f0faf0") : (dark ? "#1f2937" : "#f5f5f5"),
                           color: user.is_open_for_team ? C.success : C.muted,
-                          border: `1px solid ${user.is_open_for_team ? "#b6e2b6" : C.border}`,
+                          border: `1px solid ${user.is_open_for_team ? (dark ? "#374151" : "#b6e2b6") : C.border}`,
                         }}>
                           {user.is_open_for_team ? "Komanda üçün açıq" : "Komanda üçün bağlı"}
                         </span>
                         <span style={{
                           fontSize: 11, padding: "3px 8px", fontWeight: 600,
-                          background: user.is_admin ? C.primary : "#f5f5f5",
+                          background: user.is_admin ? C.primary : (dark ? "#1f2937" : "#f5f5f5"),
                           color: user.is_admin ? "#fff" : C.muted,
                         }}>
                           {user.is_admin ? "Admin" : "Normal istifadəçi"}
@@ -779,7 +780,7 @@ export default function Admin() {
                   {/* Post footer */}
                   <div style={{
                     display: "flex", alignItems: "center", justifyContent: "space-between",
-                    padding: "8px 16px", background: "#f9f9f9", borderTop: `1px solid #ebebeb`,
+                    padding: "8px 16px", background: dark ? "#111827" : "#f9f9f9", borderTop: `1px solid ${C.border}`,
                   }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
                       <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, color: C.muted }}>
@@ -855,7 +856,7 @@ export default function Admin() {
                     {/* Report header */}
                     <div style={{
                       display: "flex", alignItems: "center", justifyContent: "space-between",
-                      padding: "10px 16px", background: "#fff5f5", borderBottom: "1px solid #fca5a5",
+                      padding: "10px 16px", background: dark ? "#1f1010" : "#fff5f5", borderBottom: dark ? "1px solid #374151" : "1px solid #fca5a5",
                     }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                         <div style={{
@@ -898,7 +899,7 @@ export default function Admin() {
 
                       {r.reasons.length > 0 && (
                         <div style={{
-                          marginTop: 10, background: "#f9f9f9",
+                          marginTop: 10, background: dark ? "#111827" : "#f9f9f9",
                           border: `1px solid ${C.border}`, padding: "10px 14px",
                         }}>
                           <p style={{ margin: "0 0 6px", fontSize: 11, fontWeight: 700, color: C.muted }}>Səbəblər:</p>
@@ -914,7 +915,7 @@ export default function Admin() {
                     {/* Report actions */}
                     <div style={{
                       display: "flex", gap: 8, justifyContent: "flex-end",
-                      padding: "10px 16px", background: "#f9f9f9", borderTop: `1px solid ${C.border}`,
+                      padding: "10px 16px", background: dark ? "#111827" : "#f9f9f9", borderTop: `1px solid ${C.border}`,
                     }}>
                       <button
                         onClick={() => dismissReports(r.post_id)}
@@ -923,6 +924,7 @@ export default function Admin() {
                           padding: "6px 14px", background: C.white,
                           border: `1px solid ${C.border}`, cursor: "pointer",
                           fontSize: 13, fontWeight: 500, color: C.text,
+
                         }}
                       >
                         <CheckCircle size={14} />
@@ -1013,7 +1015,7 @@ export default function Admin() {
                 {/* Table header */}
                 <div style={{
                   display: "grid", gridTemplateColumns: "2fr 1.5fr 2fr 1.5fr 2fr",
-                  padding: "8px 16px", background: "#f5f5f5",
+                  padding: "8px 16px", background: dark ? "#111827" : "#f5f5f5",
                   borderBottom: `1px solid ${C.border}`,
                   fontSize: 11, fontWeight: 700, color: C.muted,
                   textTransform: "uppercase", letterSpacing: "0.05em",
@@ -1026,7 +1028,7 @@ export default function Admin() {
                 </div>
 
                 {logs.map((log, i) => (
-                  <LogRow key={log.id} log={log} isLast={i === logs.length - 1} isEven={i % 2 === 0} />
+                  <LogRow key={log.id} log={log} isLast={i === logs.length - 1} isEven={i % 2 === 0} dark={dark} />
                 ))}
 
                 {logs.length === 0 && (
@@ -1060,10 +1062,10 @@ const actionMeta = {
   message_send: { label: "Mesaj", icon: Send, color: "#b45309", bg: "#fffbeb", border: "#fde68a" },
 };
 
-function LogRow({ log, isLast, isEven }) {
+function LogRow({ log, isLast, isEven, dark }) {
   const meta = actionMeta[log.action] || {
     label: log.action, icon: Activity,
-    color: "#666", bg: "#f5f5f5", border: "#d4d4d4",
+    color: dark ? "#9ca3af" : "#666", bg: dark ? "#1f2937" : "#f5f5f5", border: dark ? "#374151" : "#d4d4d4",
   };
   const Icon = meta.icon;
   const date = formatBakuDate(log.created_at);
@@ -1073,14 +1075,14 @@ function LogRow({ log, isLast, isEven }) {
     <div style={{
       display: "grid", gridTemplateColumns: "2fr 1.5fr 2fr 1.5fr 2fr",
       padding: "9px 16px", alignItems: "center",
-      background: isEven ? "#ffffff" : "#f9f9f9",
-      borderBottom: isLast ? "none" : "1px solid #ebebeb",
+      background: isEven ? (dark ? "#1f2937" : "#ffffff") : (dark ? "#161d2a" : "#f9f9f9"),
+      borderBottom: isLast ? "none" : (dark ? "1px solid #374151" : "1px solid #ebebeb"),
     }}>
       <div style={{ minWidth: 0 }}>
-        <p style={{ margin: 0, fontWeight: 600, fontSize: 12, color: "#1a1a1a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        <p style={{ margin: 0, fontWeight: 600, fontSize: 12, color: dark ? "#f3f4f6" : "#1a1a1a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
           {log.full_name || "—"}
         </p>
-        <p style={{ margin: 0, fontSize: 11, color: "#666", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        <p style={{ margin: 0, fontSize: 11, color: dark ? "#9ca3af" : "#666", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
           {log.email || "—"}
         </p>
       </div>
@@ -1094,16 +1096,16 @@ function LogRow({ log, isLast, isEven }) {
           {meta.label}
         </span>
       </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "#666" }}>
-        <Clock size={12} color="#999" />
-        <span style={{ fontWeight: 600, color: "#1a1a1a" }}>{date}</span>
-        <span style={{ color: "#999" }}>{time}</span>
+      <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: dark ? "#9ca3af" : "#666" }}>
+        <Clock size={12} color={dark ? "#6b7280" : "#999"} />
+        <span style={{ fontWeight: 600, color: dark ? "#f3f4f6" : "#1a1a1a" }}>{date}</span>
+        <span style={{ color: dark ? "#6b7280" : "#999" }}>{time}</span>
       </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "#666", fontFamily: "monospace" }}>
-        <Globe size={11} color="#999" />
+      <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: dark ? "#9ca3af" : "#666", fontFamily: "monospace" }}>
+        <Globe size={11} color={dark ? "#6b7280" : "#999"} />
         {log.ip_address || "—"}
       </div>
-      <div style={{ fontSize: 11, color: "#999", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+      <div style={{ fontSize: 11, color: dark ? "#6b7280" : "#999", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
         title={log.user_agent || log.details || ""}>
         {log.details || (log.user_agent ? log.user_agent.split(" ")[0] : "—")}
       </div>
@@ -1113,11 +1115,11 @@ function LogRow({ log, isLast, isEven }) {
 
 
 /* ─── Stat Card ─── */
-function StatCard({ icon: Icon, label, value, subtitle }) {
+function StatCard({ icon: Icon, label, value, subtitle, dark }) {
   return (
     <div style={{
-      background: "#ffffff",
-      border: "1px solid #d4d4d4",
+      background: dark ? "#1f2937" : "#ffffff",
+      border: dark ? "1px solid #374151" : "1px solid #d4d4d4",
       padding: "14px 18px",
       height: "100%",
       boxSizing: "border-box",
@@ -1131,59 +1133,59 @@ function StatCard({ icon: Icon, label, value, subtitle }) {
         </div>
         {subtitle && (
           <span style={{
-            fontSize: 11, fontWeight: 600, color: "#1a4a8a",
-            background: "#eef3fa", padding: "2px 7px", border: "1px solid #c5d5ea",
+            fontSize: 11, fontWeight: 600, color: dark ? "#60a5fa" : "#1a4a8a",
+            background: dark ? "#1f2937" : "#eef3fa", padding: "2px 7px", border: dark ? "1px solid #374151" : "1px solid #c5d5ea",
           }}>{subtitle}</span>
         )}
       </div>
-      <p style={{ margin: "0 0 2px", fontSize: 28, fontWeight: 700, color: "#1a1a1a", lineHeight: 1 }}>{value}</p>
-      <p style={{ margin: 0, fontSize: 12, color: "#666" }}>{label}</p>
+      <p style={{ margin: "0 0 2px", fontSize: 28, fontWeight: 700, color: dark ? "#f3f4f6" : "#1a1a1a", lineHeight: 1 }}>{value}</p>
+      <p style={{ margin: 0, fontSize: 12, color: dark ? "#9ca3af" : "#666" }}>{label}</p>
     </div>
   );
 }
 
 
 /* ─── Overview Row ─── */
-function OverviewRow({ label, value, highlight }) {
+function OverviewRow({ label, value, highlight, dark }) {
   return (
     <div style={{
       display: "flex", alignItems: "center", justifyContent: "space-between",
-      padding: "8px 0", borderBottom: "1px solid #ebebeb",
+      padding: "8px 0", borderBottom: dark ? "1px solid #374151" : "1px solid #ebebeb",
     }}>
-      <span style={{ fontSize: 13, color: "#666" }}>{label}</span>
-      <span style={{ fontSize: 13, fontWeight: 700, color: highlight ? "#dc2626" : "#1a1a1a" }}>{value}</span>
+      <span style={{ fontSize: 13, color: dark ? "#9ca3af" : "#666" }}>{label}</span>
+      <span style={{ fontSize: 13, fontWeight: 700, color: highlight ? (dark ? "#f87171" : "#dc2626") : (dark ? "#f3f4f6" : "#1a1a1a") }}>{value}</span>
     </div>
   );
 }
 
 
 /* ─── Quick Action ─── */
-function QuickAction({ icon: Icon, label, count, onClick, warning }) {
+function QuickAction({ icon: Icon, label, count, onClick, warning, dark }) {
   return (
     <button
       onClick={onClick}
       style={{
         width: "100%", display: "flex", alignItems: "center", gap: 10,
         padding: "10px 12px", cursor: "pointer", textAlign: "left",
-        background: warning ? "#fff5f5" : "#f5f5f5",
-        border: `1px solid ${warning ? "#fca5a5" : "#d4d4d4"}`,
+        background: warning ? (dark ? "#1f1010" : "#fff5f5") : (dark ? "#111827" : "#f5f5f5"),
+        border: `1px solid ${warning ? (dark ? "#374151" : "#fca5a5") : (dark ? "#374151" : "#d4d4d4")}`,
       }}
     >
       <div style={{
         width: 32, height: 32,
-        background: warning ? "#fee2e2" : "#ffffff",
-        border: `1px solid ${warning ? "#fca5a5" : "#d4d4d4"}`,
+        background: warning ? (dark ? "#2a1010" : "#fee2e2") : (dark ? "#1f2937" : "#ffffff"),
+        border: `1px solid ${warning ? (dark ? "#374151" : "#fca5a5") : (dark ? "#374151" : "#d4d4d4")}`,
         display: "flex", alignItems: "center", justifyContent: "center",
-        color: warning ? "#dc2626" : "#666", flexShrink: 0,
+        color: warning ? (dark ? "#f87171" : "#dc2626") : (dark ? "#9ca3af" : "#666"), flexShrink: 0,
       }}>
         <Icon size={15} />
       </div>
       <div style={{ flex: 1 }}>
-        <p style={{ margin: 0, fontSize: 13, fontWeight: 500, color: warning ? "#991b1b" : "#1a1a1a" }}>{label}</p>
+        <p style={{ margin: 0, fontSize: 13, fontWeight: 500, color: warning ? (dark ? "#f87171" : "#991b1b") : (dark ? "#f3f4f6" : "#1a1a1a") }}>{label}</p>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-        <span style={{ fontSize: 14, fontWeight: 700, color: warning ? "#dc2626" : "#1a1a1a" }}>{count}</span>
-        <ChevronRight size={14} color="#999" />
+        <span style={{ fontSize: 14, fontWeight: 700, color: warning ? (dark ? "#f87171" : "#dc2626") : (dark ? "#f3f4f6" : "#1a1a1a") }}>{count}</span>
+        <ChevronRight size={14} color={dark ? "#6b7280" : "#999"} />
       </div>
     </button>
   );
