@@ -2,6 +2,7 @@ import secrets
 import logging
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 from pydantic import BaseModel, EmailStr
 from slowapi import Limiter
 from slowapi.util import get_remote_address
@@ -10,6 +11,7 @@ from app.services.auth import hash_password, verify_password, create_access_toke
 from app.services.activity_logger import log_activity
 from app.services.email import send_verification_code
 from app.models.user import User
+from app.models.connection import Connection
 
 logger = logging.getLogger(__name__)
 
@@ -74,13 +76,24 @@ class TokenResponse(BaseModel):
 
 def _cleanup_unverified(db: Session):
     """24 saatdan köhnə doğrulanmamış hesabları sil."""
-    from datetime import datetime, timezone, timedelta
-    cutoff = datetime.now(timezone.utc) - timedelta(hours=24)
-    db.query(User).filter(
-        User.is_verified == False,
-        User.created_at < cutoff,
-    ).delete(synchronize_session=False)
-    db.commit()
+    try:
+        from datetime import datetime, timezone, timedelta
+        cutoff = datetime.now(timezone.utc) - timedelta(hours=24)
+        old_ids = [row.id for row in db.query(User.id).filter(
+            User.is_verified == False,
+            User.created_at < cutoff,
+        ).all()]
+        if not old_ids:
+            return
+        # FK constraint-ləri olan cədvəlləri əvvəl sil (cascade yoxdur)
+        db.query(Connection).filter(
+            or_(Connection.sender_id.in_(old_ids), Connection.receiver_id.in_(old_ids))
+        ).delete(synchronize_session=False)
+        db.query(User).filter(User.id.in_(old_ids)).delete(synchronize_session=False)
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        logger.warning("_cleanup_unverified failed: %s", e)
 
 
 @router.post("/register")
