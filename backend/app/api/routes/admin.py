@@ -47,6 +47,7 @@ class AdminUserResponse(BaseModel):
     is_open_for_team: bool
     is_verified: bool
     created_at: str | None
+    last_seen: str | None = None
 
     class Config:
         from_attributes = True
@@ -116,6 +117,7 @@ def get_all_users(q: str = "", db: Session = Depends(get_db), admin: User = Depe
             is_open_for_team=u.is_open_for_team,
             is_verified=u.is_verified,
             created_at=str(u.created_at) if u.created_at else None,
+            last_seen=str(u.last_seen) if u.last_seen else None,
         )
         for u in users
     ]

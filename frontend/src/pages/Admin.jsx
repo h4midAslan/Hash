@@ -554,7 +554,7 @@ export default function Admin() {
                 <div>İstifadəçi</div>
                 <div>İxtisas</div>
                 <div>Status</div>
-                <div>Qeydiyyat</div>
+                <div>Son görülmə</div>
                 <div style={{ textAlign: "right" }}>Əməliyyat</div>
               </div>
 
@@ -629,9 +629,23 @@ export default function Admin() {
                       </span>
                     </div>
 
-                    {/* Date */}
+                    {/* Last seen */}
                     <div>
-                      <span style={{ fontSize: 11, color: C.muted }}>{formatBakuDate(user.created_at)}</span>
+                      {user.last_seen ? (() => {
+                        const sec = Math.floor((Date.now() - new Date(user.last_seen)) / 1000);
+                        const label = sec < 60 ? "İndicə"
+                          : sec < 3600 ? `${Math.floor(sec / 60)} dəq əvvəl`
+                          : sec < 86400 ? `${Math.floor(sec / 3600)} saat əvvəl`
+                          : sec < 604800 ? `${Math.floor(sec / 86400)} gün əvvəl`
+                          : formatBakuDate(user.last_seen);
+                        const isRecent = sec < 300;
+                        return (
+                          <span style={{ fontSize: 11, color: isRecent ? C.success : C.muted, fontWeight: isRecent ? 600 : 400 }}>
+                            {isRecent && <span style={{ display: "inline-block", width: 6, height: 6, borderRadius: "50%", background: C.success, marginRight: 4, verticalAlign: "middle" }} />}
+                            {label}
+                          </span>
+                        );
+                      })() : <span style={{ fontSize: 11, color: C.faint }}>Heç vaxt</span>}
                     </div>
 
                     {/* Actions */}
