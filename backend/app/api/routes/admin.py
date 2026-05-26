@@ -15,6 +15,7 @@ from app.models.project import Project
 from app.models.notification import Notification
 from app.models.article import Article, ArticleLike, ArticleComment
 from app.models.event import Event
+from app.models.feedback import Feedback
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
@@ -508,3 +509,32 @@ def purge_sensitive_logs(db: Session = Depends(get_db), admin: User = Depends(ge
     ).delete(synchronize_session=False)
     db.commit()
     return {"deleted": deleted}
+
+
+# ─── Feedback ───
+
+@router.get("/feedback")
+def get_feedbacks(db: Session = Depends(get_db), admin: User = Depends(get_admin_user)):
+    feedbacks = db.query(Feedback).order_by(Feedback.created_at.desc()).all()
+    return [
+        {
+            "id": f.id,
+            "user_id": f.user_id,
+            "user_name": f.user.full_name if f.user else "Silinmiş hesab",
+            "user_email": f.user.email if f.user else None,
+            "category": f.category,
+            "content": f.content,
+            "created_at": str(f.created_at) if f.created_at else None,
+        }
+        for f in feedbacks
+    ]
+
+
+@router.delete("/feedback/{feedback_id}")
+def delete_feedback(feedback_id: int, db: Session = Depends(get_db), admin: User = Depends(get_admin_user)):
+    fb = db.query(Feedback).filter(Feedback.id == feedback_id).first()
+    if not fb:
+        raise HTTPException(status_code=404, detail="Tapılmadı")
+    db.delete(fb)
+    db.commit()
+    return {"message": "Silindi"}

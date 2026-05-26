@@ -44,6 +44,7 @@ export default function Admin() {
   const [messages, setMessages] = useState([]);
   const [msgSearch, setMsgSearch] = useState("");
   const [conversation, setConversation] = useState(null);
+  const [feedbacks, setFeedbacks] = useState([]);
 
   useEffect(() => {
     loadStats();
@@ -56,6 +57,7 @@ export default function Admin() {
     if (tab === "reports") loadReports();
     if (tab === "online") loadOnline();
     if (tab === "messages") loadMessages();
+    if (tab === "feedback") loadFeedbacks();
   }, [tab]);
 
   const loadOnline = async () => {
@@ -140,6 +142,22 @@ export default function Admin() {
       setMessages(res.data);
     } catch (err) {}
     setLoading(false);
+  };
+
+  const loadFeedbacks = async () => {
+    setLoading(true);
+    try {
+      const res = await api.get("/admin/feedback");
+      setFeedbacks(res.data);
+    } catch (err) {}
+    setLoading(false);
+  };
+
+  const deleteFeedback = async (id) => {
+    try {
+      await api.delete(`/admin/feedback/${id}`);
+      setFeedbacks(prev => prev.filter(f => f.id !== id));
+    } catch (err) {}
   };
 
   const loadConversation = async (user1, user2) => {
@@ -233,6 +251,7 @@ export default function Admin() {
     { id: "posts", icon: FileText, label: "Postlar" },
     { id: "reports", icon: Flag, label: "Şikayətlər" },
     // { id: "messages", icon: MessageCircle, label: "Mesajlar" },
+    { id: "feedback", icon: MessageCircle, label: "Rəylər" },
     { id: "logs", icon: Activity, label: "Loglar" },
   ];
 
@@ -1128,6 +1147,52 @@ export default function Admin() {
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {/* ═══════ FEEDBACK ═══════ */}
+        {tab === "feedback" && (
+          <div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+              <span style={{ fontSize: 13, color: C.muted }}>{feedbacks.length} rəy</span>
+              <button onClick={loadFeedbacks} style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", background: "none", border: `1px solid ${C.border}`, cursor: "pointer", fontSize: 12, color: C.muted }}>
+                <RefreshCw size={13} /> Yenilə
+              </button>
+            </div>
+            {loading && <div style={{ textAlign: "center", padding: 40, color: C.muted }}>Yüklənir...</div>}
+            {!loading && feedbacks.length === 0 && (
+              <div style={{ textAlign: "center", padding: "60px 0" }}>
+                <MessageCircle size={32} color={C.faint} style={{ display: "block", margin: "0 auto 12px" }} />
+                <p style={{ margin: 0, color: C.muted, fontSize: 14 }}>Hələ rəy yoxdur</p>
+              </div>
+            )}
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {feedbacks.map(f => {
+                const catColor = f.category === "bug" ? { bg: "#fff5f5", border: "#fca5a5", text: "#dc2626", label: "🐛 Xəta" }
+                  : f.category === "idea" ? { bg: "#fffbeb", border: "#fde68a", text: "#b45309", label: "💡 Təklif" }
+                  : { bg: dark ? "#1f2937" : "#f5f5f5", border: dark ? "#374151" : "#d4d4d4", text: C.muted, label: "💬 Digər" };
+                return (
+                  <div key={f.id} style={{ background: dark ? "#1f2937" : "#fff", border: `1px solid ${C.border}`, padding: "14px 16px" }}>
+                    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                          <span style={{ fontSize: 11, padding: "2px 8px", fontWeight: 600, background: catColor.bg, color: catColor.text, border: `1px solid ${catColor.border}` }}>
+                            {catColor.label}
+                          </span>
+                          <span style={{ fontSize: 12, fontWeight: 600, color: C.text }}>{f.user_name}</span>
+                          {f.user_email && <span style={{ fontSize: 11, color: C.faint }}>{f.user_email}</span>}
+                          <span style={{ fontSize: 11, color: C.faint, marginLeft: "auto" }}>{f.created_at ? new Date(f.created_at).toLocaleString("az-AZ") : ""}</span>
+                        </div>
+                        <p style={{ margin: 0, fontSize: 13, color: C.text, lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{f.content}</p>
+                      </div>
+                      <button onClick={() => deleteFeedback(f.id)} style={{ flexShrink: 0, background: "none", border: "none", cursor: "pointer", color: C.faint, padding: 4 }} title="Sil">
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
 

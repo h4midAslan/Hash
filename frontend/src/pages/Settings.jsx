@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Settings as SettingsIcon, Check, Moon, Sun, Image as ImageIcon, Globe, Lock, Eye, EyeOff } from "lucide-react";
+import { Settings as SettingsIcon, Check, Moon, Sun, Image as ImageIcon, Globe, Lock, Eye, EyeOff, MessageSquare } from "lucide-react";
 import { useLang, setLang } from "../hooks/useLang";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { useDarkMode } from "../hooks/useTheme";
@@ -56,6 +56,9 @@ export default function Settings() {
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [focusedInput, setFocusedInput] = useState(null);
+  const [fbText, setFbText] = useState("");
+  const [fbCat, setFbCat] = useState("idea");
+  const [fbLoading, setFbLoading] = useState(false);
   const { lang, t } = useLang();
   const isMobile = useIsMobile();
 
@@ -323,6 +326,60 @@ export default function Settings() {
           })}
         </div>
         <p style={{ fontSize: 12, color: dark ? "#6b7280" : "#999", marginTop: 12, textAlign: "center" }}>{t("settings_bg_note")}</p>
+      </div>
+
+      {/* Feedback */}
+      <div style={{ background: dark ? "#1f2937" : "#fff", border: dark ? "1px solid #374151" : "1px solid #d4d4d4", padding: "20px 24px", marginTop: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+          <MessageSquare size={16} color={dark ? "#9ca3af" : "#555"} />
+          <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: dark ? "#f3f4f6" : "#1a1a1a" }}>Rəy və təklif</h3>
+        </div>
+        <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+          {[{ val: "idea", label: "💡 Təklif" }, { val: "bug", label: "🐛 Xəta" }, { val: "other", label: "💬 Digər" }].map(c => (
+            <button key={c.val} onClick={() => setFbCat(c.val)} style={{
+              padding: "5px 12px", fontSize: 12, fontWeight: 600, cursor: "pointer",
+              border: `1px solid ${fbCat === c.val ? "#1a4a8a" : (dark ? "#374151" : "#d4d4d4")}`,
+              background: fbCat === c.val ? "#1a4a8a" : "transparent",
+              color: fbCat === c.val ? "#fff" : (dark ? "#9ca3af" : "#555"),
+            }}>{c.label}</button>
+          ))}
+        </div>
+        <textarea
+          value={fbText}
+          onChange={e => setFbText(e.target.value)}
+          placeholder="Platformaya dair fikirlərinizi yazın..."
+          rows={4}
+          style={{
+            width: "100%", boxSizing: "border-box", padding: "10px 12px", fontSize: 13,
+            border: `1px solid ${dark ? "#374151" : "#d4d4d4"}`, resize: "vertical",
+            background: dark ? "#111827" : "#fafafa", color: dark ? "#f3f4f6" : "#1a1a1a",
+            outline: "none", fontFamily: "inherit",
+          }}
+        />
+        <button
+          disabled={fbLoading || !fbText.trim()}
+          onClick={async () => {
+            if (!fbText.trim()) return;
+            setFbLoading(true);
+            try {
+              await api.post("/feedback", { content: fbText.trim(), category: fbCat });
+              toast.success("Rəyiniz göndərildi, təşəkkür edirik!");
+              setFbText("");
+            } catch {
+              toast.error("Göndərilmədi, yenidən cəhd edin");
+            } finally {
+              setFbLoading(false);
+            }
+          }}
+          style={{
+            marginTop: 10, padding: "8px 20px", background: "#1a4a8a", color: "#fff",
+            border: "none", fontSize: 13, fontWeight: 600,
+            cursor: fbLoading || !fbText.trim() ? "not-allowed" : "pointer",
+            opacity: fbLoading || !fbText.trim() ? 0.6 : 1,
+          }}
+        >
+          {fbLoading ? "Göndərilir..." : "Göndər"}
+        </button>
       </div>
     </div>
   );
