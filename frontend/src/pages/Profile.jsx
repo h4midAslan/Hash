@@ -498,11 +498,11 @@ export default function Profile() {
                 <label style={{ ...S.label, marginBottom: 10 }}>Sosial linklər</label>
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <Github size={15} color="#555" style={{ flexShrink: 0 }} />
+                    <GithubIcon size={15} color="#555" style={{ flexShrink: 0 }} />
                     <input type="url" value={form.github_url || ""} onChange={e => setForm({ ...form, github_url: e.target.value })} placeholder="https://github.com/username" style={{ ...S.input, flex: 1 }} />
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <Linkedin size={15} color="#0077b5" style={{ flexShrink: 0 }} />
+                    <LinkedinIcon size={15} color="#0077b5" style={{ flexShrink: 0 }} />
                     <input type="url" value={form.linkedin_url || ""} onChange={e => setForm({ ...form, linkedin_url: e.target.value })} placeholder="https://linkedin.com/in/username" style={{ ...S.input, flex: 1 }} />
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
