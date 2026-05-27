@@ -4,6 +4,7 @@ import Navbar from "./components/Navbar";
 import { ToastContainer } from "./components/Toast";
 import FeedbackButton from "./components/FeedbackButton";
 import InstallPrompt from "./components/InstallPrompt";
+import { usePushNotifications } from "./hooks/usePushNotifications";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -70,6 +71,7 @@ function PrivateRoute({ children }) {
   const token = localStorage.getItem("token");
   const bg = useBackgroundTheme();
   const dark = useDarkMode();
+  usePushNotifications();
   if (!token) return <Navigate to="/login" />;
   return (
     <div className={dark ? "dark" : ""}>

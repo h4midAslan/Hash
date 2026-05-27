@@ -16,6 +16,10 @@ class Settings(BaseSettings):
     GROQ_API_KEY: str = ""
     FRONTEND_URL: str = "http://localhost:5173"
 
+    VAPID_PRIVATE_KEY: str = ""
+    VAPID_PUBLIC_KEY: str = ""
+    VAPID_EMAIL: str = "mailto:admin@hashcampus.site"
+
     class Config:
         env_file = ".env"
 

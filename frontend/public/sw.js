@@ -1,4 +1,4 @@
-const CACHE = "hash-v2";
+const CACHE = "hash-v3";
 const STATIC = ["/", "/manifest.json", "/icon-192.png", "/icon-512.png", "/logo.png"];
 
 self.addEventListener("install", e => {
@@ -13,6 +13,26 @@ self.addEventListener("activate", e => {
     )
   );
   self.clients.claim();
+});
+
+self.addEventListener("push", e => {
+  let data = { title: "Hash", body: "Yeni bildiriş", url: "/feed" };
+  try { data = e.data.json(); } catch {}
+  e.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: "/icon-192.png",
+      badge: "/icon-192.png",
+      data: { url: data.url },
+      vibrate: [200, 100, 200],
+    })
+  );
+});
+
+self.addEventListener("notificationclick", e => {
+  e.notification.close();
+  const url = (e.notification.data && e.notification.data.url) || "/feed";
+  e.waitUntil(clients.openWindow(url));
 });
 
 self.addEventListener("fetch", e => {
