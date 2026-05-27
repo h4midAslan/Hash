@@ -45,6 +45,9 @@ export default function Admin() {
   const [msgSearch, setMsgSearch] = useState("");
   const [conversation, setConversation] = useState(null);
   const [feedbacks, setFeedbacks] = useState([]);
+  const [notifSubject, setNotifSubject] = useState("");
+  const [notifMessage, setNotifMessage] = useState("");
+  const [notifSending, setNotifSending] = useState(false);
 
   useEffect(() => {
     loadStats();
@@ -58,6 +61,7 @@ export default function Admin() {
     if (tab === "online") loadOnline();
     if (tab === "messages") loadMessages();
     if (tab === "feedback") loadFeedbacks();
+    if (tab === "notify") { setNotifSubject(""); setNotifMessage(""); }
   }, [tab]);
 
   const loadOnline = async () => {
@@ -252,6 +256,7 @@ export default function Admin() {
     { id: "reports", icon: Flag, label: "Şikayətlər" },
     // { id: "messages", icon: MessageCircle, label: "Mesajlar" },
     { id: "feedback", icon: MessageCircle, label: "Rəylər" },
+    { id: "notify", icon: Mail, label: "Bildiriş" },
     { id: "logs", icon: Activity, label: "Loglar" },
   ];
 
@@ -1193,6 +1198,83 @@ export default function Admin() {
                 );
               })}
             </div>
+          </div>
+        )}
+
+        {/* ═══════ NOTIFY ═══════ */}
+        {tab === "notify" && (
+          <div style={{ maxWidth: 560 }}>
+            <h3 style={{ fontSize: 15, fontWeight: 700, color: C.text, marginBottom: 20 }}>
+              Bütün istifadəçilərə e-poçt bildirişi göndər
+            </h3>
+            <div style={{ marginBottom: 14 }}>
+              <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: C.muted, marginBottom: 6 }}>
+                Mövzu
+              </label>
+              <input
+                value={notifSubject}
+                onChange={e => setNotifSubject(e.target.value)}
+                placeholder="Məs: Yeni funksiya əlavə edildi!"
+                style={{
+                  width: "100%", boxSizing: "border-box", padding: "9px 12px",
+                  fontSize: 14, border: `1px solid ${C.border}`,
+                  background: C.white, color: C.text, outline: "none",
+                }}
+              />
+            </div>
+            <div style={{ marginBottom: 18 }}>
+              <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: C.muted, marginBottom: 6 }}>
+                Mətn
+              </label>
+              <textarea
+                value={notifMessage}
+                onChange={e => setNotifMessage(e.target.value)}
+                placeholder="İstifadəçilərə çatdırmaq istədiyiniz məlumatı yazın..."
+                rows={8}
+                style={{
+                  width: "100%", boxSizing: "border-box", padding: "9px 12px",
+                  fontSize: 14, border: `1px solid ${C.border}`,
+                  background: C.white, color: C.text, outline: "none",
+                  resize: "vertical", fontFamily: "inherit",
+                }}
+              />
+            </div>
+            <button
+              onClick={async () => {
+                if (!notifSubject.trim() || !notifMessage.trim()) {
+                  toast.error("Mövzu və mətn doldurulmalıdır");
+                  return;
+                }
+                setNotifSending(true);
+                try {
+                  const res = await api.post("/admin/notify/email", {
+                    subject: notifSubject.trim(),
+                    message: notifMessage.trim(),
+                  });
+                  toast.success(res.data.message || "Göndərilir...");
+                  setNotifSubject("");
+                  setNotifMessage("");
+                } catch {
+                  toast.error("Göndərilmədi");
+                } finally {
+                  setNotifSending(false);
+                }
+              }}
+              disabled={notifSending || !notifSubject.trim() || !notifMessage.trim()}
+              style={{
+                padding: "10px 28px", background: C.primary, color: "#fff",
+                border: "none", fontSize: 14, fontWeight: 600,
+                cursor: notifSending || !notifSubject.trim() || !notifMessage.trim() ? "not-allowed" : "pointer",
+                opacity: notifSending || !notifSubject.trim() || !notifMessage.trim() ? 0.6 : 1,
+                display: "flex", alignItems: "center", gap: 8,
+              }}
+            >
+              <Send size={15} />
+              {notifSending ? "Göndərilir..." : "Göndər"}
+            </button>
+            <p style={{ fontSize: 12, color: C.muted, marginTop: 10 }}>
+              Yalnız təsdiqlənmiş və aktiv hesablara göndərilir.
+            </p>
           </div>
         )}
 

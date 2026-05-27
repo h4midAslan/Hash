@@ -1,5 +1,5 @@
 from datetime import datetime, timezone, timedelta
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from pydantic import BaseModel
@@ -64,6 +64,11 @@ class AdminPostResponse(BaseModel):
     author_id: int
     like_count: int
     comment_count: int
+
+
+class EmailNotifyRequest(BaseModel):
+    subject: str
+    message: str
 
 
 # ─── Stats ───
@@ -538,3 +543,38 @@ def delete_feedback(feedback_id: int, db: Session = Depends(get_db), admin: User
     db.delete(fb)
     db.commit()
     return {"message": "Silindi"}
+
+
+# ─── Email Notification ───
+
+@router.post("/notify/email")
+def send_email_notification(
+    data: EmailNotifyRequest,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+    admin: User = Depends(get_admin_user),
+):
+    from app.services.email import send_notification_email
+    if not data.subject.strip() or not data.message.strip():
+        raise HTTPException(status_code=400, detail="Mövzu və mətn boş ola bilməz")
+
+    users = db.query(User.email).filter(User.is_verified == True, User.is_active == True).all()
+    emails = [u.email for u in users]
+    if not emails:
+        raise HTTPException(status_code=404, detail="Aktiv istifadəçi tapılmadı")
+
+    html = f"""<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body style="font-family:Arial,sans-serif;color:#222;max-width:540px;margin:0 auto;padding:32px 16px">
+  <p style="font-size:16px;font-weight:700;margin:0 0 24px">Hash</p>
+  <p style="font-size:15px;font-weight:600;margin:0 0 12px">{data.subject}</p>
+  <div style="font-size:14px;line-height:1.6;margin:0 0 24px;white-space:pre-wrap">{data.message}</div>
+  <p style="font-size:12px;color:#999;margin:0;border-top:1px solid #eee;padding-top:16px">
+    Bu e-poçt hashcampus.site tərəfindən göndərilmişdir.
+  </p>
+</body>
+</html>"""
+
+    background_tasks.add_task(send_notification_email, emails, data.subject, html, data.message)
+    return {"message": f"{len(emails)} istifadəçiyə göndərilir...", "total": len(emails)}
