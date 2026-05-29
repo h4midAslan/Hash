@@ -7,22 +7,68 @@ export default function Register() {
     email: "", password: "", full_name: "", faculty: "", major: "", course: "",
   });
   const [faculties, setFaculties] = useState({});
+  const [detectedUni, setDetectedUni] = useState(null); // { name } | null | "invalid"
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [step, setStep] = useState("form"); // "form" | "verify"
+  const [step, setStep] = useState("form");
   const [pendingEmail, setPendingEmail] = useState("");
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const codeRefs = useRef([]);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    api.get("/auth/faculties").then((res) => setFaculties(res.data));
-  }, []);
+  // Email domain detection — fires when email field loses focus or contains valid domain
+  const detectDomain = async (email) => {
+    const match = email.match(/@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$/);
+    if (!match) {
+      setDetectedUni(null);
+      setFaculties({});
+      setForm(f => ({ ...f, faculty: "", major: "" }));
+      return;
+    }
+    try {
+      const res = await api.get(`/auth/faculties?email=${encodeURIComponent(email)}`);
+      const data = res.data;
+      if (Object.keys(data).length === 0) {
+        setDetectedUni("invalid");
+        setFaculties({});
+        setForm(f => ({ ...f, faculty: "", major: "" }));
+      } else {
+        // Get university name from backend or derive from domain
+        const domain = match[1].toLowerCase();
+        const uniNames = {
+          "student.naa.edu.az": "Milli Aviasiya Akademiyası",
+          "unec.edu.az": "UNEC",
+        };
+        setDetectedUni({ name: uniNames[domain] || domain });
+        setFaculties(data);
+        setForm(f => ({ ...f, faculty: "", major: "" }));
+      }
+    } catch {
+      setDetectedUni("invalid");
+      setFaculties({});
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (name === "faculty") setForm({ ...form, faculty: value, major: "" });
-    else setForm({ ...form, [name]: value });
+    if (name === "faculty") {
+      setForm(f => ({ ...f, faculty: value, major: "" }));
+    } else if (name === "email") {
+      setForm(f => ({ ...f, email: value }));
+      // Detect when full email is typed (has @ + domain)
+      if (value.includes("@") && value.split("@")[1]?.includes(".")) {
+        detectDomain(value);
+      } else {
+        setDetectedUni(null);
+        setFaculties({});
+      }
+    } else {
+      setForm(f => ({ ...f, [name]: value }));
+    }
+  };
+
+  const handleEmailBlur = () => {
+    if (form.email.includes("@")) detectDomain(form.email);
   };
 
   const handleSubmit = async (e) => {
@@ -100,8 +146,8 @@ export default function Register() {
         <div style={{ width: "100%", maxWidth: 380 }}>
           <div style={{ textAlign: "center", marginBottom: 24 }}>
             <Link to="/" style={{ textDecoration: "none", display: "inline-block" }}>
-            <img src="/logo.png" alt="Hash" style={{ height: 56, width: 56, borderRadius: 14 }} />
-          </Link>
+              <img src="/logo.png" alt="Hash" style={{ height: 56, width: 56, borderRadius: 14 }} />
+            </Link>
             <p style={{ fontSize: 13, color: "#666", marginTop: 4 }}>Email təsdiqi</p>
           </div>
           <div style={card}>
@@ -125,7 +171,7 @@ export default function Register() {
               </button>
             </form>
             <div style={{ background: "#fffbeb", border: "1px solid #fde68a", padding: "10px 12px", marginTop: 14, fontSize: 12, color: "#92400e", lineHeight: 1.6 }}>
-              <strong>Vacib qeyd:</strong> Universitetin daxili təhlükəsizlik filtrlərinə görə təsdiqləmə kodu <strong>Spam</strong> (Gərəksizlər) və ya <strong>Junk</strong> qovluğuna düşə bilər. Zəhmət olmasa, həmin qovluğu yoxlayın və maili <em>"Spam deyil" (Not Junk)</em> olaraq qeyd edin.
+              <strong>Vacib qeyd:</strong> Universitetin daxili təhlükəsizlik filtrlərinə görə təsdiqləmə kodu <strong>Spam</strong> və ya <strong>Junk</strong> qovluğuna düşə bilər. Zəhmət olmasa, həmin qovluğu yoxlayın.
             </div>
             <p style={{ textAlign: "center", marginTop: 12, fontSize: 12, color: "#999" }}>
               Kod gəlmədi?{" "}
@@ -156,34 +202,62 @@ export default function Register() {
         <div style={card}>
           {error && <div style={errBox}>{error}</div>}
           <form onSubmit={handleSubmit}>
-            {[
-              { label: "Ad Soyad", name: "full_name", type: "text", placeholder: "Ad Soyad" },
-              { label: "Email", name: "email", type: "email", placeholder: "ad.soyad@uni.edu.az" },
-              { label: "Şifrə", name: "password", type: "password", placeholder: "Minimum 6 simvol" },
-            ].map(({ label, name, type, placeholder }) => (
-              <div key={name} style={{ marginBottom: 10 }}>
-                <label style={lbl}>{label}</label>
-                <input type={type} name={name} placeholder={placeholder} value={form[name]} onChange={handleChange}
-                  style={inp} onFocus={e => e.target.style.borderColor = "#1a4a8a"} onBlur={e => e.target.style.borderColor = "#ccc"} required />
-              </div>
-            ))}
+            <div style={{ marginBottom: 10 }}>
+              <label style={lbl}>Ad Soyad</label>
+              <input type="text" name="full_name" placeholder="Ad Soyad" value={form.full_name} onChange={handleChange}
+                style={inp} onFocus={e => e.target.style.borderColor = "#1a4a8a"} onBlur={e => e.target.style.borderColor = "#ccc"} required />
+            </div>
+
+            <div style={{ marginBottom: 10 }}>
+              <label style={lbl}>Email</label>
+              <input type="email" name="email" placeholder="ad.soyad@uni.edu.az" value={form.email}
+                onChange={handleChange} onBlur={handleEmailBlur}
+                style={{ ...inp, borderColor: detectedUni === "invalid" ? "#e53e3e" : detectedUni ? "#22c55e" : "#ccc" }}
+                onFocus={e => e.target.style.borderColor = "#1a4a8a"} required />
+              {detectedUni && detectedUni !== "invalid" && (
+                <p style={{ fontSize: 11, color: "#22c55e", marginTop: 4 }}>
+                  ✓ {detectedUni.name} — qeydiyyat mümkündür
+                </p>
+              )}
+              {detectedUni === "invalid" && (
+                <p style={{ fontSize: 11, color: "#e53e3e", marginTop: 4 }}>
+                  Bu email domeninə qeydiyyat hələ açıq deyil
+                </p>
+              )}
+            </div>
+
+            <div style={{ marginBottom: 10 }}>
+              <label style={lbl}>Şifrə</label>
+              <input type="password" name="password" placeholder="Minimum 6 simvol" value={form.password} onChange={handleChange}
+                style={inp} onFocus={e => e.target.style.borderColor = "#1a4a8a"} onBlur={e => e.target.style.borderColor = "#ccc"} required />
+            </div>
+
             <div style={{ marginBottom: 10 }}>
               <label style={lbl}>Fakultə</label>
-              <select name="faculty" value={form.faculty} onChange={handleChange} style={{ ...inp, color: form.faculty ? "#1a1a1a" : "#999" }} required>
-                <option value="">Fakultə seçin</option>
+              <select name="faculty" value={form.faculty} onChange={handleChange}
+                style={{ ...inp, color: form.faculty ? "#1a1a1a" : "#999" }}
+                required disabled={Object.keys(faculties).length === 0}>
+                <option value="">
+                  {detectedUni && detectedUni !== "invalid" ? "Fakultə seçin" : "Əvvəlcə email yazın"}
+                </option>
                 {Object.keys(faculties).map(f => <option key={f} value={f}>{f}</option>)}
               </select>
             </div>
+
             <div style={{ marginBottom: 10 }}>
               <label style={lbl}>İxtisas</label>
-              <select name="major" value={form.major} onChange={handleChange} style={{ ...inp, color: form.major ? "#1a1a1a" : "#999" }} required disabled={!form.faculty}>
+              <select name="major" value={form.major} onChange={handleChange}
+                style={{ ...inp, color: form.major ? "#1a1a1a" : "#999" }}
+                required disabled={!form.faculty}>
                 <option value="">{form.faculty ? "İxtisas seçin" : "Əvvəlcə fakultə seçin"}</option>
                 {specializations.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
+
             <div style={{ marginBottom: 16 }}>
               <label style={lbl}>Kurs</label>
-              <select name="course" value={form.course} onChange={handleChange} style={{ ...inp, color: form.course ? "#1a1a1a" : "#999" }} required>
+              <select name="course" value={form.course} onChange={handleChange}
+                style={{ ...inp, color: form.course ? "#1a1a1a" : "#999" }} required>
                 <option value="">Kurs seçin</option>
                 <option value="1">1-ci kurs</option>
                 <option value="2">2-ci kurs</option>
@@ -191,8 +265,9 @@ export default function Register() {
                 <option value="4">4-cü kurs</option>
               </select>
             </div>
-            <button type="submit" disabled={loading}
-              style={{ width: "100%", background: "#1a4a8a", color: "#fff", border: "1px solid #1a4a8a", padding: "9px", fontSize: 13, fontWeight: 600, cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.6 : 1 }}>
+
+            <button type="submit" disabled={loading || detectedUni === "invalid" || !detectedUni}
+              style={{ width: "100%", background: "#1a4a8a", color: "#fff", border: "1px solid #1a4a8a", padding: "9px", fontSize: 13, fontWeight: 600, cursor: (loading || !detectedUni || detectedUni === "invalid") ? "not-allowed" : "pointer", opacity: (loading || !detectedUni || detectedUni === "invalid") ? 0.5 : 1 }}>
               {loading ? "Gözləyin..." : "Qeydiyyatdan keç"}
             </button>
           </form>

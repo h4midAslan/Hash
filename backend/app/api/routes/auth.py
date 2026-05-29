@@ -57,6 +57,47 @@ UNIVERSITY_DATA = {
             ],
         },
     },
+    "unec.edu.az": {
+        "name": "UNEC",
+        "faculties": {
+            "İqtisadiyyat fakültəsi": [
+                "İqtisadiyyat",
+                "Sənaye iqtisadiyyatı",
+                "Əmək iqtisadiyyatı və sosiologiyası",
+            ],
+            "Biznesin idarə edilməsi fakültəsi": [
+                "Menecment",
+                "Marketinq",
+                "Biznesin idarə edilməsi",
+                "Turizm",
+            ],
+            "Maliyyə fakültəsi": [
+                "Maliyyə",
+                "Mühasibat uçotu və audit",
+                "Sığorta işi",
+                "Bank işi",
+            ],
+            "Beynəlxalq iqtisadi münasibətlər fakültəsi": [
+                "Beynəlxalq iqtisadi münasibətlər",
+                "Dünya iqtisadiyyatı",
+                "Beynəlxalq ticarət",
+            ],
+            "Tətbiqi informatika fakültəsi": [
+                "İnformasiya texnologiyaları",
+                "Kompüter elmləri",
+                "Kibertəhlükəsizlik",
+                "Proqram mühəndisliyi",
+            ],
+            "Hüquq fakültəsi": [
+                "Hüquqşünaslıq",
+                "Beynəlxalq hüquq",
+            ],
+            "Sahibkarlıq fakültəsi": [
+                "Sahibkarlıq",
+                "İnnovasiya menecmenti",
+            ],
+        },
+    },
 }
 
 # Flat dict for backward compatibility
