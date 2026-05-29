@@ -60,41 +60,48 @@ UNIVERSITY_DATA = {
     "unec.edu.az": {
         "name": "UNEC",
         "faculties": {
-            "İqtisadiyyat fakültəsi": [
-                "İqtisadiyyat",
-                "Sənaye iqtisadiyyatı",
-                "Əmək iqtisadiyyatı və sosiologiyası",
-            ],
-            "Biznesin idarə edilməsi fakültəsi": [
+            "Biznes və Menecment fakültəsi": [
+                "Biznesin idarə edilməsi",
                 "Menecment",
                 "Marketinq",
-                "Biznesin idarə edilməsi",
-                "Turizm",
+                "Beynəlxalq ticarət və logistika",
             ],
-            "Maliyyə fakültəsi": [
+            "İqtisadiyyat və İdarəetmə fakültəsi": [
+                "İqtisadiyyat",
+                "Ekologiya",
+                "Sosial iş",
+                "Statistika",
+                "Beynəlxalq münasibətlər",
+                "Dövlət və bələdiyyə idarəetməsi",
+            ],
+            "Maliyyə və Mühasibat fakültəsi": [
                 "Maliyyə",
-                "Mühasibat uçotu və audit",
-                "Sığorta işi",
-                "Bank işi",
+                "Mühasibat",
             ],
-            "Beynəlxalq iqtisadi münasibətlər fakültəsi": [
-                "Beynəlxalq iqtisadi münasibətlər",
-                "Dünya iqtisadiyyatı",
-                "Beynəlxalq ticarət",
+            "Mühəndislik fakültəsi": [
+                "Sənaye mühəndisliyi",
+                "Qida mühəndisliyi",
+                "Materiallar mühəndisliyi",
+                "Ekologiya mühəndisliyi",
+                "Maşın mühəndisliyi",
+                "Elektrik və elektronika mühəndisliyi",
             ],
-            "Tətbiqi informatika fakültəsi": [
+            "Rəqəmsal İqtisadiyyat fakültəsi": [
                 "İnformasiya texnologiyaları",
+                "Kommunikasiya sistemləri mühəndisliyi",
+                "İnformasiya təhlükəsizliyi",
                 "Kompüter elmləri",
-                "Kibertəhlükəsizlik",
-                "Proqram mühəndisliyi",
+                "Kompüter mühəndisliyi",
             ],
-            "Hüquq fakültəsi": [
-                "Hüquqşünaslıq",
-                "Beynəlxalq hüquq",
-            ],
-            "Sahibkarlıq fakültəsi": [
-                "Sahibkarlıq",
-                "İnnovasiya menecmenti",
+            "Türk Dünyası İqtisad fakültəsi": [
+                "Maliyyə",
+                "Marketinq",
+                "İqtisadiyyat",
+                "Mühasibat",
+                "Biznesin idarə edilməsi",
+                "Beynəlxalq ticarət və logistika",
+                "Dövlət və bələdiyyə idarəetməsi",
+                "Beynəlxalq münasibətlər",
             ],
         },
     },
