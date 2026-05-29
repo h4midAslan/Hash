@@ -285,7 +285,7 @@ export default function Feed() {
             <div style={{ padding: "10px 14px", borderBottom: `1px solid ${C.divider}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <div>
                 <p style={{ margin: 0, fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: C.muted }}>Foto Müsabiqəsi</p>
-                <p style={{ margin: "2px 0 0", fontSize: 14, fontWeight: 700, color: C.text }}>{contestInfo.title || "Aviasiya Akademiyası"}</p>
+                <p style={{ margin: "2px 0 0", fontSize: 14, fontWeight: 700, color: C.text }}>{contestInfo.title || "Hash Müsabiqəsi"}</p>
               </div>
               <div style={{ textAlign: "right" }}>
                 <p style={{ margin: 0, fontSize: 18, fontWeight: 800, color: "#1a4a8a", lineHeight: 1 }}>{contestInfo.prize}</p>

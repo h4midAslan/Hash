@@ -1,1385 +1,642 @@
-import { useRef, useMemo, useEffect, useState, useCallback, createContext, useContext } from "react";
+import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Sphere, MeshDistortMaterial, Float, Stars, Trail, Html } from "@react-three/drei";
-import { motion, useScroll, useTransform, AnimatePresence, useSpring } from "framer-motion";
-import * as THREE from "three";
-import { ArrowRight, Users, BookOpen, Network, FileText, ChevronDown, Globe, Shield } from "lucide-react";
 
-/* ═══════════════════════════════════════
-   MOBILE HOOK
-═══════════════════════════════════════ */
-function useMobile() {
-  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
-  useEffect(() => {
-    const fn = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener("resize", fn);
-    return () => window.removeEventListener("resize", fn);
-  }, []);
-  return isMobile;
+const CSS = `
+@import url('https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,800;1,900&family=Archivo+Black&display=swap');
+
+:root {
+  --navy:      #071428;
+  --navy-deep: #050f1f;
+  --navy-card: #0a1c39;
+  --blue:      #1E90FF;
+  --blue-strong: color-mix(in oklab, #1E90FF, #00101f 32%);
+  --cyan:      #38bdf8;
+  --white:     #ffffff;
+  --muted:     #7d8ba3;
+  --muted-dim: #54627a;
+  --line:      rgba(255,255,255,0.09);
+  --line-soft: rgba(255,255,255,0.05);
+  --f-head: "Archivo Black", "Archivo", system-ui, sans-serif;
+  --f-body: "Archivo", system-ui, sans-serif;
+  --maxw: 1240px;
+  --gutter: clamp(20px, 5vw, 64px);
+  --motion: 1;
 }
 
-/* ═══════════════════════════════════════
-   3D: REALISTIC AIRPLANE
-═══════════════════════════════════════ */
-function RealisticPlane({ orbitRadius = 2.8, speed = 0.22, tilt = 0.35 }) {
-  const groupRef = useRef();
-  const trailRef = useRef();
-  const engineGlowRef1 = useRef();
-  const engineGlowRef2 = useRef();
-  const angle = useRef(0);
+.hl-page * { box-sizing: border-box; }
+.hl-page { font-family: var(--f-body); font-size: 17px; line-height: 1.6; -webkit-font-smoothing: antialiased; overflow-x: hidden; margin: 0; background: var(--navy); color: var(--white); }
+.hl-page h1, .hl-page h2, .hl-page h3 { margin: 0; font-family: var(--f-head); font-weight: 900; line-height: 0.92; letter-spacing: -0.02em; }
+.hl-page p { margin: 0; text-wrap: pretty; }
+.hl-page a { color: inherit; text-decoration: none; }
+.hl-wrap { width: 100%; max-width: var(--maxw); margin: 0 auto; padding-inline: var(--gutter); }
+.hl-page section { position: relative; }
 
-  useFrame((_, delta) => {
-    angle.current += delta * speed;
-    const a = angle.current;
+.hl-eyebrow {
+  font-family: var(--f-body); font-weight: 800; font-size: 13px;
+  letter-spacing: 0.32em; text-transform: uppercase; color: var(--blue);
+  display: inline-flex; align-items: center; gap: 12px;
+}
+.hl-eyebrow::before { content: ""; width: 26px; height: 2px; background: var(--blue); display: inline-block; }
 
-    const x = Math.cos(a) * orbitRadius;
-    const z = Math.sin(a) * orbitRadius;
-    const y = Math.sin(a * 0.5) * 0.6 + 0.3;
+/* BUTTONS */
+.hl-btn {
+  font-family: var(--f-body); font-weight: 800; font-size: 15px;
+  letter-spacing: 0.02em; padding: 16px 26px; border: 0; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 10px;
+  transition: transform .25s cubic-bezier(.22,1,.36,1), box-shadow .3s, background .25s;
+  position: relative; white-space: nowrap; text-decoration: none;
+}
+.hl-btn svg { width: 18px; height: 18px; }
+.hl-btn-primary {
+  background: linear-gradient(135deg, var(--blue), var(--blue-strong));
+  color: #fff;
+  box-shadow: 0 0 0 0 rgba(30,144,255,0.5), 0 12px 30px -12px rgba(30,144,255,0.7);
+}
+.hl-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 30px -2px rgba(30,144,255,0.55), 0 16px 34px -12px rgba(30,144,255,0.8); }
+.hl-btn-ghost { background: transparent; color: #fff; border: 1px solid var(--line); }
+.hl-btn-ghost:hover { border-color: var(--blue); color: var(--cyan); transform: translateY(-2px); }
+.hl-pulse { animation: hlPulse calc(2.6s / var(--motion)) ease-in-out infinite; }
+@keyframes hlPulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(30,144,255,0.45), 0 16px 40px -14px rgba(30,144,255,0.7); }
+  50%      { box-shadow: 0 0 44px 4px rgba(30,144,255,0.35), 0 16px 40px -14px rgba(30,144,255,0.9); }
+}
 
-    if (groupRef.current) {
-      groupRef.current.position.set(x, y, z);
-      // Face direction of travel
-      const nextA = a + 0.01;
-      const nx = Math.cos(nextA) * orbitRadius;
-      const nz = Math.sin(nextA) * orbitRadius;
-      const ny = Math.sin(nextA * 0.5) * 0.6 + 0.3;
-      const dir = new THREE.Vector3(nx - x, ny - y, nz - z).normalize();
-      groupRef.current.lookAt(
-        groupRef.current.position.x + dir.x,
-        groupRef.current.position.y + dir.y,
-        groupRef.current.position.z + dir.z,
-      );
-      // Bank into the turn
-      groupRef.current.rotateZ(-tilt);
-    }
+/* REVEAL */
+.hl-reveal { opacity: 0; transform: translateY(30px); transition: opacity .75s ease, transform .75s cubic-bezier(.22,1,.36,1); }
+.hl-reveal.in { opacity: 1; transform: none; }
+.hl-reveal-l { opacity: 0; transform: translateX(-46px); transition: opacity .8s ease, transform .8s cubic-bezier(.22,1,.36,1); }
+.hl-reveal-r { opacity: 0; transform: translateX(46px); transition: opacity .8s ease, transform .8s cubic-bezier(.22,1,.36,1); }
+.hl-reveal-l.in, .hl-reveal-r.in { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .hl-reveal, .hl-reveal-l, .hl-reveal-r { opacity: 1 !important; transform: none !important; }
+  .hl-pulse { animation: none; }
+}
 
-    // Engine glow pulse
-    const pulse = 0.6 + Math.sin(Date.now() * 0.008) * 0.4;
-    if (engineGlowRef1.current) engineGlowRef1.current.intensity = pulse * 1.8;
-    if (engineGlowRef2.current) engineGlowRef2.current.intensity = pulse * 1.8;
-  });
+/* PARTICLES */
+#hl-particles { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+.hl-page-inner { position: relative; z-index: 1; }
 
-  const silver = { color: "#c8d4e0", metalness: 0.95, roughness: 0.12 };
-  const dark   = { color: "#1a2233", metalness: 0.9,  roughness: 0.2  };
-  const glass  = { color: "#3b82f6", metalness: 0.5,  roughness: 0.05, transparent: true, opacity: 0.7 };
+/* NAVBAR */
+.hl-nav {
+  position: sticky; top: 0; z-index: 50;
+  transition: background .3s, backdrop-filter .3s, border-color .3s;
+  border-bottom: 1px solid transparent;
+}
+.hl-nav.scrolled { background: rgba(7,20,40,0.92); backdrop-filter: blur(14px); border-bottom: 1px solid var(--line); }
+.hl-nav .hl-wrap { display: flex; align-items: center; justify-content: space-between; height: 78px; }
+.hl-brand { display: flex; align-items: center; gap: 14px; text-decoration: none; }
+.hl-brand .hl-mark { width: 38px; height: 38px; display: block; }
+.hl-hash-dots circle { fill: var(--blue); }
+.hl-brand-name { font-family: var(--f-head); font-weight: 900; font-size: 24px; letter-spacing: 0.04em; color: #fff; }
+.hl-nav-actions { display: flex; align-items: center; gap: 14px; }
 
+/* HERO */
+.hl-hero {
+  min-height: 100vh; display: flex; flex-direction: column;
+  justify-content: center; padding-top: 40px; padding-bottom: 48px; overflow: hidden;
+}
+.hl-hero-inner { text-align: center; display: flex; flex-direction: column; align-items: center; }
+.hl-pill {
+  display: inline-flex; align-items: center; gap: 10px;
+  border: 1px solid var(--line); background: rgba(255,255,255,0.02);
+  padding: 9px 18px; font-size: 12.5px; font-weight: 700;
+  letter-spacing: 0.18em; text-transform: uppercase; color: #c9d6ea;
+}
+.hl-pill .hl-dot { width: 6px; height: 6px; background: var(--blue); display: inline-block; }
+.hl-h1 { font-size: clamp(58px, 13.5vw, 200px); margin-top: 30px; }
+.hl-h1 .l1 { display: block; color: #fff; }
+.hl-h1 .l2 { display: block; color: var(--blue); font-style: italic; }
+.hl-tagline {
+  margin-top: 26px; font-weight: 800;
+  font-size: clamp(13px, 1.5vw, 17px); letter-spacing: 0.16em;
+  text-transform: uppercase; color: #c4d1e6;
+  display: flex; gap: 16px; align-items: center; flex-wrap: wrap; justify-content: center;
+}
+.hl-tagline .sep { color: var(--blue); }
+.hl-brush {
+  margin-top: 30px; display: inline-block;
+  background: linear-gradient(135deg, var(--blue), var(--blue-strong));
+  color: #fff; font-family: var(--f-head); font-weight: 900;
+  font-size: clamp(18px, 2.8vw, 30px); letter-spacing: 0.02em;
+  padding: 14px 34px; transform: rotate(-1.4deg);
+  clip-path: polygon(2% 12%, 99% 0, 100% 86%, 1% 100%);
+  box-shadow: 0 18px 50px -20px rgba(30,144,255,0.9);
+}
+.hl-hero-ctas { margin-top: 40px; display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+.hl-stats {
+  margin-top: 64px; display: flex; align-items: stretch; justify-content: center; gap: 0;
+  border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+}
+.hl-stat { padding: 26px 44px; text-align: center; }
+.hl-stat + .hl-stat { border-left: 1px solid var(--line); }
+.hl-stat .num { font-family: var(--f-head); font-weight: 900; font-size: clamp(34px, 5vw, 54px); color: #fff; line-height: 1; }
+.hl-stat .num .plus { color: var(--blue); }
+.hl-stat .lab { margin-top: 8px; font-size: 12px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted); }
+
+/* DOT GRIDS */
+.hl-dotgrid { position: absolute; display: grid; grid-template-columns: repeat(6, 7px); gap: 11px; opacity: 0.5; pointer-events: none; }
+.hl-dotgrid i { width: 4px; height: 4px; background: var(--blue); border-radius: 50%; }
+.hl-dg-tl { top: 120px; left: var(--gutter); }
+.hl-dg-tr { top: 120px; right: var(--gutter); }
+.hl-trail { position: absolute; pointer-events: none; opacity: 0.5; color: var(--blue); }
+
+/* FEATURES */
+.hl-section-pad { padding-block: clamp(80px, 12vh, 150px); }
+.hl-section-head { max-width: 720px; }
+.hl-section-head h2 { font-size: clamp(38px, 6vw, 76px); margin-top: 22px; }
+.hl-section-head .sub { margin-top: 20px; color: var(--muted); font-size: 18px; max-width: 540px; }
+.hl-feat-grid {
+  margin-top: 64px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
+  border: 1px solid var(--line);
+}
+.hl-feat {
+  padding: 40px 34px 44px; position: relative;
+  transition: transform .35s cubic-bezier(.22,1,.36,1), background .35s, box-shadow .35s;
+  background: linear-gradient(180deg, rgba(255,255,255,0.012), transparent);
+}
+.hl-feat + .hl-feat { border-left: 1px solid var(--line); }
+.hl-feat:hover {
+  transform: translateY(-8px); background: rgba(30,144,255,0.05);
+  box-shadow: 0 40px 60px -34px rgba(30,144,255,0.6), inset 0 0 0 1px rgba(30,144,255,0.35); z-index: 2;
+}
+.hl-feat .ico {
+  width: 56px; height: 56px; display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--line); color: var(--blue); margin-bottom: 28px;
+  transition: border-color .35s, color .35s, background .35s;
+}
+.hl-feat:hover .ico { border-color: var(--blue); background: rgba(30,144,255,0.12); color: var(--cyan); }
+.hl-feat .ico svg { width: 28px; height: 28px; }
+.hl-feat h3 { font-size: 22px; letter-spacing: 0; font-weight: 900; }
+.hl-feat .idx { position: absolute; top: 26px; right: 30px; font-family: var(--f-head); font-weight: 900; font-size: 15px; color: var(--muted-dim); }
+.hl-feat p { margin-top: 14px; color: var(--muted); font-size: 15.5px; }
+
+/* STEPS */
+.hl-steps { display: flex; flex-direction: column; gap: clamp(70px, 10vh, 130px); margin-top: 72px; }
+.hl-step { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(32px, 6vw, 90px); align-items: center; }
+.hl-step.flip .step-text { order: 2; }
+.hl-step-num {
+  font-family: var(--f-head); font-weight: 900; font-size: clamp(60px, 9vw, 120px);
+  color: transparent; -webkit-text-stroke: 1.5px rgba(125,139,163,0.45); line-height: 0.8; margin-bottom: 18px;
+}
+.hl-step .step-text h3 { font-size: clamp(30px, 4vw, 46px); }
+.hl-step .step-text .when { color: var(--blue); }
+.hl-step .step-text p { margin-top: 20px; color: var(--muted); font-size: 18px; max-width: 440px; }
+.hl-mock {
+  background: linear-gradient(180deg, var(--navy-card), var(--navy-deep));
+  border: 1px solid var(--line); padding: 26px;
+  box-shadow: 0 50px 80px -40px rgba(0,0,0,0.9), inset 0 1px 0 rgba(255,255,255,0.04);
+}
+.hl-mock-bar { display: flex; gap: 7px; margin-bottom: 22px; }
+.hl-mock-bar i { width: 10px; height: 10px; display: block; background: rgba(255,255,255,0.12); }
+.hl-mock-label { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted-dim); font-weight: 700; margin-bottom: 12px; }
+.hl-field { display: flex; align-items: center; justify-content: space-between; border: 1px solid var(--line); padding: 16px 18px; background: rgba(255,255,255,0.02); }
+.hl-field .val { font-size: 15px; color: #d7e2f3; }
+.hl-field .ok { width: 26px; height: 26px; background: rgba(56,200,120,0.16); color: #38c878; display: flex; align-items: center; justify-content: center; }
+.hl-field .ok svg { width: 15px; height: 15px; }
+.hl-bar-progress { height: 6px; background: rgba(255,255,255,0.06); margin-top: 20px; overflow: hidden; }
+.hl-bar-progress i { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, var(--blue), var(--cyan)); transform-origin: left; }
+.hl-profile-top { display: flex; align-items: center; gap: 16px; }
+.hl-avatar { width: 56px; height: 56px; background: linear-gradient(135deg, var(--blue), var(--blue-strong)); display: flex; align-items: center; justify-content: center; font-family: var(--f-head); font-weight: 900; font-size: 22px; }
+.hl-profile-top .who { font-weight: 800; font-size: 17px; }
+.hl-profile-top .role { font-size: 13px; color: var(--muted); }
+.hl-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
+.hl-tag { font-size: 12px; font-weight: 700; letter-spacing: 0.04em; padding: 7px 12px; border: 1px solid var(--line); color: #bccbe2; }
+.hl-tag.on { background: rgba(30,144,255,0.14); border-color: var(--blue); color: var(--cyan); }
+.hl-post { display: flex; gap: 13px; padding: 14px 0; border-top: 1px solid var(--line-soft); }
+.hl-post:first-of-type { border-top: 0; }
+.hl-post .pa { width: 38px; height: 38px; flex: none; background: rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; color: var(--cyan); }
+.hl-post .pb .ph { font-weight: 700; font-size: 14px; }
+.hl-post .pb .pt { font-size: 13.5px; color: var(--muted); margin-top: 2px; }
+
+/* CTA */
+.hl-cta-card {
+  position: relative; text-align: center; overflow: hidden;
+  background: radial-gradient(120% 140% at 50% -10%, rgba(30,144,255,0.22), transparent 60%),
+              linear-gradient(180deg, var(--navy-card), var(--navy-deep));
+  border: 1px solid var(--line);
+  padding: clamp(56px, 9vw, 110px) var(--gutter);
+}
+.hl-cta-card::before {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(60% 80% at 50% 120%, rgba(30,144,255,0.3), transparent 70%);
+  pointer-events: none;
+}
+.hl-cta-card h2 { font-size: clamp(36px, 6vw, 78px); max-width: 14ch; margin-inline: auto; position: relative; }
+.hl-cta-card .sub { margin-top: 22px; color: #b7c5dc; font-size: 18px; position: relative; }
+.hl-cta-card .hl-btn { margin-top: 42px; font-size: 17px; padding: 20px 38px; position: relative; }
+
+/* FOOTER */
+.hl-footer { border-top: 1px solid var(--line); padding-block: 48px; }
+.hl-footer .hl-wrap { display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+.hl-fbrand { display: flex; align-items: center; gap: 12px; }
+.hl-fbrand .hl-mark { width: 26px; height: 26px; }
+.hl-fmeta { color: var(--muted); font-size: 14px; }
+.hl-fmeta b { color: #fff; font-weight: 800; letter-spacing: 0.04em; }
+.hl-fnote { color: var(--muted-dim); font-size: 13px; margin-top: 4px; }
+.hl-ig { width: 44px; height: 44px; border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; color: var(--muted); transition: .3s; }
+.hl-ig:hover { border-color: var(--blue); color: var(--cyan); transform: translateY(-2px); }
+.hl-ig svg { width: 20px; height: 20px; }
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .hl-feat-grid { grid-template-columns: repeat(2, 1fr); }
+  .hl-feat:nth-child(3), .hl-feat:nth-child(4) { border-top: 1px solid var(--line); }
+  .hl-step { grid-template-columns: 1fr; gap: 34px; }
+  .hl-step.flip .step-text { order: 0; }
+  .hl-dotgrid { display: none; }
+}
+@media (max-width: 560px) {
+  .hl-feat-grid { grid-template-columns: 1fr; }
+  .hl-feat + .hl-feat { border-left: 0; border-top: 1px solid var(--line); }
+  .hl-stats { flex-direction: column; }
+  .hl-stat + .hl-stat { border-left: 0; border-top: 1px solid var(--line); }
+  .hl-brand-name { display: none; }
+  .hl-tagline { font-size: 11px; gap: 10px; }
+}
+`;
+
+function HashMark({ size = 38, className = "" }) {
   return (
-    <group ref={groupRef}>
-      {/* Trail */}
-      <Trail
-        width={0.06}
-        length={18}
-        color="#ffffff"
-        attenuation={(t) => t * t}
-        target={groupRef}
-      >
-        <mesh>
-          <sphereGeometry args={[0.001]} />
-          <meshBasicMaterial transparent opacity={0} />
-        </mesh>
-      </Trail>
-
-      {/* Engine glows */}
-      <pointLight ref={engineGlowRef1} position={[-0.09, -0.02, 0.06]} color="#60a5fa" intensity={1.8} distance={0.6} />
-      <pointLight ref={engineGlowRef2} position={[0.09, -0.02, 0.06]}  color="#60a5fa" intensity={1.8} distance={0.6} />
-
-      {/* ── FUSELAGE ── */}
-      <mesh position={[0, 0, 0]} rotation={[0, 0, 0]}>
-        <cylinderGeometry args={[0.028, 0.022, 0.38, 16]} />
-        <meshStandardMaterial {...silver} />
-      </mesh>
-      {/* Nose cone */}
-      <mesh position={[0, 0, -0.21]}>
-        <coneGeometry args={[0.028, 0.08, 16]} />
-        <meshStandardMaterial {...silver} />
-      </mesh>
-      {/* Tail cone */}
-      <mesh position={[0, 0.006, 0.21]}>
-        <coneGeometry args={[0.022, 0.07, 16]} />
-        <meshStandardMaterial {...silver} />
-      </mesh>
-
-      {/* ── COCKPIT WINDOWS ── */}
-      <mesh position={[0, 0.022, -0.17]} rotation={[0.5, 0, 0]}>
-        <boxGeometry args={[0.038, 0.012, 0.018]} />
-        <meshStandardMaterial {...glass} />
-      </mesh>
-
-      {/* ── MAIN WINGS ── */}
-      {/* Left wing */}
-      <mesh position={[-0.14, -0.004, 0.02]} rotation={[0, 0, 0.06]}>
-        <boxGeometry args={[0.22, 0.008, 0.09]} />
-        <meshStandardMaterial {...silver} />
-      </mesh>
-      {/* Right wing */}
-      <mesh position={[0.14, -0.004, 0.02]} rotation={[0, 0, -0.06]}>
-        <boxGeometry args={[0.22, 0.008, 0.09]} />
-        <meshStandardMaterial {...silver} />
-      </mesh>
-      {/* Wing tips - left */}
-      <mesh position={[-0.245, 0.01, 0.015]} rotation={[0, 0, 0.4]}>
-        <boxGeometry args={[0.03, 0.022, 0.05]} />
-        <meshStandardMaterial {...silver} />
-      </mesh>
-      {/* Wing tips - right */}
-      <mesh position={[0.245, 0.01, 0.015]} rotation={[0, 0, -0.4]}>
-        <boxGeometry args={[0.03, 0.022, 0.05]} />
-        <meshStandardMaterial {...silver} />
-      </mesh>
-
-      {/* ── ENGINES (under wings) ── */}
-      {/* Left engine */}
-      <group position={[-0.1, -0.022, 0.03]}>
-        <mesh rotation={[Math.PI / 2, 0, 0]}>
-          <cylinderGeometry args={[0.018, 0.016, 0.075, 12]} />
-          <meshStandardMaterial {...dark} />
-        </mesh>
-        {/* Engine intake */}
-        <mesh position={[0, 0, -0.038]} rotation={[Math.PI / 2, 0, 0]}>
-          <ringGeometry args={[0.01, 0.018, 12]} />
-          <meshStandardMaterial color="#0a1628" metalness={1} roughness={0.1} />
-        </mesh>
-        {/* Engine glow ring */}
-        <mesh position={[0, 0, 0.038]} rotation={[Math.PI / 2, 0, 0]}>
-          <ringGeometry args={[0.005, 0.015, 12]} />
-          <meshStandardMaterial color="#93c5fd" emissive="#3b82f6" emissiveIntensity={2} transparent opacity={0.85} />
-        </mesh>
-      </group>
-      {/* Right engine */}
-      <group position={[0.1, -0.022, 0.03]}>
-        <mesh rotation={[Math.PI / 2, 0, 0]}>
-          <cylinderGeometry args={[0.018, 0.016, 0.075, 12]} />
-          <meshStandardMaterial {...dark} />
-        </mesh>
-        <mesh position={[0, 0, -0.038]} rotation={[Math.PI / 2, 0, 0]}>
-          <ringGeometry args={[0.01, 0.018, 12]} />
-          <meshStandardMaterial color="#0a1628" metalness={1} roughness={0.1} />
-        </mesh>
-        <mesh position={[0, 0, 0.038]} rotation={[Math.PI / 2, 0, 0]}>
-          <ringGeometry args={[0.005, 0.015, 12]} />
-          <meshStandardMaterial color="#93c5fd" emissive="#3b82f6" emissiveIntensity={2} transparent opacity={0.85} />
-        </mesh>
-      </group>
-
-      {/* ── HORIZONTAL STABILIZER ── */}
-      <mesh position={[-0.07, 0.005, 0.175]} rotation={[0, 0, 0.04]}>
-        <boxGeometry args={[0.1, 0.006, 0.038]} />
-        <meshStandardMaterial {...silver} />
-      </mesh>
-      <mesh position={[0.07, 0.005, 0.175]} rotation={[0, 0, -0.04]}>
-        <boxGeometry args={[0.1, 0.006, 0.038]} />
-        <meshStandardMaterial {...silver} />
-      </mesh>
-
-      {/* ── VERTICAL STABILIZER ── */}
-      <mesh position={[0, 0.038, 0.175]}>
-        <boxGeometry args={[0.006, 0.055, 0.05]} />
-        <meshStandardMaterial {...silver} />
-      </mesh>
-
-      {/* ── FUSELAGE STRIPE ── */}
-      <mesh position={[0, 0.012, 0]}>
-        <cylinderGeometry args={[0.0285, 0.0285, 0.3, 16, 1, true]} />
-        <meshStandardMaterial color="#1d4ed8" metalness={0.6} roughness={0.3} transparent opacity={0.9} />
-      </mesh>
-
-      {/* ── CABIN WINDOWS (row) ── */}
-      {[-0.1, -0.06, -0.02, 0.02, 0.06, 0.1].map((z, i) => (
-        <mesh key={i} position={[0.029, 0.01, z]}>
-          <boxGeometry args={[0.002, 0.009, 0.012]} />
-          <meshStandardMaterial color="#bfdbfe" emissive="#3b82f6" emissiveIntensity={0.8} transparent opacity={0.9} />
-        </mesh>
-      ))}
-      {[-0.1, -0.06, -0.02, 0.02, 0.06, 0.1].map((z, i) => (
-        <mesh key={i} position={[-0.029, 0.01, z]}>
-          <boxGeometry args={[0.002, 0.009, 0.012]} />
-          <meshStandardMaterial color="#bfdbfe" emissive="#3b82f6" emissiveIntensity={0.8} transparent opacity={0.9} />
-        </mesh>
-      ))}
-
-      {/* Nav lights */}
-      <mesh position={[-0.246, 0.018, 0.015]}>
-        <sphereGeometry args={[0.005, 6, 6]} />
-        <meshStandardMaterial color="#ff4444" emissive="#ff0000" emissiveIntensity={3} />
-      </mesh>
-      <mesh position={[0.246, 0.018, 0.015]}>
-        <sphereGeometry args={[0.005, 6, 6]} />
-        <meshStandardMaterial color="#44ff44" emissive="#00ff44" emissiveIntensity={3} />
-      </mesh>
-      {/* Strobe */}
-      <mesh position={[0, -0.002, 0]}>
-        <sphereGeometry args={[0.004, 6, 6]} />
-        <meshStandardMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={2} />
-      </mesh>
-    </group>
+    <svg className={className} viewBox="0 0 100 100" width={size} height={size} style={{ color: "#fff", display: "block" }}>
+      <g fill="currentColor">
+        <rect x="30" y="12" width="12" height="76" />
+        <rect x="58" y="12" width="12" height="76" />
+        <rect x="12" y="30" width="76" height="12" />
+        <rect x="12" y="58" width="76" height="12" />
+      </g>
+      <g className="hl-hash-dots">
+        <circle cx="36" cy="36" r="6.5" />
+        <circle cx="64" cy="36" r="6.5" />
+        <circle cx="36" cy="64" r="6.5" />
+        <circle cx="64" cy="64" r="6.5" />
+      </g>
+    </svg>
   );
 }
 
-/* ═══════════════════════════════════════
-   3D: ORBIT RINGS
-═══════════════════════════════════════ */
-function OrbitRings() {
-  const ring1 = useRef();
-  const ring2 = useRef();
-  const ring3 = useRef();
-
-  useFrame((_, delta) => {
-    if (ring1.current) ring1.current.rotation.z += delta * 0.12;
-    if (ring2.current) ring2.current.rotation.x += delta * 0.08;
-    if (ring3.current) {
-      ring3.current.rotation.y += delta * 0.06;
-      ring3.current.rotation.z += delta * 0.04;
-    }
-  });
-
-  return (
-    <group>
-      {/* Ring 1 — equatorial */}
-      <mesh ref={ring1} rotation={[Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[1.95, 0.004, 8, 120]} />
-        <meshBasicMaterial color="#38bdf8" transparent opacity={0.35} />
-      </mesh>
-
-      {/* Ring 2 — tilted */}
-      <mesh ref={ring2} rotation={[0.6, 0.3, 0]}>
-        <torusGeometry args={[2.15, 0.003, 8, 120]} />
-        <meshBasicMaterial color="#818cf8" transparent opacity={0.25} />
-      </mesh>
-
-      {/* Ring 3 — outer glow ring */}
-      <mesh ref={ring3} rotation={[1.1, 0.5, 0.2]}>
-        <torusGeometry args={[2.38, 0.002, 8, 120]} />
-        <meshBasicMaterial color="#22d3ee" transparent opacity={0.18} />
-      </mesh>
-
-      {/* Ring glow dashes on ring1 */}
-      {Array.from({ length: 12 }).map((_, i) => {
-        const a = (i / 12) * Math.PI * 2;
-        return (
-          <mesh key={i} position={[Math.cos(a) * 1.95, 0, Math.sin(a) * 1.95]}>
-            <sphereGeometry args={[0.016, 6, 6]} />
-            <meshBasicMaterial color="#7dd3fc" transparent opacity={0.7} />
-          </mesh>
-        );
-      })}
-    </group>
-  );
-}
-
-/* ═══════════════════════════════════════
-   3D: GLOBE WITH NODES
-═══════════════════════════════════════ */
-function GlobeNodes() {
-  const groupRef = useRef();
-  const nodeCount = 32;
-
-  const nodes = useMemo(() => {
-    return Array.from({ length: nodeCount }, () => {
-      const phi = Math.acos(-1 + 2 * Math.random());
-      const theta = Math.random() * Math.PI * 2;
-      const r = 1.55;
-      return new THREE.Vector3(
-        r * Math.sin(phi) * Math.cos(theta),
-        r * Math.sin(phi) * Math.sin(theta),
-        r * Math.cos(phi)
-      );
-    });
-  }, []);
-
-  const lineGeometries = useMemo(() => {
-    const pairs = [];
-    for (let i = 0; i < nodes.length; i++)
-      for (let j = i + 1; j < nodes.length; j++)
-        if (nodes[i].distanceTo(nodes[j]) < 1.05)
-          pairs.push(new THREE.BufferGeometry().setFromPoints([nodes[i], nodes[j]]));
-    return pairs;
-  }, [nodes]);
-
-  // Baku: lat 40.41°N, lon 49.87°E → sphere coords (r=1.55)
-  const bakuPos = useMemo(() => {
-    const phi   = (90 - 40.41) * (Math.PI / 180);
-    const theta = 49.87        * (Math.PI / 180);
-    return new THREE.Vector3(
-      1.58 * Math.sin(phi) * Math.cos(theta),
-      1.58 * Math.cos(phi),
-      1.58 * Math.sin(phi) * Math.sin(theta),
-    );
-  }, []);
-
-  useFrame((_, delta) => {
-    if (groupRef.current) {
-      groupRef.current.rotation.y += delta * 0.06;
-    }
-  });
-
-  return (
-    <group ref={groupRef}>
-      <Sphere args={[1.5, 64, 64]}>
-        <MeshDistortMaterial
-          color="#071630"
-          emissive="#0a3a7a"
-          emissiveIntensity={0.5}
-          distort={0.06}
-          speed={1.0}
-          roughness={0.15}
-          metalness={0.9}
-          transparent
-          opacity={0.9}
-        />
-      </Sphere>
-      <Sphere args={[1.52, 32, 32]}>
-        <meshBasicMaterial color="#38bdf8" wireframe transparent opacity={0.05} />
-      </Sphere>
-      {lineGeometries.map((geo, i) => (
-        <line key={i} geometry={geo}>
-          <lineBasicMaterial color="#38bdf8" transparent opacity={0.22} />
-        </line>
-      ))}
-      {nodes.map((pos, i) => (
-        <mesh key={i} position={pos}>
-          <sphereGeometry args={[0.024, 8, 8]} />
-          <meshBasicMaterial color="#7dd3fc" />
-        </mesh>
-      ))}
-      <Sphere args={[1.68, 32, 32]}>
-        <meshBasicMaterial color="#38bdf8" transparent opacity={0.03} side={THREE.BackSide} />
-      </Sphere>
-
-      {/* ── BAKU POINT ── */}
-      <BakuPoint position={bakuPos} />
-    </group>
-  );
-}
-
-/* ═══════════════════════════════════════
-   3D: BAKU POINT
-═══════════════════════════════════════ */
-function BakuPoint({ position }) {
-  const dotRef   = useRef();
-  const ring1Ref = useRef();
-  const ring2Ref = useRef();
-
-  useFrame((state) => {
-    const t = state.clock.elapsedTime;
-    // Pulsing dot
-    if (dotRef.current) {
-      const s = 1 + Math.sin(t * 2.5) * 0.35;
-      dotRef.current.scale.setScalar(s);
-    }
-    // Expanding rings
-    if (ring1Ref.current) {
-      const s1 = 1 + ((t * 0.8) % 1) * 2.5;
-      ring1Ref.current.scale.setScalar(s1);
-      ring1Ref.current.material.opacity = Math.max(0, 0.7 - ((t * 0.8) % 1) * 0.7);
-    }
-    if (ring2Ref.current) {
-      const s2 = 1 + (((t * 0.8) + 0.5) % 1) * 2.5;
-      ring2Ref.current.scale.setScalar(s2);
-      ring2Ref.current.material.opacity = Math.max(0, 0.7 - (((t * 0.8) + 0.5) % 1) * 0.7);
-    }
-  });
-
-  return (
-    <group position={position}>
-      {/* Core glowing dot */}
-      <mesh ref={dotRef}>
-        <sphereGeometry args={[0.03, 12, 12]} />
-        <meshBasicMaterial color="#f97316" />
-      </mesh>
-      {/* Point light glow */}
-      <pointLight color="#f97316" intensity={1.2} distance={0.5} />
-
-      {/* Expanding pulse rings */}
-      <mesh ref={ring1Ref} rotation={[Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[0.03, 0.045, 24]} />
-        <meshBasicMaterial color="#fb923c" transparent opacity={0.7} side={THREE.DoubleSide} />
-      </mesh>
-      <mesh ref={ring2Ref} rotation={[Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[0.03, 0.045, 24]} />
-        <meshBasicMaterial color="#fb923c" transparent opacity={0.35} side={THREE.DoubleSide} />
-      </mesh>
-
-      {/* HTML label */}
-      <Html
-        position={[0.08, 0.08, 0]}
-        style={{ pointerEvents: "none", userSelect: "none" }}
-        distanceFactor={4}
-      >
-        <div style={{
-          fontFamily: "'Courier New', monospace",
-          fontSize: "9px",
-          color: "#fb923c",
-          whiteSpace: "nowrap",
-          background: "rgba(4,12,24,0.75)",
-          border: "1px solid rgba(251,146,60,0.45)",
-          borderRadius: "3px",
-          padding: "2px 6px",
-          letterSpacing: "0.08em",
-          lineHeight: 1.5,
-        }}>
-          <span style={{ color: "#fdba74", fontWeight: 700 }}>UBBB</span>
-          {" · "}BAKU
-          <br />
-          <span style={{ color: "#94a3b8", fontSize: "8px" }}>40.41°N 49.87°E</span>
-        </div>
-      </Html>
-    </group>
-  );
-}
-
-/* ═══════════════════════════════════════
-   3D: PARTICLES
-═══════════════════════════════════════ */
-function ParticleField() {
-  const ref = useRef();
-  const positions = useMemo(() => {
-    const arr = new Float32Array(1500 * 3);
-    for (let i = 0; i < 1500; i++) {
-      arr[i * 3]     = (Math.random() - 0.5) * 24;
-      arr[i * 3 + 1] = (Math.random() - 0.5) * 24;
-      arr[i * 3 + 2] = (Math.random() - 0.5) * 24;
-    }
-    return arr;
-  }, []);
-
-  useFrame((_, delta) => {
-    if (ref.current) ref.current.rotation.y += delta * 0.008;
-  });
-
-  return (
-    <points ref={ref}>
-      <bufferGeometry>
-        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
-      </bufferGeometry>
-      <pointsMaterial size={0.02} color="#7dd3fc" transparent opacity={0.5} sizeAttenuation />
-    </points>
-  );
-}
-
-/* ═══════════════════════════════════════
-   3D: FLOATING ORBS
-═══════════════════════════════════════ */
-function FloatingOrb({ position, color, size = 0.4, speed = 1 }) {
-  const meshRef = useRef();
-  const base = position[1];
-  useFrame((state) => {
-    if (meshRef.current)
-      meshRef.current.position.y = base + Math.sin(state.clock.elapsedTime * speed) * 0.18;
-  });
-  return (
-    <mesh ref={meshRef} position={position}>
-      <sphereGeometry args={[size, 32, 32]} />
-      <MeshDistortMaterial color={color} emissive={color} emissiveIntensity={0.55}
-        distort={0.35} speed={2} transparent opacity={0.55} />
-    </mesh>
-  );
-}
-
-/* ═══════════════════════════════════════
-   3D: MOUSE PARALLAX CAMERA
-═══════════════════════════════════════ */
-function CameraRig({ mouseX, mouseY }) {
-  const { camera } = useThree();
-  useFrame((state) => {
-    const baseX = Math.sin(state.clock.elapsedTime * 0.08) * 0.3;
-    const baseY = Math.cos(state.clock.elapsedTime * 0.06) * 0.15 + 0.2;
-    camera.position.x += (mouseX.current * 1.2 + baseX - camera.position.x) * 0.04;
-    camera.position.y += (-mouseY.current * 0.8 + baseY - camera.position.y) * 0.04;
-    camera.lookAt(0, 0, 0);
-  });
-  return null;
-}
-
-/* ═══════════════════════════════════════
-   HERO SCENE
-═══════════════════════════════════════ */
-function HeroScene({ mouseX, mouseY }) {
-  return (
-    <Canvas camera={{ position: [0, 0.3, 5.2], fov: 48 }}
-      gl={{ antialias: true, alpha: true }}
-      style={{ position: "absolute", inset: 0 }}>
-      <ambientLight intensity={0.25} />
-      <pointLight position={[6, 6, 4]} intensity={2.2} color="#38bdf8" />
-      <pointLight position={[-6, -4, -4]} intensity={1.0} color="#818cf8" />
-      <pointLight position={[0, 10, 0]} intensity={0.6} color="#ffffff" />
-      <pointLight position={[0, -8, 3]} intensity={0.4} color="#0ea5e9" />
-
-      <Stars radius={90} depth={70} count={3500} factor={3} fade speed={0.4} />
-      <ParticleField />
-
-      <Float speed={0.8} rotationIntensity={0.05} floatIntensity={0.15}>
-        <GlobeNodes />
-        <OrbitRings />
-      </Float>
-
-      <RealisticPlane orbitRadius={2.9} speed={0.28} tilt={0.32} />
-
-      <FloatingOrb position={[-3.8, 1.2, -2.5]} color="#0ea5e9" size={0.32} speed={0.7} />
-      <FloatingOrb position={[3.5, -1.2, -2]}   color="#6366f1" size={0.25} speed={1.1} />
-      <FloatingOrb position={[2.8, 2.2, -3.5]}  color="#22d3ee" size={0.18} speed={1.4} />
-      <FloatingOrb position={[-3.0, -1.8, -2]}  color="#a78bfa" size={0.20} speed={0.9} />
-
-      <CameraRig mouseX={mouseX} mouseY={mouseY} />
-    </Canvas>
-  );
-}
-
-/* ═══════════════════════════════════════
-   HUD OVERLAY
-═══════════════════════════════════════ */
-function HUDOverlay() {
-  const isMobile = useMobile();
-  const [tick, setTick] = useState(0);
-
-  useEffect(() => {
-    const id = setInterval(() => setTick(t => t + 1), 1200);
-    return () => clearInterval(id);
-  }, []);
-
-  const alt   = (9144 + Math.round(Math.sin(tick * 0.4) * 38)).toLocaleString();
-  const spd   = 847  + Math.round(Math.sin(tick * 0.3) * 5);
-  const hdg   = String(45 + Math.round(Math.sin(tick * 0.2) * 3)).padStart(3, "0");
-  const pitch = (2.1  + Math.sin(tick * 0.25) * 0.4).toFixed(1);
-
-  const mono = {
-    fontFamily: "'Courier New', monospace",
-    letterSpacing: "0.06em",
-  };
-
-  const label = { fontSize: "9px", color: "#38bdf8", opacity: 0.7, marginBottom: "2px", ...mono };
-  const value = { fontSize: "13px", color: "#e0f2fe", fontWeight: 700, ...mono };
-  const dim   = { fontSize: "9px", color: "#38bdf8", opacity: 0.55, ...mono };
-
-  // Corner bracket helper
-  const Corner = ({ pos }) => {
-    const size = 18, thick = 1.5;
-    const styles = {
-      tl: { top: 0, left: 0,  borderTop: `${thick}px solid #38bdf8`, borderLeft:  `${thick}px solid #38bdf8` },
-      tr: { top: 0, right: 0, borderTop: `${thick}px solid #38bdf8`, borderRight: `${thick}px solid #38bdf8` },
-      bl: { bottom: 0, left:  0, borderBottom: `${thick}px solid #38bdf8`, borderLeft:  `${thick}px solid #38bdf8` },
-      br: { bottom: 0, right: 0, borderBottom: `${thick}px solid #38bdf8`, borderRight: `${thick}px solid #38bdf8` },
-    };
-    return <div style={{ position: "absolute", width: size, height: size, opacity: 0.6, ...styles[pos] }} />;
-  };
-
-  if (isMobile) return null;
-
-  return (
-    <div style={{
-      position: "absolute", inset: 0, zIndex: 20,
-      pointerEvents: "none", userSelect: "none",
-    }}>
-      {/* ── TOP LEFT: Mission ID ── */}
-      <motion.div
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 1.2, duration: 0.8 }}
-        style={{ position: "absolute", top: 90, left: 28, ...mono }}
-      >
-        <div style={{ fontSize: "9px", color: "#38bdf8", opacity: 0.6, marginBottom: 4 }}>MISSION</div>
-        <div style={{ fontSize: "14px", color: "#7dd3fc", fontWeight: 700 }}>HASH-01</div>
-        <div style={{ fontSize: "10px", color: "#38bdf8", opacity: 0.7, marginTop: 2 }}>MAA CAMPUS NET</div>
-        <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 6 }}>
-          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22c55e", display: "inline-block", boxShadow: "0 0 6px #22c55e" }} />
-          <span style={{ fontSize: "9px", color: "#22c55e", opacity: 0.9 }}>ONLINE</span>
-        </div>
-      </motion.div>
-
-      {/* ── TOP RIGHT: Heading + pitch ── */}
-      <motion.div
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 1.3, duration: 0.8 }}
-        style={{ position: "absolute", top: 90, right: 28, textAlign: "right" }}
-      >
-        <div style={label}>HDG</div>
-        <div style={value}>{hdg}°</div>
-        <div style={{ marginTop: 10 }}>
-          <div style={label}>PITCH</div>
-          <div style={value}>{pitch}°</div>
-        </div>
-      </motion.div>
-
-      {/* ── BOTTOM LEFT: Altitude ── */}
-      <motion.div
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 1.4, duration: 0.8 }}
-        style={{ position: "absolute", bottom: 100, left: 28 }}
-      >
-        <div style={label}>ALTITUDE</div>
-        <div style={{ ...value, fontSize: "16px" }}>{alt} <span style={{ ...dim, fontSize: "10px" }}>m</span></div>
-        <div style={{ marginTop: 10 }}>
-          <div style={label}>ORIGIN</div>
-          <div style={{ ...value, fontSize: "11px" }}>UBBB · BAKU</div>
-        </div>
-      </motion.div>
-
-      {/* ── BOTTOM RIGHT: Speed ── */}
-      <motion.div
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 1.5, duration: 0.8 }}
-        style={{ position: "absolute", bottom: 100, right: 28, textAlign: "right" }}
-      >
-        <div style={label}>AIRSPEED</div>
-        <div style={{ ...value, fontSize: "16px" }}>{spd} <span style={{ ...dim, fontSize: "10px" }}>km/h</span></div>
-        <div style={{ marginTop: 10 }}>
-          <div style={label}>PLATFORM</div>
-          <div style={{ ...value, fontSize: "11px", color: "#fb923c" }}>hashcampus.site</div>
-        </div>
-      </motion.div>
-
-      {/* ── CENTER RETICLE ── */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.6 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 1.6, duration: 0.9 }}
-        style={{
-          position: "absolute",
-          top: "50%", left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: 72, height: 72,
-        }}
-      >
-        {/* Outer ring */}
-        <div style={{
-          position: "absolute", inset: 0,
-          border: "1px solid rgba(56,189,248,0.35)",
-          borderRadius: "50%",
-        }} />
-        {/* Inner dot */}
-        <div style={{
-          position: "absolute", top: "50%", left: "50%",
-          width: 6, height: 6,
-          transform: "translate(-50%,-50%)",
-          background: "#38bdf8",
-          borderRadius: "50%",
-          boxShadow: "0 0 10px #38bdf8",
-        }} />
-        {/* Cross hairs */}
-        {[0, 90, 180, 270].map(deg => (
-          <div key={deg} style={{
-            position: "absolute",
-            top: "50%", left: "50%",
-            width: 12, height: 1,
-            background: "rgba(56,189,248,0.55)",
-            transformOrigin: "left center",
-            transform: `translateY(-50%) rotate(${deg}deg) translateX(20px)`,
-          }} />
-        ))}
-        {/* Corner brackets on reticle */}
-        <Corner pos="tl" /><Corner pos="tr" /><Corner pos="bl" /><Corner pos="br" />
-      </motion.div>
-
-      {/* ── HORIZONTAL SCAN LINE ── */}
-      <motion.div
-        animate={{ top: ["15%", "85%", "15%"] }}
-        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-        style={{
-          position: "absolute", left: "5%", right: "5%",
-          height: "1px",
-          background: "linear-gradient(to right, transparent, rgba(56,189,248,0.18), rgba(56,189,248,0.35), rgba(56,189,248,0.18), transparent)",
-        }}
-      />
-
-      {/* ── SIDE TICK MARKS (left) ── */}
-      <div style={{ position: "absolute", left: 16, top: "30%", bottom: "30%", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-        {Array.from({ length: 7 }).map((_, i) => (
-          <div key={i} style={{ width: i % 3 === 0 ? 10 : 5, height: 1, background: "rgba(56,189,248,0.3)" }} />
-        ))}
-      </div>
-      {/* Right ticks */}
-      <div style={{ position: "absolute", right: 16, top: "30%", bottom: "30%", display: "flex", flexDirection: "column", justifyContent: "space-between", alignItems: "flex-end" }}>
-        {Array.from({ length: 7 }).map((_, i) => (
-          <div key={i} style={{ width: i % 3 === 0 ? 10 : 5, height: 1, background: "rgba(56,189,248,0.3)" }} />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════
-   ANIMATED COUNTER
-═══════════════════════════════════════ */
-function Counter({ target, suffix = "" }) {
-  const [count, setCount] = useState(0);
-  const ref = useRef();
-  const started = useRef(false);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting && !started.current) {
-        started.current = true;
-        const num = parseInt(target);
-        const duration = 1800;
-        const steps = 60;
-        let step = 0;
-        const timer = setInterval(() => {
-          step++;
-          setCount(Math.round((num * step) / steps));
-          if (step >= steps) clearInterval(timer);
-        }, duration / steps);
-      }
-    }, { threshold: 0.5 });
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, [target]);
-
-  return <span ref={ref}>{count}{suffix}</span>;
-}
-
-/* ═══════════════════════════════════════
-   MOCKUP: STEP 1 — REGISTRATION
-═══════════════════════════════════════ */
-function RegistrationMockup({ active }) {
-  const email    = "sardar@naa.edu.az";
-  const name     = "Sardar Soltanzada";
-  const [eLen, setELen] = useState(0);
-  const [nLen, setNLen] = useState(0);
-  const [stage, setStage] = useState(0); // 0 typing, 1 loading, 2 done
-
-  useEffect(() => {
-    if (!active) { setELen(0); setNLen(0); setStage(0); return; }
-    let t;
-    // type name
-    let ni = 0;
-    t = setInterval(() => { ni++; setNLen(ni); if (ni >= name.length) clearInterval(t); }, 55);
-    // type email after name done
-    setTimeout(() => {
-      let ei = 0;
-      const t2 = setInterval(() => { ei++; setELen(ei); if (ei >= email.length) clearInterval(t2); }, 45);
-    }, name.length * 55 + 300);
-    // loading + done
-    setTimeout(() => setStage(1), name.length * 55 + email.length * 45 + 700);
-    setTimeout(() => setStage(2), name.length * 55 + email.length * 45 + 1700);
-    return () => clearInterval(t);
-  }, [active]);
-
-  const card = {
-    background: "rgba(6,18,36,0.95)", border: "1px solid rgba(56,189,248,0.15)",
-    borderRadius: 0, padding: "28px 24px", width: "100%", maxWidth: 360,
-    boxShadow: "0 24px 80px rgba(0,0,0,0.5)",
-  };
-  const inp = {
-    width: "100%", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)",
-    borderRadius: 0, padding: "10px 14px", color: "#e2e8f0", fontSize: 14,
-    fontFamily: "inherit", outline: "none", boxSizing: "border-box",
-  };
-  const lbl = { fontSize: 11, color: "#64748b", marginBottom: 5, display: "block" };
-
-  return (
-    <div style={card}>
-      {/* Header */}
-      <div style={{ textAlign: "center", marginBottom: 24 }}>
-        <span style={{ fontSize: 22, fontWeight: 900, background: "linear-gradient(135deg,#38bdf8,#818cf8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Hash</span>
-        <p style={{ fontSize: 13, color: "#64748b", marginTop: 4 }}>Qeydiyyat — MAA tələbəsi</p>
-      </div>
-
-      {/* Name field */}
-      <div style={{ marginBottom: 14 }}>
-        <span style={lbl}>Ad Soyad</span>
-        <div style={{ ...inp, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span>{name.slice(0, nLen)}{nLen < name.length && active ? <span style={{ borderRight: "2px solid #38bdf8", marginLeft: 1, animation: "blink 1s infinite" }}>&nbsp;</span> : null}</span>
-        </div>
-      </div>
-
-      {/* Email field */}
-      <div style={{ marginBottom: 20 }}>
-        <span style={lbl}>Email</span>
-        <div style={{ ...inp, display: "flex", alignItems: "center", justifyContent: "space-between",
-          borderColor: eLen === email.length ? "rgba(34,197,94,0.5)" : "rgba(255,255,255,0.1)" }}>
-          <span style={{ color: eLen > 0 ? "#e2e8f0" : "#475569" }}>
-            {email.slice(0, eLen)}{eLen > 0 && eLen < email.length && active ? <span style={{ borderRight: "2px solid #38bdf8", marginLeft: 1 }}>&nbsp;</span> : null}
-          </span>
-          {eLen === email.length && <span style={{ color: "#22c55e", fontSize: 16 }}>✓</span>}
-        </div>
-        {eLen === email.length && (
-          <p style={{ fontSize: 10, color: "#22c55e", marginTop: 4 }}>✓ MAA email təsdiqləndi</p>
-        )}
-      </div>
-
-      {/* Button */}
-      <div style={{
-        width: "100%", padding: "12px", borderRadius: 0, textAlign: "center",
-        fontWeight: 700, fontSize: 14,
-        background: stage === 0 ? "linear-gradient(135deg,#0ea5e9,#2563eb)" :
-                    stage === 1 ? "rgba(14,165,233,0.4)" : "linear-gradient(135deg,#22c55e,#16a34a)",
-        boxShadow: "0 0 30px rgba(14,165,233,0.3)", transition: "all 0.5s", cursor: "default",
-      }}>
-        {stage === 0 && "Qeydiyyatdan keç →"}
-        {stage === 1 && <span style={{ opacity: 0.7 }}>Yüklənir...</span>}
-        {stage === 2 && "✓ Uğurla qeydiyyat oldunuz!"}
-      </div>
-
-      {/* Verify email note */}
-      {stage === 2 && (
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-          style={{ marginTop: 14, padding: "10px 14px", borderRadius: 0,
-            background: "rgba(34,197,94,0.07)", border: "1px solid rgba(34,197,94,0.2)",
-            fontSize: 11, color: "#86efac", textAlign: "center" }}>
-          📬 naa.edu.az emailinə doğrulama linki göndərildi
-        </motion.div>
-      )}
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════
-   MOCKUP: STEP 2 — PROFILE BUILD
-═══════════════════════════════════════ */
-function ProfileMockup({ active }) {
-  const skills = ["Python", "AutoCAD", "MATLAB", "Aviasiya", "C++", "SolidWorks"];
-  const [visSkills, setVisSkills] = useState(0);
-  const [progress, setProgress]   = useState(0);
-  const [showConn, setShowConn]   = useState(false);
-
-  useEffect(() => {
-    if (!active) { setVisSkills(0); setProgress(0); setShowConn(false); return; }
-    // progress bar
-    let p = 0;
-    const t1 = setInterval(() => { p += 2; setProgress(Math.min(p, 85)); if (p >= 85) clearInterval(t1); }, 30);
-    // skills appear one by one
-    skills.forEach((_, i) => setTimeout(() => setVisSkills(i + 1), 400 + i * 320));
-    setTimeout(() => setShowConn(true), 400 + skills.length * 320 + 300);
-    return () => clearInterval(t1);
-  }, [active]);
-
-  const card = {
-    background: "rgba(6,18,36,0.95)", border: "1px solid rgba(56,189,248,0.15)",
-    borderRadius: 0, padding: "24px", width: "100%", maxWidth: 360,
-    boxShadow: "0 24px 80px rgba(0,0,0,0.5)",
-  };
-
-  return (
-    <div style={card}>
-      {/* Avatar + name */}
-      <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 20 }}>
-        <div style={{ width: 52, height: 52, borderRadius: "50%", flexShrink: 0,
-          background: "linear-gradient(135deg,#0ea5e9,#6366f1)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 20, fontWeight: 900, color: "#fff",
-          boxShadow: "0 0 20px rgba(14,165,233,0.4)" }}>S</div>
-        <div>
-          <div style={{ fontSize: 16, fontWeight: 700, color: "#f1f5f9" }}>Sardar Soltanzada</div>
-          <div style={{ fontSize: 12, color: "#38bdf8", marginTop: 2 }}>Aviasiya Mühəndisliyi</div>
-          <div style={{ fontSize: 11, color: "#475569", marginTop: 1 }}>III kurs · MAA</div>
-        </div>
-      </div>
-
-      {/* Progress bar */}
-      <div style={{ marginBottom: 18 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#64748b", marginBottom: 6 }}>
-          <span>Profil tamamlanma</span><span style={{ color: "#38bdf8" }}>{progress}%</span>
-        </div>
-        <div style={{ height: 4, background: "rgba(255,255,255,0.06)", borderRadius: 0 }}>
-          <motion.div animate={{ width: `${progress}%` }} transition={{ duration: 0.05 }}
-            style={{ height: "100%", borderRadius: 0,
-              background: "linear-gradient(90deg,#0ea5e9,#6366f1)",
-              boxShadow: "0 0 8px rgba(14,165,233,0.5)" }} />
-        </div>
-      </div>
-
-      {/* Skills */}
-      <div style={{ fontSize: 11, color: "#64748b", marginBottom: 10 }}>Bacarıqlar</div>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 18 }}>
-        {skills.slice(0, visSkills).map((s, i) => (
-          <motion.span key={s} initial={{ opacity: 0, scale: 0.7 }} animate={{ opacity: 1, scale: 1 }}
-            style={{ fontSize: 11, padding: "4px 10px", borderRadius: 2,
-              background: "rgba(56,189,248,0.1)", border: "1px solid rgba(56,189,248,0.25)",
-              color: "#7dd3fc" }}>{s}</motion.span>
-        ))}
-      </div>
-
-      {/* Connection requests */}
-      <AnimatePresence>
-        {showConn && (
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-            style={{ padding: "10px 14px", borderRadius: 0,
-              background: "rgba(99,102,241,0.08)", border: "1px solid rgba(99,102,241,0.2)",
-              display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span style={{ fontSize: 12, color: "#a5b4fc" }}>🔔 3 əlaqə istəyi gözləyir</span>
-            <span style={{ fontSize: 11, color: "#6366f1", fontWeight: 600, cursor: "default" }}>Bax →</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════
-   MOCKUP: STEP 3 — NETWORK / FEED
-═══════════════════════════════════════ */
-function NetworkMockup({ active }) {
-  const posts = [
-    { initials: "A", name: "Anar Hüseynov", dept: "Hava Nəqliyyatı", text: "Drone layihəm üçün komanda axtarıram. Python + Arduino biləni var?", likes: 18, comments: 5, color: "#0ea5e9" },
-    { initials: "N", name: "Nigar Əliyeva",  dept: "Aviasiya Elektronikası", text: "HackMAA 2026 yarışmasına qeydiyyat başladı! Komanda quranlar DM göndərsin 🚀", likes: 42, comments: 11, color: "#8b5cf6" },
-    { initials: "R", name: "Rauf Quliyev",   dept: "Texniki Texnologiyalar", text: "MATLAB ilə uçuş simulyasiyası hazırladım — kim maraqlanır?", likes: 9, comments: 3, color: "#22c55e" },
-  ];
-  const [visPosts, setVisPosts] = useState(0);
-  const [showNotif, setShowNotif] = useState(false);
-  const [likedPost, setLikedPost] = useState(null);
-
-  useEffect(() => {
-    if (!active) { setVisPosts(0); setShowNotif(false); setLikedPost(null); return; }
-    setTimeout(() => setShowNotif(true), 200);
-    posts.forEach((_, i) => setTimeout(() => setVisPosts(i + 1), 600 + i * 500));
-    setTimeout(() => setLikedPost(0), 600 + posts.length * 500 + 300);
-  }, [active]);
-
-  const card = {
-    background: "rgba(6,18,36,0.95)", border: "1px solid rgba(56,189,248,0.15)",
-    borderRadius: 0, padding: "16px", width: "100%", maxWidth: 360,
-    boxShadow: "0 24px 80px rgba(0,0,0,0.5)", overflow: "hidden",
-  };
-
-  return (
-    <div style={card}>
-      {/* Notification */}
-      <AnimatePresence>
-        {showNotif && (
-          <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }}
-            style={{ padding: "9px 12px", borderRadius: 0, marginBottom: 14,
-              background: "rgba(251,146,60,0.09)", border: "1px solid rgba(251,146,60,0.25)",
-              display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#fdba74" }}>
-            <span>🔔</span>
-            <span><strong>Anar Hüseynov</strong> sizi izləməyə başladı</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Posts */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {posts.slice(0, visPosts).map((p, i) => (
-          <motion.div key={p.name} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
-            style={{ padding: "12px", borderRadius: 0,
-              background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-              <div style={{ width: 34, height: 34, borderRadius: "50%", flexShrink: 0,
-                background: `linear-gradient(135deg,${p.color},${p.color}88)`,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 14, fontWeight: 800, color: "#fff" }}>{p.initials}</div>
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: "#f1f5f9" }}>{p.name}</div>
-                <div style={{ fontSize: 10, color: "#475569" }}>{p.dept}</div>
-              </div>
-            </div>
-            <p style={{ fontSize: 12, color: "#94a3b8", lineHeight: 1.5, marginBottom: 10 }}>{p.text}</p>
-            <div style={{ display: "flex", gap: 16, fontSize: 11 }}>
-              <span
-                style={{ color: likedPost === i ? "#f43f5e" : "#64748b", cursor: "default",
-                  fontWeight: likedPost === i ? 700 : 400 }}>
-                {likedPost === i ? "♥" : "♡"} {likedPost === i ? p.likes + 1 : p.likes}
-              </span>
-              <span style={{ color: "#64748b" }}>💬 {p.comments}</span>
-            </div>
-          </motion.div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════
-   ONBOARDING SHOWCASE (scroll-driven)
-═══════════════════════════════════════ */
-const steps = [
-  { num: "01", title: "Qeydiyyat",       desc: "@naa.edu.az emailinlə platformaya qoşul. Email real vaxtda doğrulanır.", tag: "30 saniyə" },
-  { num: "02", title: "Profil yarat",    desc: "İxtisasını, bacarıqlarını və layihələrini əlavə et. Profil kartın avtomatik hazırlanır.", tag: "2 dəqiqə" },
-  { num: "03", title: "Şəbəkəyə qoşul", desc: "Həmyaşıdlarınla əlaqə saxla, komanda tap, layihə başlat.", tag: "İndi" },
-];
-
-function StepRow({ step, index, mockup }) {
-  const rowRef   = useRef();
-  const [active, setActive] = useState(false);
-  const isMobile = useMobile();
-  const isEven   = index % 2 === 0;
-
-  useEffect(() => {
-    const el = rowRef.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(
-      ([e]) => setActive(e.isIntersecting),
-      { threshold: 0.45 }
-    );
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, []);
-
-  return (
-    <motion.div
-      ref={rowRef}
-      initial={{ opacity: 0, y: 50 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: false, amount: 0.4 }}
-      transition={{ duration: 0.7 }}
-      style={{
-        display: "flex",
-        flexDirection: isMobile ? "column" : isEven ? "row" : "row-reverse",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: isMobile ? 28 : "clamp(32px,6vw,80px)",
-        padding: isMobile ? "48px 20px" : "clamp(60px,8vw,100px) clamp(16px,5vw,48px)",
-        maxWidth: 1000,
-        margin: "0 auto",
-        width: "100%",
-      }}
-    >
-      {/* Step info */}
-      <div style={{ flexShrink: 0, maxWidth: isMobile ? "100%" : 260, width: isMobile ? "100%" : "auto" }}>
-        {/* Step number badge */}
-        <motion.div
-          animate={{
-            background: active
-              ? "linear-gradient(135deg,#0ea5e9,#6366f1)"
-              : "rgba(255,255,255,0.04)",
-            boxShadow: active
-              ? "0 0 28px rgba(14,165,233,0.45)"
-              : "none",
-          }}
-          transition={{ duration: 0.5 }}
-          style={{
-            width: 52, height: 52, borderRadius: 0,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 16, fontWeight: 900,
-            color: active ? "#fff" : "#334155",
-            border: active ? "none" : "1px solid rgba(255,255,255,0.07)",
-            marginBottom: 18,
-          }}
-        >
-          {step.num}
-        </motion.div>
-
-        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em",
-          textTransform: "uppercase", color: "#38bdf8", marginBottom: 8 }}>
-          {step.tag}
-        </div>
-        <h3 style={{ fontSize: "clamp(1.4rem,2.5vw,1.9rem)", fontWeight: 900,
-          color: "#f1f5f9", lineHeight: 1.2, marginBottom: 12 }}>
-          {step.title}
-        </h3>
-        <p style={{ fontSize: 14, color: "#64748b", lineHeight: 1.7, margin: 0 }}>
-          {step.desc}
-        </p>
-
-        {/* Connector dot */}
-        {index < steps.length - 1 && (
-          <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 28 }}>
-            <div style={{ width: 6, height: 6, borderRadius: "50%",
-              background: active ? "#38bdf8" : "#1e3a5f",
-              boxShadow: active ? "0 0 8px #38bdf8" : "none",
-              transition: "all 0.4s" }} />
-            <div style={{ flex: 1, height: 1,
-              background: active
-                ? "linear-gradient(to right,#38bdf8,transparent)"
-                : "rgba(255,255,255,0.05)",
-              transition: "all 0.4s" }} />
-          </div>
-        )}
-      </div>
-
-      {/* Mockup */}
-      <div style={{ flex: 1, minWidth: 0, maxWidth: 380,
-        display: "flex", justifyContent: "center" }}>
-        <motion.div
-          animate={{ scale: active ? 1 : 0.97, opacity: active ? 1 : 0.5 }}
-          transition={{ duration: 0.5 }}
-          style={{ width: "100%" }}
-        >
-          {mockup(active)}
-        </motion.div>
-      </div>
-    </motion.div>
-  );
-}
-
-function OnboardingShowcase() {
-  const mockups = [
-    (active) => <RegistrationMockup active={active} />,
-    (active) => <ProfileMockup     active={active} />,
-    (active) => <NetworkMockup     active={active} />,
-  ];
-
-  return (
-    <section style={{ position: "relative" }}>
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 28 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.7 }}
-        style={{ textAlign: "center", padding: "72px 24px 0" }}
-      >
-        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.16em",
-          textTransform: "uppercase", color: "#38bdf8", marginBottom: 10 }}>
-          Necə işləyir
-        </p>
-        <h2 style={{ fontSize: "clamp(1.8rem,3.5vw,2.8rem)", fontWeight: 900,
-          color: "#fff", lineHeight: 1.1, margin: 0 }}>
-          Real vaxtda başla
-        </h2>
-      </motion.div>
-
-      {/* Vertical connector line between rows */}
-      <div style={{ position: "absolute", left: "50%", top: "18%", bottom: "10%",
-        width: 1, background: "rgba(56,189,248,0.07)",
-        transform: "translateX(-50%)", pointerEvents: "none" }} />
-
-      {steps.map((s, i) => (
-        <StepRow key={s.num} step={s} index={i} mockup={mockups[i]} />
-      ))}
-    </section>
-  );
-}
-
-/* ═══════════════════════════════════════
-   FEATURE CARDS & DATA
-═══════════════════════════════════════ */
-const features = [
-  { icon: FileText, title: "Akademik Lent",      desc: "Layihələrini, tədqiqatlarını və fikirlərini həmyaşıdlarınla paylaş.", gradient: "from-sky-500 to-blue-600",    glow: "rgba(14,165,233,0.18)" },
-  { icon: Users,    title: "Tələbə Şəbəkəsi",    desc: "İxtisas və bacarıq filtri ilə düzgün insanı tap, komanda qur.",        gradient: "from-indigo-500 to-violet-600", glow: "rgba(99,102,241,0.18)" },
-  { icon: Network,  title: "Professional Bağlantı", desc: "Əlaqə istəyi göndər, peşəkar şəbəkəni genişləndir.",             gradient: "from-blue-500 to-cyan-600",  glow: "rgba(6,182,212,0.18)" },
-  { icon: BookOpen, title: "Məqalə Yaz",          desc: "Bilik paylaş, sahənə dair dərin məzmun hazırla.",                    gradient: "from-violet-500 to-purple-600", glow: "rgba(139,92,246,0.18)" },
-  { icon: Shield,   title: "Qapalı Kampus",        desc: "Yalnız @naa.edu.az emaili ilə giriş — tam güvənli mühit.",           gradient: "from-emerald-500 to-teal-600", glow: "rgba(16,185,129,0.18)" },
-];
-
-/* ═══════════════════════════════════════
-   MAIN LANDING
-═══════════════════════════════════════ */
 export default function Landing() {
-  const containerRef = useRef();
-  const mouseX = useRef(0);
-  const mouseY = useRef(0);
-  const [mounted, setMounted] = useState(false);
-  const isMobile = useMobile();
+  const navRef = useRef();
 
-  const { scrollYProgress } = useScroll({ target: containerRef });
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
-  const heroScale   = useTransform(scrollYProgress, [0, 0.2], [1, 0.92]);
+  // Particle canvas
+  useEffect(() => {
+    const canvas = document.getElementById("hl-particles");
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    let w, h, dpr, dots = [], raf;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  const handleMouseMove = useCallback((e) => {
-    mouseX.current = (e.clientX / window.innerWidth  - 0.5) * 2;
-    mouseY.current = (e.clientY / window.innerHeight - 0.5) * 2;
+    function resize() {
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      w = canvas.clientWidth; h = canvas.clientHeight;
+      canvas.width = w * dpr; canvas.height = h * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      build();
+    }
+
+    function build() {
+      const n = Math.max(8, Math.round((w * h) / 26000 * 0.55));
+      dots = Array.from({ length: n }, () => ({
+        x: Math.random() * w, y: Math.random() * h,
+        r: Math.random() * 1.8 + 0.6,
+        vx: (Math.random() - 0.5) * 0.16, vy: (Math.random() - 0.5) * 0.16,
+        a: Math.random() * 0.5 + 0.18, tw: Math.random() * Math.PI * 2,
+      }));
+    }
+
+    function tick() {
+      ctx.clearRect(0, 0, w, h);
+      for (const d of dots) {
+        d.x += d.vx; d.y += d.vy; d.tw += 0.012;
+        if (d.x < -10) d.x = w + 10; if (d.x > w + 10) d.x = -10;
+        if (d.y < -10) d.y = h + 10; if (d.y > h + 10) d.y = -10;
+        const flick = 0.6 + 0.4 * Math.sin(d.tw);
+        ctx.beginPath();
+        ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(56,189,248,${d.a * flick})`;
+        ctx.fill();
+      }
+      if (!reduced) raf = requestAnimationFrame(tick);
+    }
+
+    window.addEventListener("resize", resize);
+    resize();
+    if (reduced) tick(); else raf = requestAnimationFrame(tick);
+    return () => { window.removeEventListener("resize", resize); cancelAnimationFrame(raf); };
   }, []);
 
+  // Scroll reveal + counters + nav blur
   useEffect(() => {
-    window.addEventListener("mousemove", handleMouseMove);
-    setTimeout(() => setMounted(true), 120);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, [handleMouseMove]);
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const nav = navRef.current;
+
+    // nav blur
+    const onScroll = () => nav && nav.classList.toggle("scrolled", window.scrollY > 24);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+
+    // reveals
+    const revealEls = [...document.querySelectorAll(".hl-reveal, .hl-reveal-l, .hl-reveal-r")];
+    if (reduced) {
+      revealEls.forEach(el => el.classList.add("in"));
+    } else {
+      let pending = [...revealEls];
+      const showOne = el => { const d = parseInt(el.dataset.d || "0", 10); setTimeout(() => el.classList.add("in"), d); };
+      const checkReveal = () => {
+        const vh = window.innerHeight;
+        pending = pending.filter(el => {
+          const r = el.getBoundingClientRect();
+          if (r.top < vh * 0.9 && r.bottom > 0) { showOne(el); return false; }
+          return true;
+        });
+      };
+      let ticking = false;
+      const onScrollR = () => { if (ticking) return; ticking = true; requestAnimationFrame(() => { ticking = false; checkReveal(); }); };
+      window.addEventListener("scroll", onScrollR, { passive: true });
+      window.addEventListener("resize", onScrollR, { passive: true });
+      checkReveal();
+      setTimeout(() => revealEls.forEach(el => el.classList.add("in")), 2600);
+    }
+
+    // counters
+    const counters = [...document.querySelectorAll("[data-count]")];
+    let cPending = [...counters];
+    const runCounter = el => {
+      const target = parseFloat(el.dataset.count);
+      const vEl = el.querySelector(".v");
+      if (!vEl) return;
+      if (reduced) { vEl.textContent = target; return; }
+      const dur = 1400, t0 = performance.now();
+      const step = now => {
+        const p = Math.min((now - t0) / dur, 1);
+        vEl.textContent = Math.round(target * (1 - Math.pow(1 - p, 3)));
+        if (p < 1) requestAnimationFrame(step); else vEl.textContent = target;
+      };
+      requestAnimationFrame(step);
+    };
+    const checkCounters = () => {
+      const vh = window.innerHeight;
+      cPending = cPending.filter(el => {
+        const r = el.getBoundingClientRect();
+        if (r.top < vh * 0.85) { runCounter(el); return false; }
+        return true;
+      });
+    };
+    window.addEventListener("scroll", checkCounters, { passive: true });
+    checkCounters();
+    setTimeout(checkCounters, 2600);
+
+    // feature card tilt
+    if (!reduced && window.matchMedia("(pointer:fine)").matches) {
+      const grid = document.querySelector(".hl-feat-grid");
+      if (grid) grid.style.perspective = "900px";
+      document.querySelectorAll(".hl-feat").forEach(card => {
+        card.addEventListener("mousemove", ev => {
+          const r = card.getBoundingClientRect();
+          const px = (ev.clientX - r.left) / r.width - 0.5;
+          const py = (ev.clientY - r.top) / r.height - 0.5;
+          card.style.transform = `translateY(-8px) rotateX(${(-py * 6).toFixed(2)}deg) rotateY(${(px * 6).toFixed(2)}deg)`;
+        });
+        card.addEventListener("mouseleave", () => { card.style.transform = ""; });
+      });
+    }
+
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const dots24 = Array.from({ length: 24 });
 
   return (
-    <div ref={containerRef} className="min-h-screen bg-[#040c18] text-white overflow-x-hidden">
+    <div className="hl-page">
+      <style>{CSS}</style>
+      <canvas id="hl-particles" />
 
-      {/* ── NAV ── */}
-      <motion.nav
-        initial={{ y: -70, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-        className="fixed top-0 inset-x-0 z-50 flex items-center justify-between px-4 md:px-8 py-4"
-        style={{ background: "rgba(4,12,24,0.98)", borderBottom: "1px solid rgba(56,189,248,0.15)" }}
-      >
-        <span className="text-2xl font-black tracking-tight select-none"
-          style={{ background: "linear-gradient(135deg,#38bdf8,#818cf8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-          Hash
-        </span>
-        <div className="flex items-center gap-3">
-          <Link to="/login" className="px-5 py-2 text-sm font-medium text-sky-300 hover:text-white transition-colors duration-200">
-            Daxil ol
-          </Link>
-          <Link to="/register" className="px-5 py-2 text-sm font-semibold transition-all duration-200 hover:scale-105"
-            style={{ background: "linear-gradient(135deg,#0ea5e9,#2563eb)", boxShadow: "0 0 24px rgba(14,165,233,0.4)", borderRadius: 0 }}>
-            Qeydiyyat
-          </Link>
-        </div>
-      </motion.nav>
+      <div className="hl-page-inner">
 
-      {/* ── HERO ── */}
-      <motion.section
-        style={{ opacity: heroOpacity, scale: heroScale }}
-        className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden"
-      >
-        {/* Background radial */}
-        <div className="absolute inset-0" style={{
-          background: "radial-gradient(ellipse 90% 65% at 50% 42%, #0c2550 0%, #040c18 72%)"
-        }} />
-        {/* Ambient glow blobs */}
-        <div className="absolute top-1/3 left-1/4 w-96 h-96 rounded-full blur-3xl pointer-events-none"
-          style={{ background: "rgba(14,165,233,0.07)" }} />
-        <div className="absolute top-1/4 right-1/4 w-72 h-72 rounded-full blur-3xl pointer-events-none"
-          style={{ background: "rgba(99,102,241,0.07)" }} />
+        {/* NAVBAR */}
+        <header className="hl-nav" ref={navRef}>
+          <div className="hl-wrap">
+            <Link className="hl-brand" to="/">
+              <HashMark size={38} className="hl-mark" />
+              <span className="hl-brand-name">HASH</span>
+            </Link>
+            <nav className="hl-nav-actions">
+              <Link className="hl-btn hl-btn-ghost" to="/login">Daxil ol</Link>
+              <Link className="hl-btn hl-btn-primary" to="/register">Qeydiyyatdan keç</Link>
+            </nav>
+          </div>
+        </header>
 
-        {/* 3D Canvas */}
-        <HeroScene mouseX={mouseX} mouseY={mouseY} />
+        {/* HERO */}
+        <section className="hl-hero" id="top">
+          <div className="hl-dotgrid hl-dg-tl">{dots24.map((_, i) => <i key={i} />)}</div>
+          <div className="hl-dotgrid hl-dg-tr">{dots24.map((_, i) => <i key={i} />)}</div>
 
-        {/* Hero text */}
-        <div className="relative z-10 text-center px-6 max-w-5xl mx-auto pointer-events-none">
-          <AnimatePresence>
-            {mounted && (
-              <>
-                <motion.div
-                  initial={{ opacity: 0, y: 24 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3, duration: 0.7 }}
-                  className="inline-flex items-center gap-2 px-3 py-1.5 mb-6 text-xs font-semibold tracking-widest uppercase pointer-events-auto"
-                  style={{ border: "1px solid rgba(56,189,248,0.28)", background: "rgba(56,189,248,0.07)", color: "#7dd3fc", borderRadius: 2 }}
-                >
-                  <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse" />
-                  Milli Aviasiya Akademiyası · Qapalı Platforma
-                </motion.div>
+          <svg className="hl-trail" style={{ top: 90, right: "8%", width: 160 }} viewBox="0 0 200 120" fill="none">
+            <path d="M4 96 C 40 96, 30 30, 80 34 S 150 70, 196 18" stroke="currentColor" strokeWidth="2" strokeDasharray="2 8" strokeLinecap="round" />
+            <path d="M196 18 l-22 6 l8 9 z" fill="currentColor" />
+          </svg>
 
+          <div className="hl-wrap hl-hero-inner">
+            <span className="hl-pill hl-reveal" data-d="0">
+              Tələbə <span className="hl-dot" /> Komanda <span className="hl-dot" /> Layihə <span className="hl-dot" /> Karyera
+            </span>
 
-                <motion.p
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.62, duration: 0.7 }}
-                  className="text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed"
-                  style={{ color: "#7dd3fc" }}
-                >
-                  Hash — MAA tələbələri üçün vahid akademik şəbəkə. Layihə tap,
-                  komanda qur, sahənin ən yaxşıları ilə əlaqə saxla.
-                </motion.p>
+            <h1 className="hl-h1">
+              <span className="l1 hl-reveal" data-d="80">BİRLİKDƏ</span>
+              <span className="l2 hl-reveal" data-d="180">YARADIRIQ.</span>
+            </h1>
 
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.78, duration: 0.7 }}
-                  className="flex flex-col sm:flex-row gap-3 justify-center items-center mt-16 mb-20 pointer-events-auto px-4"
-                >
-                  <Link to="/register"
-                    className="flex items-center gap-2 px-7 py-3.5 font-semibold transition-all duration-300 hover:scale-105 hover:shadow-2xl w-full sm:w-auto justify-center"
-                    style={{ background: "linear-gradient(135deg,#0ea5e9,#2563eb)", boxShadow: "0 0 50px rgba(14,165,233,0.45), inset 0 1px 0 rgba(255,255,255,0.12)", borderRadius: 0, letterSpacing: "0.05em", textTransform: "uppercase", fontSize: 13 }}>
-                    Platformaya qoşul <ArrowRight size={18} />
-                  </Link>
-                  <Link to="/login"
-                    className="flex items-center gap-2 px-7 py-3.5 font-medium transition-all duration-300 hover:scale-105 w-full sm:w-auto justify-center"
-                    style={{ border: "1px solid rgba(255,255,255,0.25)", background: "rgba(255,255,255,0.04)", borderRadius: 0 }}>
-                    Daxil ol
-                  </Link>
-                </motion.div>
-              </>
-            )}
-          </AnimatePresence>
-        </div>
+            <p className="hl-tagline hl-reveal" data-d="300">
+              <span>İDEYAN VARSA</span><span className="sep">•</span>
+              <span>KOMANDA QUR</span><span className="sep">•</span>
+              <span>LAYİHƏNİ GERÇƏKLƏŞDİR</span>
+            </p>
 
-        {/* Stats */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.0, duration: 0.7 }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-8 md:gap-14 z-10"
-          style={{ borderTop: "1px solid rgba(56,189,248,0.1)", paddingTop: 16 }}
-        >
-          {[
-            { target: "3000", suffix: "+", label: "Tələbə" },
-            { target: "5",    suffix: "+", label: "Fakültə" },
-            { target: "1",    suffix: "",  label: "Platforma" },
-          ].map(s => (
-            <div key={s.label} className="text-center">
-              <p className="text-3xl font-black text-white">
-                <Counter target={s.target} suffix={s.suffix} />
-              </p>
-              <p className="text-sm mt-0.5" style={{ color: "#475569" }}>{s.label}</p>
+            <span className="hl-brush hl-reveal" data-d="400">SƏNİN İDEYAN, GƏLƏCƏYİN!</span>
+
+            <div className="hl-hero-ctas hl-reveal" data-d="520">
+              <Link className="hl-btn hl-btn-primary" to="/register">
+                Platformaya qoşul
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+              </Link>
+              <a className="hl-btn hl-btn-ghost" href="#imkanlar">Daha çox öyrən</a>
             </div>
-          ))}
-        </motion.div>
 
-        <motion.div
-          animate={{ y: [0, 9, 0] }}
-          transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-          className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10"
-          style={{ color: "#1e3a5f" }}
-        >
-          <ChevronDown size={22} />
-        </motion.div>
-      </motion.section>
-
-      {/* ── FEATURES ── */}
-      <section className="relative py-36 px-6 max-w-7xl mx-auto">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[350px] rounded-full blur-3xl pointer-events-none"
-          style={{ background: "rgba(14,165,233,0.05)" }} />
-
-        <motion.div
-          initial={{ opacity: 0, y: 32 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.7 }}
-          className="text-center mb-20"
-        >
-          <p className="text-xs font-semibold tracking-widest uppercase mb-3" style={{ color: "#38bdf8" }}>İmkanlar</p>
-          <h2 className="text-4xl md:text-5xl font-black text-white">Platforma nə verir?</h2>
-        </motion.div>
-
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {features.map((f, i) => (
-            <motion.div
-              key={f.title}
-              initial={{ opacity: 0, y: 44 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.6, delay: i * 0.08 }}
-              whileHover={{ y: -8, scale: 1.025 }}
-              className="group relative p-7 cursor-default transition-all duration-300"
-              style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 0 }}
-              onMouseEnter={e => {
-                e.currentTarget.style.boxShadow = `0 24px 70px ${f.glow}, inset 0 1px 0 rgba(255,255,255,0.07)`;
-                e.currentTarget.style.border = "1px solid rgba(255,255,255,0.12)";
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.boxShadow = "none";
-                e.currentTarget.style.border = "1px solid rgba(255,255,255,0.06)";
-              }}
-            >
-              <div className={`w-12 h-12 bg-gradient-to-br ${f.gradient} flex items-center justify-center mb-5 shadow-lg`} style={{ borderRadius: 0 }}>
-                <f.icon size={22} className="text-white" />
+            <div className="hl-stats hl-reveal" data-d="640">
+              <div className="hl-stat">
+                <div className="num" data-count="500"><span className="v">0</span><span className="plus">+</span></div>
+                <div className="lab">Tələbə</div>
               </div>
-              <h3 className="text-lg font-bold text-white mb-2">{f.title}</h3>
-              <p className="text-sm leading-relaxed" style={{ color: "#64748b" }}>{f.desc}</p>
-            </motion.div>
-          ))}
-        </div>
-      </section>
+              <div className="hl-stat">
+                <div className="num" data-count="4"><span className="v">0</span></div>
+                <div className="lab">Universitet</div>
+              </div>
+              <div className="hl-stat">
+                <div className="num" data-count="1"><span className="v">0</span></div>
+                <div className="lab">Şəbəkə</div>
+              </div>
+            </div>
+          </div>
+        </section>
 
-      {/* ── ONBOARDING SHOWCASE ── */}
-      <OnboardingShowcase />
+        {/* FEATURES */}
+        <section className="hl-section-pad" id="imkanlar">
+          <div className="hl-wrap">
+            <div className="hl-section-head">
+              <span className="hl-eyebrow hl-reveal">İmkanlar</span>
+              <h2 className="hl-reveal" data-d="60">Platforma nə verir?</h2>
+              <p className="sub hl-reveal" data-d="140">İdeyadan komandaya, komandadan layihəyə — hər addımda yanında.</p>
+            </div>
 
-      {/* ── CTA ── */}
-      <section className="px-6 pb-36 max-w-5xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 44 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          className="relative overflow-hidden p-8 md:p-14 text-center"
-          style={{
-            borderRadius: 0,
-            background: "linear-gradient(135deg,rgba(12,37,80,0.92) 0%,rgba(4,12,24,0.97) 100%)",
-            border: "1px solid rgba(56,189,248,0.14)",
-            boxShadow: "0 0 130px rgba(14,165,233,0.1), inset 0 1px 0 rgba(255,255,255,0.05)",
-          }}
-        >
-          <p className="text-xs font-semibold tracking-widest uppercase mb-4" style={{ color: "#38bdf8" }}>Başlamağa hazırsan?</p>
-          <h2 className="text-4xl md:text-5xl font-black text-white mb-4 relative">
-            Akademik karyeranı<br />bu gün inşa et.
-          </h2>
-          <p className="mb-10 max-w-md mx-auto" style={{ color: "#64748b" }}>
-            @naa.edu.az və ya @student.naa.edu.az email ünvanınla qeydiyyatdan keç.
-          </p>
-          <Link to="/register"
-            className="inline-flex items-center gap-2 px-10 py-4 font-semibold transition-all duration-300 hover:scale-105"
-            style={{ background: "linear-gradient(135deg,#0ea5e9,#2563eb)", boxShadow: "0 0 55px rgba(14,165,233,0.48)", borderRadius: 0, letterSpacing: "0.05em", textTransform: "uppercase", fontSize: 13 }}>
-            Qeydiyyatdan keç <ArrowRight size={18} />
-          </Link>
-        </motion.div>
-      </section>
+            <div className="hl-feat-grid">
+              {[
+                {
+                  idx: "01", title: "Komanda qur",
+                  desc: "Eyni məqsəd üçün doğru insanlarla bir araya gəl.",
+                  icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
+                },
+                {
+                  idx: "02", title: "İdeyanı paylaş",
+                  desc: "Yaradıcı fikirlərini cəmiyyətlə paylaş.",
+                  icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5C17.7 10.2 18 9 18 8A6 6 0 0 0 6 8c0 1 .3 2.2 1.5 3.5C8.3 12.3 8.8 13 9 14"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>,
+                },
+                {
+                  idx: "03", title: "Layihəni qur",
+                  desc: "İdeyadan reallığa gedən yolun ilk addımı.",
+                  icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg>,
+                },
+                {
+                  idx: "04", title: "Yarış & inkişaf et",
+                  desc: "Yarışmalarda iştirak et, təcrübə qazan və irəli get.",
+                  icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>,
+                },
+              ].map((f, i) => (
+                <article key={f.idx} className="hl-feat hl-reveal" data-d={i * 120}>
+                  <span className="idx">{f.idx}</span>
+                  <div className="ico">{f.icon}</div>
+                  <h3>{f.title}</h3>
+                  <p>{f.desc}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
 
-      {/* ── FOOTER ── */}
-      <footer className="border-t text-center py-10 text-sm"
-        style={{ borderColor: "rgba(255,255,255,0.05)", color: "#334155" }}>
-        <span className="font-bold" style={{ color: "#38bdf8" }}>Hash</span>
-        {" "}· Milli Aviasiya Akademiyası · hashcampus.site · © 2026
-      </footer>
+        {/* STEPS */}
+        <section className="hl-section-pad" id="addimlar">
+          <div className="hl-wrap">
+            <div className="hl-section-head">
+              <span className="hl-eyebrow hl-reveal">Addımlar</span>
+              <h2 className="hl-reveal" data-d="60">Necə işləyir?</h2>
+            </div>
+
+            <div className="hl-steps">
+              {/* STEP 01 */}
+              <div className="hl-step">
+                <div className="step-text hl-reveal-l">
+                  <div className="hl-step-num">01</div>
+                  <h3>Qeydiyyat — <span className="when">30 saniyə</span></h3>
+                  <p>Universitet email ünvanın ilə qeydiyyatdan keç. Sistem səni avtomatik tanıyır və şəbəkəyə qoşulursan.</p>
+                </div>
+                <div className="hl-mock hl-reveal-r">
+                  <div className="hl-mock-bar"><i /><i /><i /></div>
+                  <div className="hl-mock-label">Qeydiyyat</div>
+                  <div className="hl-field">
+                    <span className="val">ad.soyad@uni.edu.az</span>
+                    <span className="ok">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+                    </span>
+                  </div>
+                  <div className="hl-bar-progress"><i /></div>
+                </div>
+              </div>
+
+              {/* STEP 02 */}
+              <div className="hl-step flip">
+                <div className="step-text hl-reveal-r">
+                  <div className="hl-step-num">02</div>
+                  <h3>Profil yarat — <span className="when">2 dəqiqə</span></h3>
+                  <p>Bacarıqlarını, layihələrini və ixtisasını əlavə et. Profil kartın avtomatik hazırlanır.</p>
+                </div>
+                <div className="hl-mock hl-reveal-l">
+                  <div className="hl-mock-bar"><i /><i /><i /></div>
+                  <div className="hl-profile-top">
+                    <div className="hl-avatar">A</div>
+                    <div>
+                      <div className="who">Aysel M.</div>
+                      <div className="role">Kompüter Mühəndisliyi · 3-cü kurs</div>
+                    </div>
+                  </div>
+                  <div className="hl-tags">
+                    <span className="hl-tag on">Python</span>
+                    <span className="hl-tag on">UI/UX</span>
+                    <span className="hl-tag">React</span>
+                    <span className="hl-tag">Robotika</span>
+                    <span className="hl-tag on">Data</span>
+                    <span className="hl-tag">Liderlik</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* STEP 03 */}
+              <div className="hl-step">
+                <div className="step-text hl-reveal-l">
+                  <div className="hl-step-num">03</div>
+                  <h3>Şəbəkəyə qoşul — <span className="when">İndi</span></h3>
+                  <p>Həmyaşıdlarınla əlaqə saxla, komanda tap və layihəni birlikdə başlat.</p>
+                </div>
+                <div className="hl-mock hl-reveal-r">
+                  <div className="hl-mock-bar"><i /><i /><i /></div>
+                  <div className="hl-mock-label">Axın</div>
+                  <div className="hl-post">
+                    <div className="pa">RŞ</div>
+                    <div className="pb"><div className="ph">Rəşad Ş.</div><div className="pt">Hackathon üçün frontend developer axtarıram 🔍</div></div>
+                  </div>
+                  <div className="hl-post">
+                    <div className="pa">NƏ</div>
+                    <div className="pb"><div className="ph">Nərmin Ə.</div><div className="pt">Yeni AI layihəmizə komanda yığırıq — qoşulun!</div></div>
+                  </div>
+                  <div className="hl-post">
+                    <div className="pa">TH</div>
+                    <div className="pb"><div className="ph">Tural H.</div><div className="pt">Robotika yarışına 2 nəfər lazımdır.</div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* CTA */}
+        <section className="hl-section-pad" id="qosul">
+          <div className="hl-wrap">
+            <div className="hl-cta-card hl-reveal">
+              <h2>Akademik karyeranı bu gün inşa et.</h2>
+              <p className="sub">Pulsuz qeydiyyat. Heç bir ödəniş yoxdur.</p>
+              <Link className="hl-btn hl-btn-primary hl-pulse" to="/register">
+                Qeydiyyatdan keç
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* FOOTER */}
+        <footer className="hl-footer">
+          <div className="hl-wrap">
+            <div>
+              <div className="hl-fbrand">
+                <HashMark size={26} className="hl-mark" />
+                <span className="hl-fmeta"><b>HASH</b> &nbsp;·&nbsp; hashcampus.site &nbsp;·&nbsp; © 2026</span>
+              </div>
+              <p className="hl-fnote">Hash müstəqil tələbə icmasıdır.</p>
+            </div>
+            <a className="hl-ig" href="https://www.instagram.com/hashcampus_official/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="0.6" fill="currentColor"/></svg>
+            </a>
+          </div>
+        </footer>
+
+      </div>
     </div>
   );
 }

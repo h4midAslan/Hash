@@ -10,6 +10,6 @@ class Contest(Base):
     title = Column(String(255), nullable=False)
     prize = Column(String(100), nullable=False)
     deadline = Column(DateTime(timezone=True), nullable=False)
-    tags = Column(Text, nullable=False, default="#AviasiyaAkademiyası,#HashCampus")
+    tags = Column(Text, nullable=False, default="#HashCampus")
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

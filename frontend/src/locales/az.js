@@ -35,7 +35,7 @@ export default {
   settings_lang_en: "English",
   bg_default: "Normal",
   bg_navy: "Tünd göy",
-  bg_vectors: "Vektor & Aviasiya",
+  bg_vectors: "Vektor & Texnologiya",
 
   // Feed
   feed_title: "Yeniliklər",
@@ -123,7 +123,7 @@ export default {
   register_title: "Qeydiyyat",
   register_subtitle: "Yeni hesab yaradın",
   register_fullname: "Ad Soyad",
-  register_email: "Email (@naa.edu.az / @unec.edu.az)",
+  register_email: "Email (@uni.edu.az)",
   register_password: "Şifrə",
   register_faculty: "Fakültə",
   register_major: "İxtisas",

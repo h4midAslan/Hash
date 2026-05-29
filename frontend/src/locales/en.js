@@ -123,7 +123,7 @@ export default {
   register_title: "Register",
   register_subtitle: "Create a new account",
   register_fullname: "Full name",
-  register_email: "Email (@naa.edu.az)",
+  register_email: "Email (@uni.edu.az)",
   register_password: "Password",
   register_faculty: "Faculty",
   register_major: "Major",

@@ -49,7 +49,7 @@ export default function Admin() {
   const [notifMessage, setNotifMessage] = useState("");
   const [notifSending, setNotifSending] = useState(false);
   const [contest, setContest] = useState(null);
-  const [contestForm, setContestForm] = useState({ title: "Aviasiya Akademiyası Foto Müsabiqəsi", prize: "50 AZN", deadline: "", tags: "#AviasiyaAkademiyası,#HashCampus" });
+  const [contestForm, setContestForm] = useState({ title: "Hash Foto Müsabiqəsi", prize: "50 AZN", deadline: "", tags: "#HashCampus" });
   const [contestSaving, setContestSaving] = useState(false);
 
   useEffect(() => {
@@ -1321,9 +1321,9 @@ export default function Admin() {
             </h4>
 
             {[
-              { label: "Başlıq", key: "title", placeholder: "Aviasiya Akademiyası Foto Müsabiqəsi" },
+              { label: "Başlıq", key: "title", placeholder: "Hash Foto Müsabiqəsi" },
               { label: "Mükafat", key: "prize", placeholder: "50 AZN" },
-              { label: "Etiketlər (vergüllə)", key: "tags", placeholder: "#AviasiyaAkademiyası,#HashCampus" },
+              { label: "Etiketlər (vergüllə)", key: "tags", placeholder: "#HashCampus" },
             ].map(({ label, key, placeholder }) => (
               <div key={key} style={{ marginBottom: 12 }}>
                 <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: C.muted, marginBottom: 5 }}>{label}</label>
@@ -1470,7 +1470,7 @@ export default function Admin() {
             <form onSubmit={createUser} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {[
                 { label: "Ad Soyad", key: "full_name", type: "text", placeholder: "Ad Soyad" },
-                { label: "Email", key: "email", type: "email", placeholder: "ad.soyad@naa.edu.az" },
+                { label: "Email", key: "email", type: "email", placeholder: "ad.soyad@uni.edu.az" },
                 { label: "Şifrə", key: "password", type: "password", placeholder: "Minimum 6 simvol" },
                 { label: "Fakultə", key: "faculty", type: "text", placeholder: "Məs: Aerokosmik fakültə" },
                 { label: "İxtisas", key: "major", type: "text", placeholder: "Məs: Kompüter mühəndisliyi" },

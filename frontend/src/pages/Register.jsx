@@ -158,7 +158,7 @@ export default function Register() {
           <form onSubmit={handleSubmit}>
             {[
               { label: "Ad Soyad", name: "full_name", type: "text", placeholder: "Ad Soyad" },
-              { label: "Email", name: "email", type: "email", placeholder: "ad.soyad@naa.edu.az" },
+              { label: "Email", name: "email", type: "email", placeholder: "ad.soyad@uni.edu.az" },
               { label: "Şifrə", name: "password", type: "password", placeholder: "Minimum 6 simvol" },
             ].map(({ label, name, type, placeholder }) => (
               <div key={name} style={{ marginBottom: 10 }}>

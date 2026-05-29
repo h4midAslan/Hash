@@ -49,7 +49,7 @@ export default function Login() {
           <form onSubmit={handleSubmit}>
             <div style={{ marginBottom: 12 }}>
               <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#333", marginBottom: 4 }}>Email</label>
-              <input type="email" placeholder="ad.soyad@naa.edu.az" value={email} onChange={e => setEmail(e.target.value)}
+              <input type="email" placeholder="ad.soyad@uni.edu.az" value={email} onChange={e => setEmail(e.target.value)}
                 style={inp} onFocus={e => e.target.style.borderColor = "#1a4a8a"} onBlur={e => e.target.style.borderColor = "#ccc"} required />
             </div>
             <div style={{ marginBottom: 16 }}>

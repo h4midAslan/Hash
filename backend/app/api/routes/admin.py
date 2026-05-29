@@ -76,7 +76,7 @@ class ContestRequest(BaseModel):
     title: str
     prize: str
     deadline: str
-    tags: str = "#AviasiyaAkademiyası,#HashCampus"
+    tags: str = "#HashCampus"
 
 
 # ─── Stats ───

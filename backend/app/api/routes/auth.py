@@ -18,41 +18,56 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 limiter = Limiter(key_func=get_remote_address)
 
-FACULTY_SPECIALIZATIONS = {
-    "Hava nəqliyyatı fakültəsi": [
-        "Uçuş mühəndisliyi",
-        "Hava nəqliyyatının hərəkətinin təşkili",
-        "Aerokosmik mühəndislik",
-        "Hidrometeorologiya",
-    ],
-    "Nəqliyyat texnologiyaları fakültəsi": [
-        "Logistika və nəqliyyat texnologiyaları mühəndisliyi",
-        "Mexanika mühəndisliyi",
-        "Aviasiya təhlükəsizliyi mühəndisliyi",
-        "Materiallar mühəndisliyi",
-    ],
-    "Aerokosmik fakültə": [
-        "Kompüter mühəndisliyi",
-        "Ekologiya mühəndisliyi",
-        "İnformasiya texnologiyaları",
-    ],
-    "Fizika-Texnologiya fakültəsi": [
-        "Mühəndislik fizikası",
-        "Radiotexnika və telekommunikasiya mühəndisliyi",
-        "Elektrik və elektronika mühəndisliyi",
-        "Cihaz mühəndisliyi",
-        "Energetika mühəndisliyi",
-        "Proseslərin avtomatlaşdırılması mühəndisliyi",
-        "Mexatronika və robototexnika mühəndisliyi",
-    ],
-    "İqtisadiyyat və hüquq fakültəsi": [
-        "Hüquqşünaslıq",
-        "İqtisadiyyat",
-        "Maliyyə",
-        "Menecment",
-        "Biznesin idarə edilməsi",
-    ],
+UNIVERSITY_DATA = {
+    "student.naa.edu.az": {
+        "name": "Milli Aviasiya Akademiyası",
+        "faculties": {
+            "Hava nəqliyyatı fakültəsi": [
+                "Hava nəqliyyatının idarə edilməsi",
+                "Hava nəqliyyatının hərəkətinin təşkili",
+                "Mühəndislik mexanikası",
+                "Hidrometeorologiya",
+            ],
+            "Nəqliyyat texnologiyaları fakültəsi": [
+                "Logistika və nəqliyyat texnologiyaları mühəndisliyi",
+                "Mexanika mühəndisliyi",
+                "Nəqliyyat mühəndisliyi",
+                "Materiallar mühəndisliyi",
+            ],
+            "Texniki fakültə": [
+                "Kompüter mühəndisliyi",
+                "Ekologiya mühəndisliyi",
+                "İnformasiya texnologiyaları",
+            ],
+            "Fizika-Texnologiya fakültəsi": [
+                "Mühəndislik fizikası",
+                "Radiotexnika və telekommunikasiya mühəndisliyi",
+                "Elektrik və elektronika mühəndisliyi",
+                "Cihaz mühəndisliyi",
+                "Energetika mühəndisliyi",
+                "Proseslərin avtomatlaşdırılması mühəndisliyi",
+                "Mexatronika və robototexnika mühəndisliyi",
+            ],
+            "İqtisadiyyat və hüquq fakültəsi": [
+                "Hüquqşünaslıq",
+                "İqtisadiyyat",
+                "Maliyyə",
+                "Menecment",
+                "Biznesin idarə edilməsi",
+            ],
+        },
+    },
 }
+
+# Flat dict for backward compatibility
+FACULTY_SPECIALIZATIONS = {}
+for uni in UNIVERSITY_DATA.values():
+    FACULTY_SPECIALIZATIONS.update(uni["faculties"])
+
+
+def _get_university_from_email(email: str):
+    domain = email.split("@")[-1].lower()
+    return UNIVERSITY_DATA.get(domain)
 
 
 class RegisterRequest(BaseModel):
@@ -100,24 +115,20 @@ def _cleanup_unverified(db: Session):
 @limiter.limit("5/minute")
 def register(request: Request, data: RegisterRequest, db: Session = Depends(get_db)):
     _cleanup_unverified(db)
-    if data.email.endswith("@naa.edu.az"):
+    uni = _get_university_from_email(data.email)
+    if not uni:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="@naa.edu.az ilə qeydiyyat bağlıdır. Admin ilə əlaqə saxlayın: +994 50 431 90 40"
-        )
-    if not data.email.endswith("@student.naa.edu.az"):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Yalnız @student.naa.edu.az email ilə qeydiyyat mümkündür. Əlaqə: +994 50 431 90 40"
+            detail="Yalnız universitet email ünvanı ilə qeydiyyat mümkündür."
         )
 
-    if data.faculty not in FACULTY_SPECIALIZATIONS:
+    if data.faculty not in uni["faculties"]:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Yanlış fakultə seçimi"
         )
 
-    if data.major not in FACULTY_SPECIALIZATIONS[data.faculty]:
+    if data.major not in uni["faculties"][data.faculty]:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Seçilmiş fakultəyə aid olmayan ixtisas"
@@ -176,7 +187,11 @@ def register(request: Request, data: RegisterRequest, db: Session = Depends(get_
 
 
 @router.get("/faculties")
-def get_faculties():
+def get_faculties(email: str = ""):
+    if email:
+        uni = _get_university_from_email(email)
+        if uni:
+            return uni["faculties"]
     return FACULTY_SPECIALIZATIONS
 
 

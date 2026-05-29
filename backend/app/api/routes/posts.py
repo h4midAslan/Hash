@@ -35,7 +35,7 @@ Qaydalar:
 - Emojilər az istifadə et (1-2 max)
 - 150-250 söz arasında olsun
 - Həşteqləri sona əlavə et (3-5 ədəd)
-- Akademik/aviasiya mühitinə uyğun ton
+- Tələbə icması üçün uyğun ton
 
 İstifadəçinin mətni:
 {data.text.strip()}
