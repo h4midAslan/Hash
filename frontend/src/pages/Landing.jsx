@@ -252,6 +252,14 @@ const CSS = `
   .hl-stat + .hl-stat { border-left: 0; border-top: 1px solid var(--line); }
   .hl-brand-name { display: none; }
   .hl-tagline { font-size: 11px; gap: 10px; }
+  .hl-nav-ghost-mobile { display: none; }
+  .hl-btn { padding: 12px 18px; font-size: 13px; }
+  .hl-brush { font-size: 16px; padding: 10px 22px; }
+  .hl-hero-ctas { flex-direction: column; align-items: stretch; }
+  .hl-hero-ctas .hl-btn { justify-content: center; }
+  .hl-cta-card .hl-btn { width: 100%; justify-content: center; }
+  .hl-step .step-text p { font-size: 16px; }
+  .hl-footer .hl-wrap { flex-direction: column; align-items: flex-start; gap: 16px; }
 }
 `;
 
@@ -420,7 +428,7 @@ export default function Landing() {
               <span className="hl-brand-name">HASH</span>
             </Link>
             <nav className="hl-nav-actions">
-              <Link className="hl-btn hl-btn-ghost" to="/login">Daxil ol</Link>
+              <Link className="hl-btn hl-btn-ghost hl-nav-ghost-mobile" to="/login">Daxil ol</Link>
               <Link className="hl-btn hl-btn-primary" to="/register">Qeydiyyatdan keç</Link>
             </nav>
           </div>
