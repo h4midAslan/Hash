@@ -28,7 +28,6 @@ class PublicUserResponse(BaseModel):
     course: int | None
     bio: str | None
     profile_picture: str | None
-    banner_image: str | None = None
     github_url: str | None
     linkedin_url: str | None
     website_url: str | None
@@ -53,7 +52,6 @@ class UserResponse(BaseModel):
     course: int | None
     bio: str | None
     profile_picture: str | None
-    banner_image: str | None = None
     phone: str | None
     github_url: str | None
     linkedin_url: str | None
@@ -76,7 +74,6 @@ class UpdateProfileRequest(BaseModel):
     course: int | None = None
     bio: str | None = None
     profile_picture: str | None = None
-    banner_image: str | None = None
     phone: str | None = None
     github_url: str | None = None
     linkedin_url: str | None = None

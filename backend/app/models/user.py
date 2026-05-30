@@ -17,7 +17,6 @@ class User(Base):
     headline = Column(String(255))  # "Frontend Developer | 3-cu kurs"
     bio = Column(Text)
     profile_picture = Column(String(500))
-    banner_image = Column(String(500))
     phone = Column(String(50))
     github_url = Column(String(500))
     linkedin_url = Column(String(500))
