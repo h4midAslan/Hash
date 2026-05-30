@@ -249,24 +249,6 @@ function LeftNav({ C, dark, user, onCompose, onToggleTheme }) {
           Rəy və Təklif
         </button>
 
-        {user && (
-          <Link to="/profile" style={{
-            display: "flex", alignItems: "center", gap: 10,
-            padding: "8px 12px", borderRadius: 12, textDecoration: "none",
-          }}
-            onMouseEnter={e => e.currentTarget.style.background = C.navHover}
-            onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-          >
-            <UserAvatar user={user} size="sm" />
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontWeight: 800, fontSize: 13.5, color: C.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontFamily: "'Archivo', sans-serif" }}>{user.full_name}</div>
-              <div style={{ fontSize: 11, color: C.muted, fontFamily: "'JetBrains Mono', monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                @{user.username || user.email?.split("@")[0]}
-              </div>
-            </div>
-          </Link>
-        )}
-
       </div>
 
       <FeedbackModal open={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
@@ -500,6 +482,7 @@ export default function Feed() {
   const [feedTab, setFeedTab] = useState("foryou");
   const [mobileComposer, setMobileComposer] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   const composerRef = useRef(null);
   const touchStartX = useRef(null);
@@ -720,6 +703,7 @@ export default function Feed() {
       onTouchStart={isMobile ? handleTouchStart : undefined}
       onTouchEnd={isMobile ? handleTouchEnd : undefined}
     >
+      <FeedbackModal open={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
       {/* Mobile drawer */}
       {isMobile && (
         <>
@@ -796,6 +780,14 @@ export default function Feed() {
               >
                 <span style={{ color: C.textSoft }}>{dark ? <Sun size={22} /> : <Moon size={22} />}</span>
                 {dark ? "Açıq tema" : "Qaranlıq tema"}
+              </button>
+              <button onClick={() => { setFeedbackOpen(true); setDrawerOpen(false); }}
+                style={{ display: "flex", alignItems: "center", gap: 18, padding: "14px 20px", background: "none", border: "none", color: C.text, fontFamily: "'Archivo', sans-serif", fontWeight: 700, fontSize: 17, width: "100%", cursor: "pointer", textAlign: "left" }}
+                onMouseEnter={e => e.currentTarget.style.background = C.navHover}
+                onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+              >
+                <span style={{ color: C.textSoft }}><MessageSquare size={22} /></span>
+                Rəy və Təklif
               </button>
             </div>
           </div>
