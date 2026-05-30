@@ -126,9 +126,8 @@ export default function Profile() {
   const [connListLoading, setConnListLoading] = useState(false);
   const [cvParsing, setCvParsing]     = useState(false);
   const [cvPreview, setCvPreview]     = useState(null);
-  const fileInputRef   = useRef(null);
-  const cvInputRef     = useRef(null);
-  const bannerInputRef = useRef(null);
+  const fileInputRef = useRef(null);
+  const cvInputRef   = useRef(null);
 
   useEffect(() => {
     loadProfile(); loadCertificates(); loadProjects(); loadUserPosts();
@@ -210,19 +209,6 @@ export default function Profile() {
       loadProfile();
     } catch {}
     setUploadingPic(false);
-    e.target.value = "";
-  };
-
-  const handleUploadBanner = async (e) => {
-    const file = e.target.files?.[0]; if (!file) return;
-    try {
-      const formData = new FormData(); formData.append("file", file);
-      const uploadRes = await api.post("/upload", formData, { headers: { "Content-Type": "multipart/form-data" } });
-      await api.put("/users/me", { banner_image: uploadRes.data.url });
-      loadProfile();
-      toast.success("Arxaplan yeniləndi!");
-    } catch { toast.error("Yüklənmədi"); }
-    e.target.value = "";
   };
 
   const handleCertImagePick = async (e) => {
@@ -350,33 +336,8 @@ export default function Profile() {
         {/* ── HEADER CARD ── */}
         <div style={{ background: C.surface, border: C.border, borderRadius: 20, overflow: "hidden", marginBottom: 14 }}>
           {/* Banner */}
-          <div
-            style={{ height: isMobile ? 100 : 130, position: "relative", overflow: "hidden", cursor: isOwn ? "pointer" : "default" }}
-            onClick={isOwn ? () => bannerInputRef.current?.click() : undefined}
-          >
-            {user.banner_image
-              ? <img src={user.banner_image} alt="banner" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-              : <>
-                  <div style={{ position: "absolute", inset: 0, background: C.bannerBg }} />
-                  <div style={{ position: "absolute", inset: 0, background: "repeating-linear-gradient(135deg, rgba(30,144,255,0.04) 0 20px, transparent 20px 40px)" }} />
-                </>
-            }
-            {isOwn && (
-              <div style={{
-                position: "absolute", inset: 0,
-                background: "rgba(0,0,0,0.35)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                gap: 8, opacity: 0, transition: "opacity .15s",
-              }}
-                onMouseEnter={e => e.currentTarget.style.opacity = 1}
-                onMouseLeave={e => e.currentTarget.style.opacity = 0}
-              >
-                <Camera size={18} color="#fff" />
-                <span style={{ color: "#fff", fontSize: 13, fontWeight: 700, fontFamily: "'Archivo', sans-serif" }}>
-                  Arxaplanı dəyiş
-                </span>
-              </div>
-            )}
+          <div style={{ height: isMobile ? 80 : 110, background: C.bannerBg, position: "relative" }}>
+            <div style={{ position: "absolute", inset: 0, background: "repeating-linear-gradient(135deg, rgba(30,144,255,0.04) 0 20px, transparent 20px 40px)" }} />
           </div>
 
           <div style={{ padding: isMobile ? "0 16px 20px" : "0 28px 24px", marginTop: isMobile ? -36 : -44 }}>
@@ -424,7 +385,6 @@ export default function Profile() {
 
             {isOwn && <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" style={{ display: "none" }} onChange={handleUploadPic} />}
             {isOwn && <input ref={cvInputRef} type="file" accept="application/pdf" style={{ display: "none" }} onChange={handleCvUpload} />}
-            {isOwn && <input ref={bannerInputRef} type="file" accept="image/jpeg,image/png,image/webp" style={{ display: "none" }} onChange={handleUploadBanner} />}
 
             {/* Name / Info */}
             <h2 style={{ margin: "0 0 4px", fontSize: isMobile ? 20 : 24, fontWeight: 900, color: C.text, letterSpacing: "0.02em" }}>{user.full_name}</h2>
