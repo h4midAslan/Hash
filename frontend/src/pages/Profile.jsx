@@ -400,9 +400,17 @@ export default function Profile() {
                       <Settings size={14} />Parametrlər
                     </button>
                   </>
-                ) : isConnected && (
+                ) : isConnected ? (
                   <button onClick={() => navigate(`/messages?to=${user.id}&name=${encodeURIComponent(user.full_name)}`)} style={btnPrimary()}>
                     <Mail size={14} />Mesaj göndər
+                  </button>
+                ) : myPendingIds.has(user.id) ? (
+                  <button disabled style={btnGhost({ opacity: 0.6, cursor: "default" })}>
+                    <UserCheck size={14} />İstək göndərildi
+                  </button>
+                ) : (
+                  <button onClick={() => handleQuickConnect(user.id)} style={btnPrimary()}>
+                    <UserPlus size={14} />Bağlan
                   </button>
                 )}
               </div>
