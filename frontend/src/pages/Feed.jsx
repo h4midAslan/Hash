@@ -75,18 +75,18 @@ const COLORS = {
 
 function HashMark({ size = 32 }) {
   return (
-    <svg viewBox="0 0 100 100" width={size} height={size} style={{ display: "block", color: "#fff" }}>
-      <g fill="currentColor">
-        <rect x="30" y="12" width="12" height="76" />
-        <rect x="58" y="12" width="12" height="76" />
-        <rect x="12" y="30" width="76" height="12" />
-        <rect x="12" y="58" width="76" height="12" />
+    <svg viewBox="0 0 100 100" width={size} height={size} style={{ display: "block" }}>
+      <g fill="#ffffff">
+        <rect x="32" y="10" width="11" height="80" />
+        <rect x="57" y="10" width="11" height="80" />
+        <rect x="10" y="32" width="80" height="11" />
+        <rect x="10" y="57" width="80" height="11" />
       </g>
-      <g fill={ACCENT}>
-        <circle cx="36" cy="36" r="6.5" />
-        <circle cx="64" cy="36" r="6.5" />
-        <circle cx="36" cy="64" r="6.5" />
-        <circle cx="64" cy="64" r="6.5" />
+      <g fill="#00CFFF">
+        <circle cx="37" cy="37" r="7" />
+        <circle cx="63" cy="37" r="7" />
+        <circle cx="37" cy="63" r="7" />
+        <circle cx="63" cy="63" r="7" />
       </g>
     </svg>
   );
@@ -185,10 +185,10 @@ function LeftNav({ C, dark, user, onCompose, onToggleTheme }) {
       {/* Logo */}
       <div style={{ padding: "18px 6px 10px", display: "flex", alignItems: "center", gap: 10 }}>
         <div style={{
-          width: 38, height: 38, borderRadius: 12, background: ACCENT,
+          width: 38, height: 38, borderRadius: 12, background: "#071428",
           display: "flex", alignItems: "center", justifyContent: "center",
-          boxShadow: "0 4px 16px rgba(30,144,255,0.40)", flexShrink: 0,
-        }}><HashMark size={22} /></div>
+          boxShadow: "0 4px 16px rgba(0,0,0,0.35)", flexShrink: 0,
+        }}><HashMark size={24} /></div>
         <span style={{ fontWeight: 900, fontSize: 20, letterSpacing: "0.04em", color: C.text, fontFamily: "'Archivo', sans-serif" }}>HASH</span>
       </div>
 
@@ -810,8 +810,8 @@ export default function Feed() {
                     <UserAvatar user={user} size="sm" />
                   </button>
                   <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-                    <div style={{ width: 34, height: 34, borderRadius: 10, background: ACCENT, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 3px 10px rgba(30,144,255,0.35)", flexShrink: 0 }}>
-                      <HashMark size={20} />
+                    <div style={{ width: 34, height: 34, borderRadius: 10, background: "#071428", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 3px 10px rgba(0,0,0,0.30)", flexShrink: 0 }}>
+                      <HashMark size={22} />
                     </div>
                     <span style={{ fontWeight: 900, fontSize: 19, letterSpacing: "0.04em", color: C.text, fontFamily: "'Archivo', sans-serif" }}>HASH</span>
                   </div>
