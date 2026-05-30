@@ -9,6 +9,9 @@ import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import VerifyEmail from "./pages/VerifyEmail";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
+import Disclaimer from "./pages/Disclaimer";
 import api from "./api/client";
 import UserAvatar from "./components/UserAvatar";
 import {
@@ -325,6 +328,9 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/disclaimer" element={<Disclaimer />} />
         <Route path="/feed" element={<FeedRoute><Feed /></FeedRoute>} />
         <Route path="/profile" element={<AppShell><Profile /></AppShell>} />
         <Route path="/profile/:id" element={<AppShell><Profile /></AppShell>} />

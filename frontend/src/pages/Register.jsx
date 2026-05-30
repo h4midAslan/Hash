@@ -77,6 +77,7 @@ export default function Register() {
   const [form, setForm] = useState({
     email: "", password: "", full_name: "", faculty: "", major: "", course: "",
   });
+  const [agreed, setAgreed] = useState(false);
   const [faculties, setFaculties] = useState({});
   const [detectedUni, setDetectedUni] = useState(null);
   const [error, setError] = useState("");
@@ -415,22 +416,39 @@ export default function Register() {
               </StyledSelect>
             </Field>
 
+            {/* Consent checkbox */}
+            <label style={{ display: "flex", alignItems: "flex-start", gap: 10, margin: "14px 0 6px", cursor: "pointer" }}>
+              <input
+                type="checkbox"
+                checked={agreed}
+                onChange={e => setAgreed(e.target.checked)}
+                style={{ marginTop: 3, accentColor: ACCENT, width: 15, height: 15, flexShrink: 0, cursor: "pointer" }}
+              />
+              <span style={{ fontSize: 12, color: "#7d8ba3", lineHeight: 1.6 }}>
+                <Link to="/terms" target="_blank" style={{ color: ACCENT, fontWeight: 700, textDecoration: "none" }}>İstifadəçi Şərtlərini</Link>
+                {" "}və{" "}
+                <Link to="/privacy" target="_blank" style={{ color: ACCENT, fontWeight: 700, textDecoration: "none" }}>Məxfilik Siyasətini</Link>
+                {" "}oxudum və qəbul edirəm. Həmçinin platformanın universitetlə rəsmi əlaqəsi olmadığını{" "}
+                <Link to="/disclaimer" target="_blank" style={{ color: "#7d8ba3", textDecoration: "underline" }}>başa düşürəm</Link>.
+              </span>
+            </label>
+
             <button
               type="submit"
-              disabled={loading || detectedUni === "invalid" || !detectedUni}
+              disabled={loading || detectedUni === "invalid" || !detectedUni || !agreed}
               style={{
-                width: "100%", marginTop: 8,
-                background: (loading || !detectedUni || detectedUni === "invalid") ? "rgba(30,144,255,0.35)" : ACCENT,
+                width: "100%", marginTop: 10,
+                background: (loading || !detectedUni || detectedUni === "invalid" || !agreed) ? "rgba(30,144,255,0.35)" : ACCENT,
                 color: "#fff", border: "none",
                 padding: "13px", borderRadius: 12,
                 fontSize: 14, fontWeight: 800,
-                cursor: (loading || !detectedUni || detectedUni === "invalid") ? "not-allowed" : "pointer",
+                cursor: (loading || !detectedUni || detectedUni === "invalid" || !agreed) ? "not-allowed" : "pointer",
                 fontFamily: "'Archivo', sans-serif",
                 letterSpacing: "0.02em",
-                boxShadow: (!loading && detectedUni && detectedUni !== "invalid") ? "0 6px 20px rgba(30,144,255,0.40)" : "none",
+                boxShadow: (!loading && detectedUni && detectedUni !== "invalid" && agreed) ? "0 6px 20px rgba(30,144,255,0.40)" : "none",
                 transition: "opacity 0.15s",
               }}
-              onMouseEnter={e => { if (!loading && detectedUni && detectedUni !== "invalid") e.currentTarget.style.opacity = "0.88"; }}
+              onMouseEnter={e => { if (!loading && detectedUni && detectedUni !== "invalid" && agreed) e.currentTarget.style.opacity = "0.88"; }}
               onMouseLeave={e => { e.currentTarget.style.opacity = "1"; }}
             >
               {loading ? "Gözləyin..." : "Qeydiyyatdan keç"}
