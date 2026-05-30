@@ -243,7 +243,7 @@ export default function Messages() {
 
       <div style={{
         display: "flex",
-        height: isMobile ? "calc(100dvh - 60px)" : "calc(100vh - 130px)",
+        height: isMobile ? "calc(100dvh - 60px)" : "calc(100vh - 70px)",
         background: C.surface,
         border: isMobile ? "none" : `1px solid ${C.border}`,
         borderRadius: isMobile ? 0 : 20,
