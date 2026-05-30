@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Heart, ThumbsDown, MessageCircle, Send, Pin, Image as ImageIcon, Film, Flag, X, ChevronDown, ChevronUp, Trash2, UserPlus, UserCheck, ChevronLeft, ChevronRight, BookOpen, TrendingUp } from "lucide-react";
 import api from "../api/client";
@@ -9,62 +9,272 @@ import { useLang } from "../hooks/useLang";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { useDarkMode } from "../hooks/useTheme";
 
+const ACCENT = "#1E90FF";
+
 const COLORS = {
   light: {
-    border:     "1px solid #d4d4d4",
-    bg:         "#ffffff",
-    text:       "#1a1a1a",
-    muted:      "#666",
-    faint:      "#999",
-    primary:    "#1a4a8a",
-    divider:    "#ebebeb",
-    commentBg:  "#f7f7f7",
-    commentBorder: "#e8e8e8",
-    commentText: "#333",
-    sidebarBg:  "#fff",
-    btnPrimary: { background: "#1a4a8a", color: "#fff", border: "1px solid #1a4a8a" },
-    btnGhost:   { background: "#fff", color: "#444", border: "1px solid #ccc" },
+    border: "1px solid #e4e9f1",
+    borderColor: "#e4e9f1",
+    bg: "#ffffff",
+    surface: "#f5f7fb",
+    text: "#071428",
+    textBody: "#16243c",
+    textSoft: "#3a4861",
+    muted: "#69768d",
+    faint: "#a0aab8",
+    primary: ACCENT,
+    accent: ACCENT,
+    accentGlow: "rgba(30,144,255,0.28)",
+    accentWash: "rgba(30,144,255,0.10)",
+    accentMuted: "rgba(30,144,255,0.35)",
+    divider: "#edf1f6",
+    commentBg: "#f5f7fb",
+    commentBorder: "1px solid #e4e9f1",
+    commentText: "#16243c",
+    sidebarBg: "#f5f7fb",
+    rowHover: "#f8fafd",
+    barBlur: "rgba(255,255,255,0.88)",
+    btnPrimary: { background: ACCENT, color: "#fff", border: `1px solid ${ACCENT}` },
+    btnGhost: { background: "#f5f7fb", color: "#3a4861", border: "1px solid #e4e9f1" },
   },
   dark: {
-    border:     "1px solid #374151",
-    bg:         "#1f2937",
-    text:       "#f3f4f6",
-    muted:      "#9ca3af",
-    faint:      "#6b7280",
-    primary:    "#60a5fa",
-    divider:    "#374151",
-    commentBg:  "#111827",
-    commentBorder: "#374151",
-    commentText: "#d1d5db",
-    sidebarBg:  "#1f2937",
-    btnPrimary: { background: "#2563eb", color: "#fff", border: "1px solid #2563eb" },
-    btnGhost:   { background: "#374151", color: "#d1d5db", border: "1px solid #4b5563" },
+    border: "1px solid #1a2b49",
+    borderColor: "#1a2b49",
+    bg: "#050f1f",
+    surface: "#0a1c39",
+    text: "#ffffff",
+    textBody: "#e6edf7",
+    textSoft: "#c4d0e0",
+    muted: "#7d8ba3",
+    faint: "#54627a",
+    primary: ACCENT,
+    accent: ACCENT,
+    accentGlow: "rgba(30,144,255,0.40)",
+    accentWash: "rgba(30,144,255,0.14)",
+    accentMuted: "rgba(30,144,255,0.35)",
+    divider: "rgba(255,255,255,0.07)",
+    commentBg: "#071428",
+    commentBorder: "1px solid #1a2b49",
+    commentText: "#c4d0e0",
+    sidebarBg: "#0a1c39",
+    rowHover: "rgba(255,255,255,0.025)",
+    barBlur: "rgba(5,15,31,0.88)",
+    btnPrimary: { background: ACCENT, color: "#fff", border: `1px solid ${ACCENT}` },
+    btnGhost: { background: "transparent", color: "#c4d0e0", border: "1px solid #1a2b49" },
   },
 };
+
+function useFonts() {
+  useEffect(() => {
+    if (document.getElementById("hash-fonts")) return;
+    const link = document.createElement("link");
+    link.id = "hash-fonts";
+    link.rel = "stylesheet";
+    link.href = "https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,800&family=JetBrains+Mono:wght@500;600&display=swap";
+    document.head.appendChild(link);
+  }, []);
+}
 
 function ImageCarousel({ images }) {
   const [idx, setIdx] = useState(0);
   if (!images?.length) return null;
-  if (images.length === 1) return <img src={images[0]} alt="post" style={{ width: "100%", maxHeight: 480, objectFit: "cover", display: "block" }} />;
+  if (images.length === 1) return (
+    <img src={images[0]} alt="post" style={{ width: "100%", maxHeight: 480, objectFit: "cover", display: "block", borderRadius: 14 }} />
+  );
   return (
-    <div style={{ position: "relative", userSelect: "none" }}>
+    <div style={{ position: "relative", userSelect: "none", borderRadius: 14, overflow: "hidden" }}>
       <img src={images[idx]} alt={`post-${idx}`} style={{ width: "100%", maxHeight: 480, objectFit: "cover", display: "block" }} />
       <button onClick={() => setIdx(i => (i - 1 + images.length) % images.length)}
-        style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", width: 28, height: 28, background: "rgba(0,0,0,0.5)", border: "none", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <ChevronLeft size={14} />
+        style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", width: 32, height: 32, background: "rgba(0,0,0,0.55)", border: "none", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "50%" }}>
+        <ChevronLeft size={16} />
       </button>
       <button onClick={() => setIdx(i => (i + 1) % images.length)}
-        style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", width: 28, height: 28, background: "rgba(0,0,0,0.5)", border: "none", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <ChevronRight size={14} />
+        style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", width: 32, height: 32, background: "rgba(0,0,0,0.55)", border: "none", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "50%" }}>
+        <ChevronRight size={16} />
       </button>
-      <span style={{ position: "absolute", bottom: 8, right: 8, background: "rgba(0,0,0,0.5)", color: "#fff", fontSize: 11, padding: "2px 7px" }}>
+      <span style={{ position: "absolute", bottom: 10, right: 12, background: "rgba(0,0,0,0.55)", color: "#fff", fontSize: 11, padding: "3px 8px", borderRadius: 8, fontFamily: "'JetBrains Mono', monospace", letterSpacing: "0.06em" }}>
         {idx + 1}/{images.length}
       </span>
     </div>
   );
 }
 
+function ActionBtn({ C, onClick, active, activeColor, icon, count, title }) {
+  const [hover, setHover] = useState(false);
+  const col = active ? activeColor : hover ? C.accent : C.muted;
+  return (
+    <button onClick={onClick} title={title}
+      onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
+      style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 10px", borderRadius: 999, border: "none", background: hover ? C.accentWash : "transparent", cursor: "pointer", color: col, font: "inherit", fontSize: 13.5, fontWeight: 600, transition: "background .12s, color .12s" }}>
+      {icon}
+      {count != null && count > 0 && <span>{count}</span>}
+    </button>
+  );
+}
+
+function Panel({ C, children }) {
+  return (
+    <div style={{ background: C.sidebarBg, border: C.border, borderRadius: 18, overflow: "hidden" }}>
+      {children}
+    </div>
+  );
+}
+
+function PanelHead({ C, children }) {
+  return (
+    <div style={{ padding: "16px 18px 12px", fontWeight: 900, fontSize: 18, letterSpacing: "0.01em", color: C.text, fontFamily: "'Archivo', sans-serif" }}>
+      {children}
+    </div>
+  );
+}
+
+function PostItem({ post, C, user, connectedIds, pendingIds, openComments, comments, commentText, onLike, onDislike, onDelete, onConnect, onToggleComments, onCommentChange, onSubmitComment, onReport, t }) {
+  const [hover, setHover] = useState(false);
+
+  return (
+    <article
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{ display: "flex", gap: 14, padding: "18px 20px", borderBottom: `1px solid ${C.divider}`, background: hover ? C.rowHover : "transparent", transition: "background .12s" }}
+    >
+      <div style={{ flexShrink: 0, paddingTop: 2 }}>
+        <Link to={`/profile/${post.author_id}`}>
+          <UserAvatar user={{ full_name: post.author_name, profile_picture: post.author_picture }} size="md" />
+        </Link>
+      </div>
+
+      <div style={{ flex: 1, minWidth: 0 }}>
+        {/* Pinned label */}
+        {post.is_pinned && (
+          <div style={{ marginBottom: 6 }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: C.accent, background: C.accentWash, padding: "3px 9px", borderRadius: 6, fontFamily: "'JetBrains Mono', monospace" }}>
+              <Pin size={10} /> {t("feed_pinned") || "Sabitlənmiş"}
+            </span>
+          </div>
+        )}
+
+        {/* Header row */}
+        <header style={{ display: "flex", alignItems: "center", gap: 5, minWidth: 0, marginBottom: 4 }}>
+          <Link to={`/profile/${post.author_id}`}
+            style={{ fontWeight: 800, fontSize: 15, color: C.text, textDecoration: "none", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", flexShrink: 1, minWidth: 0, fontFamily: "'Archivo', sans-serif" }}>
+            {post.author_name}
+          </Link>
+          <span style={{ color: C.muted, fontSize: 14, whiteSpace: "nowrap", flexShrink: 0 }}>·</span>
+          <span style={{ color: C.muted, fontSize: 13.5, whiteSpace: "nowrap", flexShrink: 0 }}>{formatBakuDate(post.created_at)}</span>
+          <div style={{ flex: 1 }} />
+          {user && post.author_id !== user.id && !connectedIds.has(post.author_id) && (
+            <button onClick={() => onConnect(post.author_id)} disabled={pendingIds.has(post.author_id)}
+              style={{ background: "none", border: "none", cursor: "pointer", padding: 4, color: pendingIds.has(post.author_id) ? "#16a34a" : C.muted, display: "flex" }}
+              title={pendingIds.has(post.author_id) ? "İstək göndərildi" : "Bağlantı istəyi göndər"}>
+              {pendingIds.has(post.author_id) ? <UserCheck size={15} /> : <UserPlus size={15} />}
+            </button>
+          )}
+          {user && post.author_id === user.id && (
+            <button onClick={() => onDelete(post.id)}
+              style={{ background: "none", border: "none", cursor: "pointer", padding: 4, color: C.muted, display: "flex" }}
+              onMouseEnter={e => e.currentTarget.style.color = "#dc2626"}
+              onMouseLeave={e => e.currentTarget.style.color = C.muted}
+              title="Postu sil">
+              <Trash2 size={14} />
+            </button>
+          )}
+        </header>
+
+        {/* Content */}
+        {post.content && (
+          <p style={{ fontSize: 15, color: C.textBody, lineHeight: 1.65, margin: "0 0 10px", whiteSpace: "pre-wrap", fontFamily: "'Archivo', sans-serif" }}>
+            {post.content.split(/(#[\p{L}\d_]+)/gu).map((part, i) =>
+              part.startsWith("#")
+                ? <span key={i} style={{ color: C.accent, fontWeight: 600 }}>{part}</span>
+                : <span key={i}>{part}</span>
+            )}
+          </p>
+        )}
+
+        {(post.images?.length > 0 || post.image_url) && (
+          <div style={{ borderRadius: 14, overflow: "hidden", marginBottom: 10, border: C.border }}>
+            <ImageCarousel images={post.images?.length > 0 ? post.images : [post.image_url]} />
+          </div>
+        )}
+        {post.video_url && (
+          <div style={{ borderRadius: 14, overflow: "hidden", marginBottom: 10, background: "#000", border: C.border }}>
+            <video src={post.video_url} controls style={{ width: "100%", maxHeight: 460, display: "block" }} />
+          </div>
+        )}
+
+        {/* Action bar */}
+        <div style={{ display: "flex", alignItems: "center", gap: 2, marginTop: 8, marginLeft: -8 }}>
+          <ActionBtn C={C} onClick={() => onToggleComments(post.id)}
+            active={openComments[post.id]} activeColor={C.accent}
+            icon={<MessageCircle size={18} />} count={post.comment_count}
+            title="Şərhlər" />
+          <ActionBtn C={C} onClick={() => onLike(post.id)}
+            active={post.is_liked} activeColor="#e11d48"
+            icon={<Heart size={18} fill={post.is_liked ? "#e11d48" : "none"} color={post.is_liked ? "#e11d48" : "currentColor"} />}
+            count={post.like_count} title="Bəyən" />
+          <ActionBtn C={C} onClick={() => onDislike(post.id)}
+            active={post.is_disliked} activeColor={C.muted}
+            icon={<ThumbsDown size={18} fill={post.is_disliked ? "currentColor" : "none"} />}
+            count={post.show_dislikes ? post.dislike_count : undefined} title="Bəyənmə" />
+          <div style={{ flex: 1 }} />
+          {user && post.author_id !== user.id && (
+            <button onClick={() => onReport(post.id)}
+              style={{ background: "none", border: "none", cursor: "pointer", padding: "7px 8px", color: C.muted, display: "flex", borderRadius: 999 }}
+              onMouseEnter={e => e.currentTarget.style.color = "#dc2626"}
+              onMouseLeave={e => e.currentTarget.style.color = C.muted}
+              title="Şikayət et">
+              <Flag size={16} />
+            </button>
+          )}
+        </div>
+
+        {/* Comments */}
+        {openComments[post.id] && (
+          <div style={{ marginTop: 14, paddingTop: 14, borderTop: `1px solid ${C.divider}` }}>
+            <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+              <input
+                type="text"
+                value={commentText[post.id] || ""}
+                onChange={e => onCommentChange(post.id, e.target.value)}
+                onKeyDown={e => e.key === "Enter" && onSubmitComment(post.id)}
+                placeholder={t("feed_comment_placeholder") || "Şərh yaz..."}
+                style={{ flex: 1, padding: "8px 12px", border: C.border, borderRadius: 10, fontSize: 13, color: C.text, background: C.bg, outline: "none", fontFamily: "'Archivo', sans-serif" }}
+                onFocus={e => e.target.style.borderColor = C.accent}
+                onBlur={e => e.target.style.borderColor = C.borderColor}
+              />
+              <button onClick={() => onSubmitComment(post.id)} disabled={!commentText[post.id]?.trim()}
+                style={{ ...C.btnPrimary, borderRadius: 10, display: "inline-flex", alignItems: "center", padding: "8px 14px", fontSize: 13, cursor: "pointer", opacity: !commentText[post.id]?.trim() ? 0.4 : 1 }}>
+                <Send size={13} />
+              </button>
+            </div>
+            <div style={{ maxHeight: 280, overflowY: "auto" }}>
+              {(comments[post.id] || []).length === 0 ? (
+                <p style={{ fontSize: 13, color: C.muted, textAlign: "center", padding: "12px 0", fontFamily: "'Archivo', sans-serif" }}>Hələ şərh yoxdur</p>
+              ) : (comments[post.id] || []).map(c => (
+                <div key={c.id} style={{ display: "flex", gap: 10, marginBottom: 10 }}>
+                  <Link to={`/profile/${c.user_id}`} style={{ width: 32, height: 32, background: C.accent, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 800, textDecoration: "none", flexShrink: 0, borderRadius: "50%" }}>
+                    {c.user_name?.charAt(0)}
+                  </Link>
+                  <div style={{ flex: 1, background: C.commentBg, border: C.commentBorder, borderRadius: 12, padding: "8px 12px" }}>
+                    <div style={{ display: "flex", gap: 8, marginBottom: 3, alignItems: "center" }}>
+                      <Link to={`/profile/${c.user_id}`} style={{ fontSize: 13, fontWeight: 700, color: C.text, textDecoration: "none", fontFamily: "'Archivo', sans-serif" }}>{c.user_name}</Link>
+                      <span style={{ fontSize: 11, color: C.muted }}>{formatBakuHM(c.created_at)}</span>
+                    </div>
+                    <p style={{ fontSize: 13, color: C.commentText, margin: 0 }}>{c.content}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </article>
+  );
+}
+
 export default function Feed() {
+  useFonts();
+
   const [posts, setPosts] = useState([]);
   const [newPost, setNewPost] = useState("");
   const [imageUrls, setImageUrls] = useState([]);
@@ -91,6 +301,9 @@ export default function Feed() {
   const [contestInfo, setContestInfo] = useState(null);
   const [contestRemaining, setContestRemaining] = useState(0);
   const [showAllSuggested, setShowAllSuggested] = useState(false);
+  const [composerFocus, setComposerFocus] = useState(false);
+  const [feedTab, setFeedTab] = useState("foryou");
+
   const { t } = useLang();
   const isMobile = useIsMobile();
   const dark = useDarkMode();
@@ -107,8 +320,8 @@ export default function Feed() {
 
   useEffect(() => {
     if (contestRemaining <= 0) return;
-    const t = setInterval(() => setContestRemaining(r => Math.max(0, r - 1)), 1000);
-    return () => clearInterval(t);
+    const timer = setInterval(() => setContestRemaining(r => Math.max(0, r - 1)), 1000);
+    return () => clearInterval(timer);
   }, [contestRemaining > 0]);
 
   const loadConnections = async () => {
@@ -254,15 +467,6 @@ export default function Feed() {
     setReporting(false);
   };
 
-  const card = { background: C.bg, border: C.border, marginBottom: 10, padding: isMobile ? "12px 10px" : "16px 18px" };
-  const btn = (active, color = C.primary) => ({
-    display: "inline-flex", alignItems: "center", gap: 5,
-    padding: "5px 12px", fontSize: 12, cursor: "pointer",
-    border: `1px solid ${active ? color : (dark ? "#4b5563" : "#ddd")}`,
-    background: active ? `${color}28` : (dark ? "#374151" : "#fff"),
-    color: active ? color : C.muted,
-  });
-
   const handleSuggestedConnect = async (userId) => {
     setSuggestedPending(prev => new Set([...prev, userId]));
     try {
@@ -274,452 +478,312 @@ export default function Feed() {
     }
   };
 
+  const pad = n => String(n).padStart(2, "0");
+  const cntD = Math.floor(contestRemaining / 86400);
+  const cntH = Math.floor((contestRemaining % 86400) / 3600);
+  const cntM = Math.floor((contestRemaining % 3600) / 60);
+  const cntS = contestRemaining % 60;
+  const hasSidebar = !isMobile && (suggested.length > 0 || contestInfo);
+
   return (
-    <div style={{ maxWidth: 960, margin: "0 auto", padding: isMobile ? "12px 10px" : "20px 12px", display: "flex", flexDirection: isMobile ? "column" : "row", gap: 20, alignItems: "flex-start" }}>
-    <div style={{ flex: 1, minWidth: 0 }}>
+    <div style={{ fontFamily: "'Archivo', system-ui, sans-serif", WebkitFontSmoothing: "antialiased", background: C.bg, color: C.text, minHeight: "100vh", transition: "background .25s, color .25s" }}>
+      <div style={{ maxWidth: 980, margin: "0 auto", display: "flex", alignItems: "flex-start" }}>
 
-      {/* Header */}
-      {user && (
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-          <div>
-            <h1 style={{ fontSize: 17, fontWeight: 700, color: C.text, margin: 0 }}>{t("feed_title")}</h1>
-            <p style={{ fontSize: 12, color: C.muted, margin: "3px 0 0" }}>{t("feed_placeholder")}</p>
+        {/* ── Center column ── */}
+        <main style={{ flex: 1, minWidth: 0, borderRight: hasSidebar ? `1px solid ${C.borderColor}` : "none" }}>
+
+          {/* Sticky feed header */}
+          <div style={{ position: "sticky", top: 60, zIndex: 15, background: C.barBlur, backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)", borderBottom: `1px solid ${C.divider}` }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px 10px" }}>
+              <h1 style={{ margin: 0, fontWeight: 900, fontSize: 20, letterSpacing: "0.02em", color: C.text }}>Yeniliklər</h1>
+              <Link to="/articles" style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 10, border: C.border, background: "transparent", color: C.textSoft, textDecoration: "none", fontSize: 13.5, fontWeight: 700 }}>
+                <BookOpen size={16} /> Məqalələr
+              </Link>
+            </div>
+            <div style={{ display: "flex", padding: "0 8px" }}>
+              {[["foryou", "Sənə uyğun"], ["following", "İzlədiklərin"]].map(([id, label]) => {
+                const on = feedTab === id;
+                return (
+                  <button key={id} onClick={() => setFeedTab(id)} style={{ flex: 1, padding: "12px 0", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 14.5, fontWeight: on ? 800 : 600, color: on ? C.text : C.muted, position: "relative" }}>
+                    {label}
+                    {on && <span style={{ position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)", width: 48, height: 4, borderRadius: 4, background: C.accent }} />}
+                  </button>
+                );
+              })}
+            </div>
           </div>
-          <Link to="/articles" style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", fontSize: 12, color: C.muted, border: C.border, background: C.bg, textDecoration: "none" }}>
-            <BookOpen size={13} /> Məqalələr
-          </Link>
-        </div>
-      )}
 
-      {/* Contest banner — mobile only */}
-      {isMobile && contestInfo && (() => {
-        const pad = n => String(n).padStart(2, "0");
-        const d = Math.floor(contestRemaining / 86400);
-        const h = Math.floor((contestRemaining % 86400) / 3600);
-        const m = Math.floor((contestRemaining % 3600) / 60);
-        const s = contestRemaining % 60;
-        const divider = <div style={{ height: 1, background: C.divider, margin: "10px 0" }} />;
-        return (
-          <div style={{ background: C.sidebarBg, border: C.border, borderRadius: 6, overflow: "hidden", marginBottom: 12 }}>
-            {/* Header */}
-            <div style={{ padding: "10px 14px", borderBottom: `1px solid ${C.divider}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <div>
-                <p style={{ margin: 0, fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: C.muted }}>Foto Müsabiqəsi</p>
-                <p style={{ margin: "2px 0 0", fontSize: 14, fontWeight: 700, color: C.text }}>{contestInfo.title || "Hash Müsabiqəsi"}</p>
-              </div>
-              <div style={{ textAlign: "right" }}>
-                <p style={{ margin: 0, fontSize: 18, fontWeight: 800, color: "#1a4a8a", lineHeight: 1 }}>{contestInfo.prize}</p>
-                <p style={{ margin: "2px 0 0", fontSize: 10, color: C.muted }}>mükafat</p>
-              </div>
-            </div>
-
-            {/* Countdown */}
-            <div style={{ padding: "10px 14px", borderBottom: `1px solid ${C.divider}`, display: "flex", gap: 6 }}>
-              {[{ v: d, l: "Gün" }, { v: h, l: "Saat" }, { v: m, l: "Dəq" }, { v: s, l: "San" }].map(({ v, l }, i) => (
-                <div key={l} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
-                  {i > 0 && <span style={{ position: "absolute", fontSize: 14, fontWeight: 700, color: C.muted, marginTop: 1 }} />}
-                  <span style={{ fontSize: 16, fontWeight: 800, color: C.text, fontVariantNumeric: "tabular-nums", letterSpacing: "-0.02em" }}>{pad(v)}</span>
-                  <span style={{ fontSize: 9, color: C.muted, textTransform: "uppercase", letterSpacing: "0.05em" }}>{l}</span>
+          {/* Contest banner — mobile */}
+          {isMobile && contestInfo && (
+            <div style={{ borderBottom: `1px solid ${C.divider}` }}>
+              <div style={{ padding: "12px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div>
+                  <p style={{ margin: 0, fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: C.muted, fontFamily: "'JetBrains Mono', monospace" }}>■ Foto Müsabiqəsi</p>
+                  <p style={{ margin: "3px 0 0", fontSize: 14, fontWeight: 800, color: C.text }}>{contestInfo.title || "Hash Müsabiqəsi"}</p>
                 </div>
-              ))}
+                <p style={{ margin: 0, fontSize: 20, fontWeight: 900, color: C.accent }}>{contestInfo.prize}</p>
+              </div>
+              <div style={{ display: "flex", gap: 8, padding: "0 20px 14px" }}>
+                {[{ v: cntD, l: "Gün" }, { v: cntH, l: "Saat" }, { v: cntM, l: "Dəq" }, { v: cntS, l: "San" }].map(({ v, l }) => (
+                  <div key={l} style={{ flex: 1, textAlign: "center", background: C.accentWash, borderRadius: 10, padding: "6px 4px" }}>
+                    <div style={{ fontSize: 15, fontWeight: 900, color: C.accent, fontVariantNumeric: "tabular-nums" }}>{pad(v)}</div>
+                    <div style={{ fontSize: 9, color: C.muted, fontFamily: "'JetBrains Mono', monospace", letterSpacing: "0.1em", textTransform: "uppercase" }}>{l}</div>
+                  </div>
+                ))}
+              </div>
             </div>
+          )}
 
-            {/* Leaderboard */}
-            <div style={{ padding: "10px 14px" }}>
-              {contestBoard.length === 0 ? (
-                <p style={{ fontSize: 12, color: C.muted, margin: 0, textAlign: "center", padding: "4px 0" }}>Hələ iştirakçı yoxdur. İlk sən ol.</p>
+          {/* Composer */}
+          <form onSubmit={handlePost} style={{ display: "flex", gap: 14, padding: "18px 20px", borderBottom: `1px solid ${C.divider}` }}>
+            <div style={{ flexShrink: 0, paddingTop: 4 }}>
+              <UserAvatar user={user} size="md" />
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <textarea
+                value={newPost}
+                onChange={e => setNewPost(e.target.value)}
+                onFocus={() => setComposerFocus(true)}
+                onBlur={() => setComposerFocus(false)}
+                placeholder={t("feed_textarea") || "Nə düşünürsən?"}
+                rows={composerFocus || newPost ? 3 : 1}
+                style={{ width: "100%", border: "none", outline: "none", resize: "none", background: "transparent", color: C.text, fontFamily: "inherit", fontSize: 18, lineHeight: 1.5, padding: "4px 0", boxSizing: "border-box", fontWeight: 500 }}
+              />
+              <div style={{ height: 2, background: composerFocus ? C.accent : C.divider, transition: "background .2s", marginBottom: 10 }} />
+
+              {imageUrls.length > 0 && (
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6, marginBottom: 10 }}>
+                  {imageUrls.map((url, i) => (
+                    <div key={i} style={{ position: "relative", borderRadius: 10, overflow: "hidden", aspectRatio: "1", border: C.border }}>
+                      <img src={url} alt={`preview-${i}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      <button type="button" onClick={() => setImageUrls(prev => prev.filter((_, j) => j !== i))}
+                        style={{ position: "absolute", top: 4, right: 4, width: 22, height: 22, background: "rgba(0,0,0,0.65)", border: "none", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "50%" }}>
+                        <X size={11} />
+                      </button>
+                    </div>
+                  ))}
+                  {imageUrls.length < 10 && (
+                    <label style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", border: `1px dashed ${C.borderColor}`, borderRadius: 10, aspectRatio: "1", cursor: "pointer", color: C.muted, fontSize: 11, gap: 4 }}>
+                      <ImageIcon size={16} /> Əlavə et
+                      <input type="file" accept="image/*" multiple onChange={handleImagePick} disabled={uploading} style={{ display: "none" }} />
+                    </label>
+                  )}
+                </div>
+              )}
+
+              {videoUrl && (
+                <div style={{ position: "relative", marginBottom: 10, borderRadius: 14, overflow: "hidden", border: C.border }}>
+                  <video src={videoUrl} controls style={{ width: "100%", maxHeight: 360, display: "block" }} />
+                  <button type="button" onClick={() => setVideoUrl("")}
+                    style={{ position: "absolute", top: 8, right: 8, width: 28, height: 28, background: "rgba(0,0,0,0.65)", border: "none", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "50%" }}>
+                    <X size={13} />
+                  </button>
+                </div>
+              )}
+
+              <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                <label style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 12px", borderRadius: 10, border: "none", background: "transparent", cursor: "pointer", color: C.accent, fontFamily: "inherit", fontSize: 14, fontWeight: 700 }}>
+                  <ImageIcon size={18} /> Şəkil
+                  {imageUrls.length > 0 && <span style={{ background: C.accent, color: "#fff", fontSize: 10, padding: "1px 6px", borderRadius: 8 }}>{imageUrls.length}</span>}
+                  <input type="file" accept="image/*" multiple onChange={handleImagePick} disabled={uploading} style={{ display: "none" }} />
+                </label>
+                <label style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 12px", borderRadius: 10, border: "none", background: "transparent", cursor: "pointer", color: C.accent, fontFamily: "inherit", fontSize: 14, fontWeight: 700 }}>
+                  <Film size={18} /> Video
+                  <input type="file" accept="video/mp4,video/webm,video/quicktime" onChange={handleVideoPick} disabled={uploading} style={{ display: "none" }} />
+                </label>
+                {uploading && <span style={{ fontSize: 11, color: C.muted, fontFamily: "'JetBrains Mono', monospace" }}>Yüklənir...</span>}
+                <div style={{ flex: 1 }} />
+                <label style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11.5, color: C.muted, cursor: "pointer" }}>
+                  <input type="checkbox" checked={showDislikes} onChange={e => setShowDislikes(e.target.checked)} style={{ accentColor: C.accent }} />
+                  <ThumbsDown size={11} /> göstər
+                </label>
+                <button type="submit" disabled={(!newPost.trim() && !imageUrls.length && !videoUrl) || posting || uploading}
+                  style={{ padding: "9px 22px", borderRadius: 11, border: "none", background: (newPost.trim() || imageUrls.length || videoUrl) ? C.accent : C.accentMuted, color: "#fff", fontFamily: "inherit", fontWeight: 800, fontSize: 15, cursor: (!newPost.trim() && !imageUrls.length && !videoUrl) || posting || uploading ? "default" : "pointer", boxShadow: (newPost.trim() || imageUrls.length || videoUrl) ? `0 4px 16px ${C.accentGlow}` : "none", transition: "background .15s", display: "inline-flex", alignItems: "center", gap: 6 }}>
+                  <Send size={14} /> {posting ? "..." : t("feed_share") || "Paylaş"}
+                </button>
+              </div>
+            </div>
+          </form>
+
+          {/* Loading skeleton */}
+          {loading && [1, 2, 3].map(i => (
+            <div key={i} style={{ display: "flex", gap: 14, padding: "18px 20px", borderBottom: `1px solid ${C.divider}`, opacity: 0.5 }}>
+              <div style={{ width: 46, height: 46, background: C.surface, borderRadius: "50%", flexShrink: 0 }} />
+              <div style={{ flex: 1 }}>
+                <div style={{ height: 13, background: C.surface, width: "30%", marginBottom: 10, borderRadius: 6 }} />
+                <div style={{ height: 11, background: C.surface, marginBottom: 6, borderRadius: 6 }} />
+                <div style={{ height: 11, background: C.surface, width: "65%", borderRadius: 6 }} />
+              </div>
+            </div>
+          ))}
+
+          {/* Posts */}
+          {!loading && posts.map(post => (
+            <PostItem
+              key={post.id}
+              post={post}
+              C={C}
+              user={user}
+              connectedIds={connectedIds}
+              pendingIds={pendingIds}
+              openComments={openComments}
+              comments={comments}
+              commentText={commentText}
+              onLike={handleLike}
+              onDislike={handleDislike}
+              onDelete={handleDelete}
+              onConnect={handleConnect}
+              onToggleComments={toggleComments}
+              onCommentChange={(id, val) => setCommentText({ ...commentText, [id]: val })}
+              onSubmitComment={submitComment}
+              onReport={setReportPostId}
+              t={t}
+            />
+          ))}
+
+          {/* Load more */}
+          {!loading && posts.length > 0 && (
+            <div style={{ textAlign: "center", padding: "24px 0" }}>
+              {hasMore ? (
+                <button onClick={loadMore} disabled={loadingMore}
+                  style={{ ...C.btnGhost, display: "inline-flex", alignItems: "center", gap: 6, fontSize: 14, padding: "10px 28px", cursor: loadingMore ? "default" : "pointer", opacity: loadingMore ? 0.5 : 1, borderRadius: 11, fontFamily: "inherit", fontWeight: 700 }}>
+                  {loadingMore ? "Yüklənir..." : "Daha çox yüklə"}
+                </button>
               ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  {contestBoard.map((entry, idx) => (
-                    <div key={entry.post_id}>
-                      {idx > 0 && <div style={{ height: 1, background: C.divider, marginBottom: 8 }} />}
-                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                        <span style={{ fontSize: 11, fontWeight: 700, color: C.muted, width: 16, flexShrink: 0, textAlign: "center" }}>
-                          {entry.rank === 1 ? "🥇" : entry.rank === 2 ? "🥈" : entry.rank === 3 ? "🥉" : `${entry.rank}`}
-                        </span>
-                        {entry.image_url && (
-                          <img src={entry.image_url} alt="" style={{ width: 42, height: 42, objectFit: "cover", borderRadius: 4, flexShrink: 0 }} />
-                        )}
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 12, fontWeight: 600, color: C.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{entry.author.full_name}</div>
-                          <div style={{ fontSize: 11, color: C.muted, display: "flex", alignItems: "center", gap: 8, marginTop: 2 }}>
-                            <span style={{ display: "flex", alignItems: "center", gap: 3 }}><Heart size={10} fill="#e11d48" color="#e11d48" /> {entry.like_count}</span>
-                            <span style={{ display: "flex", alignItems: "center", gap: 3 }}>
-                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                              {entry.comment_count ?? 0}
-                            </span>
-                            <span style={{ fontWeight: 700, color: C.primary, marginLeft: "auto" }}>{entry.score ?? entry.like_count} xal</span>
-                          </div>
-                        </div>
+                <span style={{ fontSize: 12.5, color: C.muted, fontFamily: "'JetBrains Mono', monospace", letterSpacing: "0.08em" }}>— daha çox yoxdur —</span>
+              )}
+            </div>
+          )}
+
+          {/* Empty state */}
+          {!loading && posts.length === 0 && (
+            <div style={{ textAlign: "center", padding: "60px 20px" }}>
+              <TrendingUp size={40} style={{ color: C.borderColor, marginBottom: 16 }} />
+              <p style={{ fontWeight: 900, fontSize: 18, color: C.text, margin: "0 0 8px" }}>{t("feed_empty") || "Hələ post yoxdur"}</p>
+              <p style={{ fontSize: 13, color: C.muted, margin: 0 }}>{t("feed_empty_sub") || "Birincin ol!"}</p>
+            </div>
+          )}
+        </main>
+
+        {/* ── Right sidebar ── */}
+        {hasSidebar && (
+          <aside style={{ width: 300, flexShrink: 0, padding: "20px 16px 40px", boxSizing: "border-box", display: "flex", flexDirection: "column", gap: 14, position: "sticky", top: 60, alignSelf: "flex-start", maxHeight: "calc(100vh - 70px)", overflowY: "auto" }}>
+
+            {suggested.length > 0 && (
+              <Panel C={C}>
+                <PanelHead C={C}>Tanıya bilərsən</PanelHead>
+                {(showAllSuggested ? suggested : suggested.slice(0, 3)).map(s => {
+                  const sent = suggestedPending.has(s.id);
+                  return (
+                    <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 18px", borderTop: `1px solid ${C.divider}` }}>
+                      <Link to={`/profile/${s.id}`} style={{ width: 42, height: 42, borderRadius: "50%", background: C.accent, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 14, textDecoration: "none", flexShrink: 0, overflow: "hidden" }}>
+                        {s.profile_picture ? <img src={s.profile_picture} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : s.full_name?.charAt(0)}
+                      </Link>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <Link to={`/profile/${s.id}`} style={{ fontSize: 14, fontWeight: 800, color: C.text, textDecoration: "none", display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.full_name}</Link>
+                        <p style={{ fontSize: 12, color: C.muted, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.mutual_count > 0 ? `${s.mutual_count} ümumi bağlantı` : (s.major || "Hash")}</p>
                       </div>
+                      <button onClick={() => !sent && handleSuggestedConnect(s.id)} disabled={sent}
+                        style={{ flexShrink: 0, padding: "6px 14px", borderRadius: 999, background: sent ? "transparent" : C.accent, color: sent ? C.textSoft : "#fff", border: sent ? C.border : "none", fontSize: 13, fontWeight: 800, cursor: sent ? "default" : "pointer" }}>
+                        {sent ? "Göndərildi" : "Əlaqə"}
+                      </button>
+                    </div>
+                  );
+                })}
+                {suggested.length > 3 && (
+                  <div style={{ padding: "12px 18px", borderTop: `1px solid ${C.divider}` }}>
+                    <button onClick={() => setShowAllSuggested(v => !v)}
+                      style={{ background: "none", border: "none", color: C.accent, fontSize: 13.5, fontWeight: 700, cursor: "pointer", padding: 0 }}>
+                      {showAllSuggested ? "Azalt ▲" : `Daha çoxunu göstər → (${suggested.length - 3})`}
+                    </button>
+                  </div>
+                )}
+              </Panel>
+            )}
+
+            {contestInfo && (
+              <Panel C={C}>
+                <div style={{ padding: "14px 18px 12px", borderBottom: `1px solid ${C.divider}`, display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10 }}>
+                  <div>
+                    <p style={{ margin: 0, fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: C.muted, fontFamily: "'JetBrains Mono', monospace" }}>■ Foto Müsabiqəsi</p>
+                    <p style={{ margin: "3px 0 0", fontSize: 15, fontWeight: 900, color: C.text }}>{contestInfo.title || "Hash Müsabiqəsi"}</p>
+                  </div>
+                  <div style={{ textAlign: "right", flexShrink: 0 }}>
+                    <p style={{ margin: 0, fontSize: 20, fontWeight: 900, color: C.accent, lineHeight: 1 }}>{contestInfo.prize}</p>
+                    <p style={{ margin: "2px 0 0", fontSize: 10, color: C.muted }}>mükafat</p>
+                  </div>
+                </div>
+                <div style={{ display: "flex", gap: 6, padding: "12px 18px", borderBottom: `1px solid ${C.divider}` }}>
+                  {[{ v: cntD, l: "Gün" }, { v: cntH, l: "Saat" }, { v: cntM, l: "Dəq" }, { v: cntS, l: "San" }].map(({ v, l }) => (
+                    <div key={l} style={{ flex: 1, textAlign: "center", background: C.accentWash, borderRadius: 10, padding: "6px 4px" }}>
+                      <div style={{ fontSize: 16, fontWeight: 900, color: C.accent, fontVariantNumeric: "tabular-nums" }}>{pad(v)}</div>
+                      <div style={{ fontSize: 9, color: C.muted, fontFamily: "'JetBrains Mono', monospace", letterSpacing: "0.1em", textTransform: "uppercase" }}>{l}</div>
                     </div>
                   ))}
                 </div>
-              )}
-              {contestInfo?.tags && (
-                <p style={{ fontSize: 10, color: C.faint, margin: "10px 0 0", letterSpacing: "0.03em" }}>
-                  {contestInfo.tags.map(t => t.startsWith("#") ? t : `#${t}`).join("  ")}
-                </p>
-              )}
-            </div>
-          </div>
-        );
-      })()}
-
-      {/* New post form */}
-      <form onSubmit={handlePost} style={{ ...card, marginBottom: 16 }}>
-        <div style={{ display: "flex", gap: 12 }}>
-          <div style={{ flexShrink: 0 }}>
-            <UserAvatar user={user} size="md" />
-          </div>
-          <div style={{ flex: 1 }}>
-            <textarea
-              value={newPost}
-              onChange={e => setNewPost(e.target.value)}
-              placeholder={t("feed_textarea")}
-              style={{ width: "100%", border: "none", borderBottom: `1px solid ${C.divider}`, outline: "none", fontSize: 13, color: C.text, resize: "none", background: "transparent", padding: "4px 0", lineHeight: 1.6, boxSizing: "border-box" }}
-              rows={3}
-            />
-
-            {imageUrls.length > 0 && (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6, marginTop: 8 }}>
-                {imageUrls.map((url, i) => (
-                  <div key={i} style={{ position: "relative", border: C.border, aspectRatio: "1", overflow: "hidden" }}>
-                    <img src={url} alt={`preview-${i}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                    <button type="button" onClick={() => setImageUrls(prev => prev.filter((_, j) => j !== i))}
-                      style={{ position: "absolute", top: 3, right: 3, width: 20, height: 20, background: "rgba(0,0,0,0.6)", border: "none", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <X size={11} />
-                    </button>
-                  </div>
-                ))}
-                {imageUrls.length < 10 && (
-                  <label style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", border: "1px dashed #bbb", aspectRatio: "1", cursor: "pointer", color: "#aaa", fontSize: 11 }}>
-                    <ImageIcon size={16} />
-                    <span style={{ marginTop: 4 }}>Əlavə et</span>
-                    <input type="file" accept="image/*" multiple onChange={handleImagePick} disabled={uploading} style={{ display: "none" }} />
-                  </label>
-                )}
-              </div>
-            )}
-
-            {videoUrl && (
-              <div style={{ position: "relative", marginTop: 8, border: C.border }}>
-                <video src={videoUrl} controls style={{ width: "100%", maxHeight: 360, display: "block" }} />
-                <button type="button" onClick={() => setVideoUrl("")} style={{ position: "absolute", top: 6, right: 6, width: 26, height: 26, background: "rgba(0,0,0,0.6)", border: "none", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <X size={13} />
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 12, paddingTop: 10, borderTop: `1px solid ${C.divider}` }}>
-          <div style={{ display: "flex", gap: 6 }}>
-            <label style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 10px", fontSize: 12, color: C.primary, border: "1px solid #c8d8f0", background: "#f0f5ff", cursor: "pointer" }}>
-              <ImageIcon size={13} /> Şəkil {imageUrls.length > 0 && <span style={{ background: "#1a4a8a", color: "#fff", fontSize: 10, padding: "1px 5px", borderRadius: 8 }}>{imageUrls.length}</span>}
-              <input type="file" accept="image/*" multiple onChange={handleImagePick} disabled={uploading} style={{ display: "none" }} />
-            </label>
-            <label style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 10px", fontSize: 12, color: C.primary, border: "1px solid #c8d8f0", background: "#f0f5ff", cursor: "pointer" }}>
-              <Film size={13} /> Video
-              <input type="file" accept="video/mp4,video/webm,video/quicktime" onChange={handleVideoPick} disabled={uploading} style={{ display: "none" }} />
-            </label>
-            {uploading && <span style={{ fontSize: 11, color: C.faint, alignSelf: "center" }}>Yüklənir...</span>}
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <label style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, color: C.muted, cursor: "pointer" }}>
-              <input type="checkbox" checked={showDislikes} onChange={e => setShowDislikes(e.target.checked)} style={{ accentColor: C.primary }} />
-              <ThumbsDown size={11} /> göstər
-            </label>
-            <button type="submit" disabled={(!newPost.trim() && !imageUrls.length && !videoUrl) || posting || uploading}
-              style={{ ...C.btnPrimary, display: "inline-flex", alignItems: "center", gap: 5, padding: "6px 16px", fontSize: 12, cursor: "pointer", opacity: ((!newPost.trim() && !imageUrls.length && !videoUrl) || posting || uploading) ? 0.4 : 1 }}>
-              <Send size={12} /> {posting ? "..." : t("feed_share")}
-            </button>
-          </div>
-        </div>
-      </form>
-
-      {/* Loading skeleton */}
-      {loading && (
-        <div>
-          {[1, 2, 3].map(i => (
-            <div key={i} style={{ ...card, opacity: 0.5 }}>
-              <div style={{ display: "flex", gap: 10, marginBottom: 12 }}>
-                <div style={{ width: 40, height: 40, background: "#e0e0e0", borderRadius: "50%", flexShrink: 0 }} />
-                <div style={{ flex: 1 }}>
-                  <div style={{ height: 12, background: "#e0e0e0", width: "35%", marginBottom: 6 }} />
-                  <div style={{ height: 10, background: "#e8e8e8", width: "25%" }} />
-                </div>
-              </div>
-              <div style={{ height: 11, background: "#e8e8e8", marginBottom: 5 }} />
-              <div style={{ height: 11, background: "#ebebeb", width: "70%" }} />
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Posts */}
-      {!loading && (
-        <div>
-          {posts.map(post => (
-            <div key={post.id} style={card}>
-              {/* Post header */}
-              <div style={{ display: "flex", alignItems: "center", marginBottom: 10 }}>
-                <Link to={`/profile/${post.author_id}`} style={{ flexShrink: 0 }}>
-                  <UserAvatar user={{ full_name: post.author_name, profile_picture: post.author_picture }} size="md" />
-                </Link>
-                <div style={{ flex: 1, marginLeft: 10 }}>
-                  <Link to={`/profile/${post.author_id}`} style={{ fontWeight: 600, fontSize: 13, color: C.text, textDecoration: "none" }}
-                    onMouseEnter={e => e.currentTarget.style.color = C.primary}
-                    onMouseLeave={e => e.currentTarget.style.color = C.text}>
-                    {post.author_name}
-                  </Link>
-                  <p style={{ fontSize: 11, color: C.faint, margin: "2px 0 0" }}>{formatBakuDate(post.created_at)} · {formatBakuHM(post.created_at)}</p>
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  {post.is_pinned && (
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, color: "#92600a", background: "#fef3c7", border: "1px solid #fde68a", padding: "2px 8px" }}>
-                      <Pin size={10} /> {t("feed_pinned")}
-                    </span>
-                  )}
-                  {user && post.author_id !== user.id && !connectedIds.has(post.author_id) && (
-                    <button onClick={() => handleConnect(post.author_id)} disabled={pendingIds.has(post.author_id)}
-                      style={{ background: "none", border: "none", cursor: "pointer", padding: 4, color: pendingIds.has(post.author_id) ? "#16a34a" : "#999" }}
-                      title={pendingIds.has(post.author_id) ? "İstək göndərildi" : "Bağlantı istəyi göndər"}>
-                      {pendingIds.has(post.author_id) ? <UserCheck size={15} /> : <UserPlus size={15} />}
-                    </button>
-                  )}
-                  {user && post.author_id === user.id && (
-                    <button onClick={() => handleDelete(post.id)} style={{ background: "none", border: "none", cursor: "pointer", padding: 4, color: "#aaa" }}
-                      onMouseEnter={e => e.currentTarget.style.color = "#dc2626"}
-                      onMouseLeave={e => e.currentTarget.style.color = "#aaa"}
-                      title="Postu sil"><Trash2 size={14} /></button>
-                  )}
-                </div>
-              </div>
-
-              {/* Post content */}
-              {post.content && (
-                <p style={{ fontSize: 13, color: C.text, lineHeight: 1.65, margin: "0 0 10px", whiteSpace: "pre-wrap" }}>{post.content}</p>
-              )}
-
-              {(post.images?.length > 0 || post.image_url) && (
-                <div style={{ border: C.border, overflow: "hidden", marginBottom: 10 }}>
-                  <ImageCarousel images={post.images?.length > 0 ? post.images : [post.image_url]} />
-                </div>
-              )}
-              {post.video_url && (
-                <div style={{ border: C.border, marginBottom: 10, background: "#000" }}>
-                  <video src={post.video_url} controls style={{ width: "100%", maxHeight: 460, display: "block" }} />
-                </div>
-              )}
-
-              {/* Actions */}
-              <div style={{ display: "flex", alignItems: "center", gap: 4, paddingTop: 8, borderTop: `1px solid ${C.divider}` }}>
-                <button onClick={() => handleLike(post.id)} style={btn(post.is_liked, "#dc2626")}>
-                  <Heart size={14} fill={post.is_liked ? "currentColor" : "none"} /> {post.like_count}
-                </button>
-                <button onClick={() => handleDislike(post.id)} style={btn(post.is_disliked, "#1a4a8a")}>
-                  <ThumbsDown size={14} fill={post.is_disliked ? "currentColor" : "none"} />
-                  {post.show_dislikes && <span>{post.dislike_count}</span>}
-                </button>
-                <button onClick={() => toggleComments(post.id)} style={btn(openComments[post.id], "#1a4a8a")}>
-                  <MessageCircle size={14} /> {post.comment_count} {openComments[post.id] ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-                </button>
-                {user && post.author_id !== user.id && (
-                  <button onClick={() => setReportPostId(post.id)}
-                    style={{ marginLeft: "auto", background: "none", border: "none", cursor: "pointer", padding: "4px 8px", color: "#bbb", display: "inline-flex", alignItems: "center" }}
-                    onMouseEnter={e => e.currentTarget.style.color = "#dc2626"}
-                    onMouseLeave={e => e.currentTarget.style.color = "#bbb"}
-                    title="Şikayət et"><Flag size={13} /></button>
-                )}
-              </div>
-
-              {/* Comments */}
-              {openComments[post.id] && (
-                <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.divider}` }}>
-                  <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
-                    <input
-                      type="text"
-                      value={commentText[post.id] || ""}
-                      onChange={e => setCommentText({ ...commentText, [post.id]: e.target.value })}
-                      onKeyDown={e => e.key === "Enter" && submitComment(post.id)}
-                      placeholder={t("feed_comment_placeholder")}
-                      style={{ flex: 1, padding: "6px 10px", border: C.border, fontSize: 12, color: C.text, background: C.bg, outline: "none" }}
-                      onFocus={e => e.target.style.borderColor = C.primary}
-                      onBlur={e => e.target.style.borderColor = dark ? "#374151" : "#ccc"}
-                    />
-                    <button onClick={() => submitComment(post.id)} disabled={!commentText[post.id]?.trim()}
-                      style={{ ...C.btnPrimary, display: "inline-flex", alignItems: "center", padding: "6px 12px", fontSize: 12, cursor: "pointer", opacity: !commentText[post.id]?.trim() ? 0.4 : 1 }}>
-                      <Send size={12} />
-                    </button>
-                  </div>
-                  <div style={{ maxHeight: 280, overflowY: "auto" }}>
-                    {(comments[post.id] || []).length === 0 ? (
-                      <p style={{ fontSize: 12, color: C.faint, textAlign: "center", padding: "10px 0" }}>Hələ şərh yoxdur</p>
-                    ) : (comments[post.id] || []).map(c => (
-                      <div key={c.id} style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-                        <Link to={`/profile/${c.user_id}`} style={{ width: 30, height: 30, background: "#1a4a8a", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 11, fontWeight: 700, textDecoration: "none", flexShrink: 0 }}>
-                          {c.user_name?.charAt(0)}
-                        </Link>
-                        <div style={{ flex: 1, background: C.commentBg, border: `1px solid ${C.commentBorder}`, padding: "7px 10px" }}>
-                          <div style={{ display: "flex", gap: 8, marginBottom: 3, alignItems: "center" }}>
-                            <Link to={`/profile/${c.user_id}`} style={{ fontSize: 12, fontWeight: 600, color: C.text, textDecoration: "none" }}>{c.user_name}</Link>
-                            <span style={{ fontSize: 10, color: C.faint }}>{formatBakuHM(c.created_at)}</span>
+                <div style={{ padding: "12px 18px" }}>
+                  {contestBoard.length === 0 ? (
+                    <p style={{ fontSize: 13, color: C.muted, margin: 0 }}>Hələ iştirakçı yoxdur. İlk sən ol! 📸</p>
+                  ) : (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                      {contestBoard.map(entry => (
+                        <div key={entry.post_id} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <span style={{ fontSize: 14, flexShrink: 0, width: 20, textAlign: "center" }}>
+                            {entry.rank === 1 ? "🥇" : entry.rank === 2 ? "🥈" : entry.rank === 3 ? "🥉" : `${entry.rank}.`}
+                          </span>
+                          {entry.image_url && (
+                            <img src={entry.image_url} alt="" style={{ width: 48, height: 48, objectFit: "cover", borderRadius: 8, flexShrink: 0, border: C.border }} />
+                          )}
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: C.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{entry.author.full_name}</div>
+                            <div style={{ fontSize: 11, color: C.muted, display: "flex", alignItems: "center", gap: 8, marginTop: 2 }}>
+                              <span style={{ color: "#e11d48", display: "flex", alignItems: "center", gap: 2 }}><Heart size={10} fill="#e11d48" color="#e11d48" /> {entry.like_count}</span>
+                              <span>💬 {entry.comment_count ?? 0}</span>
+                              <span style={{ color: C.accent, fontWeight: 800, marginLeft: "auto" }}>{entry.score ?? entry.like_count} xal</span>
+                            </div>
                           </div>
-                          <p style={{ fontSize: 12, color: C.commentText, margin: 0 }}>{c.content}</p>
                         </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
+                  {contestInfo?.tags && (
+                    <p style={{ fontSize: 10, color: C.muted, margin: "10px 0 0", fontFamily: "'JetBrains Mono', monospace", letterSpacing: "0.06em" }}>
+                      {contestInfo.tags.map(tag => tag.startsWith("#") ? tag : `#${tag}`).join("  ")}
+                    </p>
+                  )}
                 </div>
-              )}
+              </Panel>
+            )}
+
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "4px 12px", fontSize: 11.5, color: C.muted }}>
+              {["Haqqında", "Qaydalar", "Məxfilik", "© 2026 Hash"].map(x => (
+                <span key={x} style={{ cursor: "pointer" }}>{x}</span>
+              ))}
             </div>
-          ))}
-        </div>
-      )}
-
-      {/* Load more */}
-      {!loading && posts.length > 0 && (
-        <div style={{ textAlign: "center", padding: "12px 0 4px" }}>
-          {hasMore ? (
-            <button onClick={loadMore} disabled={loadingMore}
-              style={{ ...C.btnGhost, fontSize: 13, padding: "8px 24px", cursor: loadingMore ? "default" : "pointer", opacity: loadingMore ? 0.5 : 1 }}>
-              {loadingMore ? "Yüklənir..." : "Daha çox yüklə"}
-            </button>
-          ) : (
-            <span style={{ fontSize: 12, color: C.muted }}>Bütün postlar yükləndi</span>
-          )}
-        </div>
-      )}
-
-      {/* Empty state */}
-      {!loading && posts.length === 0 && (
-        <div style={{ textAlign: "center", padding: "60px 20px", color: C.muted }}>
-          <TrendingUp size={36} style={{ color: "#bbb", marginBottom: 12 }} />
-          <p style={{ fontWeight: 600, fontSize: 15, color: C.text, margin: "0 0 6px" }}>{t("feed_empty")}</p>
-          <p style={{ fontSize: 12, color: C.muted, margin: 0 }}>{t("feed_empty_sub")}</p>
-        </div>
-      )}
+          </aside>
+        )}
+      </div>
 
       {/* Report modal */}
       {reportPostId && (
         <div onClick={() => !reporting && setReportPostId(null)}
-          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 16px" }}>
-          <div onClick={e => e.stopPropagation()} style={{ background: C.bg, border: C.border, maxWidth: 400, width: "100%", padding: "20px 22px" }}>
-            <h3 style={{ fontSize: 14, fontWeight: 700, color: C.text, margin: "0 0 4px" }}>Postu şikayət et</h3>
-            <p style={{ fontSize: 11, color: C.muted, margin: "0 0 12px" }}>Admin yoxladıqdan sonra tədbir görüləcək</p>
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 16px" }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: C.bg, border: C.border, borderRadius: 18, maxWidth: 400, width: "100%", padding: "24px" }}>
+            <h3 style={{ fontSize: 16, fontWeight: 900, color: C.text, margin: "0 0 6px" }}>Postu şikayət et</h3>
+            <p style={{ fontSize: 12.5, color: C.muted, margin: "0 0 14px" }}>Admin yoxladıqdan sonra tədbir görüləcək</p>
             <textarea value={reportReason} onChange={e => setReportReason(e.target.value)} placeholder="Səbəb (istəyə bağlı)..."
-              style={{ width: "100%", border: C.border, background: C.commentBg, color: C.text, padding: "8px 10px", fontSize: 12, resize: "none", outline: "none", boxSizing: "border-box" }} rows={3} maxLength={300} />
-            <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 12 }}>
+              style={{ width: "100%", border: C.border, borderRadius: 10, background: C.sidebarBg, color: C.text, padding: "10px 12px", fontSize: 13, resize: "none", outline: "none", boxSizing: "border-box" }} rows={3} maxLength={300} />
+            <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 14 }}>
               <button onClick={() => { setReportPostId(null); setReportReason(""); }} disabled={reporting}
-                style={{ ...C.btnGhost, display: "inline-flex", padding: "6px 14px", fontSize: 12, cursor: "pointer" }}>Ləğv et</button>
+                style={{ ...C.btnGhost, borderRadius: 11, display: "inline-flex", padding: "9px 18px", fontSize: 13, cursor: "pointer", fontWeight: 700 }}>Ləğv et</button>
               <button onClick={submitReport} disabled={reporting}
-                style={{ background: "#dc2626", color: "#fff", border: "1px solid #dc2626", display: "inline-flex", padding: "6px 16px", fontSize: 12, cursor: "pointer", opacity: reporting ? 0.5 : 1 }}>
+                style={{ background: "#dc2626", color: "#fff", border: "1px solid #dc2626", borderRadius: 11, display: "inline-flex", padding: "9px 20px", fontSize: 13, cursor: "pointer", opacity: reporting ? 0.5 : 1, fontWeight: 800 }}>
                 {reporting ? "Göndərilir..." : "Şikayət göndər"}
               </button>
             </div>
           </div>
         </div>
       )}
-    </div>
-
-    {/* Sidebar */}
-    {(suggested.length > 0 || contestInfo) && !isMobile && (
-      <div style={{ width: 240, flexShrink: 0, position: "sticky", top: 68, display: "flex", flexDirection: "column", gap: 10, maxHeight: "calc(100vh - 80px)", overflowY: "auto" }}>
-
-        {/* Tanıya bilərsən */}
-        {suggested.length > 0 && (
-          <div style={{ background: C.sidebarBg, border: C.border, padding: "12px 14px" }}>
-            <p style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.05em", margin: "0 0 10px" }}>Tanıya bilərsən</p>
-            <div>
-              {(showAllSuggested ? suggested : suggested.slice(0, 2)).map(s => {
-                const sent = suggestedPending.has(s.id);
-                return (
-                  <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-                    <Link to={`/profile/${s.id}`} style={{ width: 32, height: 32, background: "#1a4a8a", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 13, textDecoration: "none", flexShrink: 0, overflow: "hidden", borderRadius: "50%" }}>
-                      {s.profile_picture ? <img src={s.profile_picture} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : s.full_name?.charAt(0)}
-                    </Link>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <Link to={`/profile/${s.id}`} style={{ fontSize: 12, fontWeight: 600, color: C.text, textDecoration: "none", display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.full_name}</Link>
-                      <p style={{ fontSize: 11, color: C.muted, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.mutual_count > 0 ? `${s.mutual_count} ümumi` : (s.major || "Hash")}</p>
-                    </div>
-                    <button onClick={() => !sent && handleSuggestedConnect(s.id)} disabled={sent}
-                      style={{ flexShrink: 0, background: sent ? (dark ? "#374151" : "#f0f0f0") : (dark ? "#1e3a5f" : "#f0f5ff"), color: sent ? C.faint : C.primary, border: `1px solid ${sent ? (dark ? "#4b5563" : "#ddd") : (dark ? "#2563eb" : "#c8d8f0")}`, padding: "3px 7px", fontSize: 11, cursor: sent ? "default" : "pointer", display: "flex", alignItems: "center", gap: 3 }}>
-                      {sent ? <UserCheck size={11} /> : <UserPlus size={11} />}
-                      {sent ? "Göndərildi" : "Əlaqə"}
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-            {suggested.length > 2 && (
-              <button onClick={() => setShowAllSuggested(v => !v)}
-                style={{ width: "100%", marginTop: 4, background: "none", border: "none", color: C.primary, fontSize: 12, fontWeight: 600, cursor: "pointer", textAlign: "left", padding: 0 }}>
-                {showAllSuggested ? "Azalt ▲" : `Ətraflı (${suggested.length - 2} daha) ▼`}
-              </button>
-            )}
-          </div>
-        )}
-
-        {/* Contest widget */}
-        {contestInfo && (() => {
-          const pad = n => String(n).padStart(2, "0");
-          const d = Math.floor(contestRemaining / 86400);
-          const h = Math.floor((contestRemaining % 86400) / 3600);
-          const m = Math.floor((contestRemaining % 3600) / 60);
-          const s = contestRemaining % 60;
-          return (
-            <div style={{ background: C.sidebarBg, border: C.border, padding: "12px 14px" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-                <p style={{ fontSize: 11, fontWeight: 700, color: "#1a4a8a", textTransform: "uppercase", letterSpacing: "0.05em", margin: 0 }}>🏆 {contestInfo.prize} Müsabiqə</p>
-              </div>
-
-              {/* Countdown */}
-              <div style={{ display: "flex", gap: 4, marginBottom: 10 }}>
-                {[{ v: d, l: "gün" }, { v: h, l: "saat" }, { v: m, l: "dəq" }, { v: s, l: "san" }].map(({ v, l }) => (
-                  <div key={l} style={{ flex: 1, textAlign: "center", background: dark ? "#0f172a" : "#f0f5ff", borderRadius: 6, padding: "4px 2px" }}>
-                    <div style={{ fontSize: 14, fontWeight: 800, color: "#1a4a8a", fontVariantNumeric: "tabular-nums" }}>{pad(v)}</div>
-                    <div style={{ fontSize: 9, color: C.muted }}>{l}</div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Leaderboard */}
-              {contestBoard.length === 0 ? (
-                <p style={{ fontSize: 12, color: C.muted, margin: 0 }}>Hələ iştirakçı yoxdur. İlk sən ol! 📸</p>
-              ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                  {contestBoard.map(entry => (
-                    <div key={entry.post_id} style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      <span style={{ fontSize: 13, flexShrink: 0, width: 18, textAlign: "center" }}>
-                        {entry.rank === 1 ? "🥇" : entry.rank === 2 ? "🥈" : entry.rank === 3 ? "🥉" : `${entry.rank}.`}
-                      </span>
-                      {entry.image_url && (
-                        <img src={entry.image_url} alt="" style={{ width: 52, height: 52, objectFit: "cover", borderRadius: 6, flexShrink: 0, border: "1px solid rgba(255,255,255,0.1)" }} />
-                      )}
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 11, fontWeight: 600, color: C.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{entry.author.full_name}</div>
-                        <div style={{ fontSize: 11, color: C.muted, display: "flex", alignItems: "center", gap: 6, fontWeight: 600 }}>
-                          <span style={{ color: "#e11d48", display: "flex", alignItems: "center", gap: 2 }}><Heart size={10} fill="#e11d48" /> {entry.like_count}</span>
-                          <span style={{ display: "flex", alignItems: "center", gap: 2 }}>💬 {entry.comment_count ?? 0}</span>
-                          <span style={{ color: "#7c3aed", fontWeight: 700 }}>= {entry.score ?? entry.like_count}</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-              {contestInfo?.tags && (
-                <p style={{ fontSize: 10, color: C.muted, margin: "8px 0 0" }}>
-                  {contestInfo.tags.map(t => t.startsWith("#") ? t : `#${t}`).join(" ")}
-                </p>
-              )}
-            </div>
-          );
-        })()}
-
-      </div>
-    )}
     </div>
   );
 }
