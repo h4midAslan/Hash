@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from sqlalchemy import or_, and_
+from sqlalchemy import or_, and_, func
 from app.services.database import get_db
 from app.services.auth import get_current_user
 from app.services.notifier import create_notification
@@ -59,6 +59,15 @@ def reject_request(connection_id: int, db: Session = Depends(get_db), current_us
     conn.status = "rejected"
     db.commit()
     return {"message": "Bağlantı rədd edildi"}
+
+
+@router.get("/count/{user_id}")
+def get_connection_count(user_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    count = db.query(func.count(Connection.id)).filter(
+        or_(Connection.sender_id == user_id, Connection.receiver_id == user_id),
+        Connection.status == "accepted",
+    ).scalar()
+    return {"count": count}
 
 
 @router.get("/sent")

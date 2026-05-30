@@ -120,6 +120,7 @@ export default function Profile() {
   const [uploadingPic, setUploadingPic] = useState(false);
   const [userPosts, setUserPosts]     = useState([]);
   const [isConnected, setIsConnected] = useState(false);
+  const [connectionCount, setConnectionCount] = useState(null);
   const [cvParsing, setCvParsing]     = useState(false);
   const [cvPreview, setCvPreview]     = useState(null);
   const fileInputRef = useRef(null);
@@ -130,6 +131,14 @@ export default function Profile() {
     if (id) {
       api.get("/connections/my")
         .then(res => setIsConnected(res.data.some(c => c.user_id === Number(id))))
+        .catch(() => {});
+      api.get(`/connections/count/${id}`)
+        .then(res => setConnectionCount(res.data.count))
+        .catch(() => {});
+    } else {
+      api.get("/users/me")
+        .then(res => api.get(`/connections/count/${res.data.id}`))
+        .then(res => setConnectionCount(res.data.count))
         .catch(() => {});
     }
   }, [id]);
@@ -365,6 +374,18 @@ export default function Profile() {
             <h2 style={{ margin: "0 0 4px", fontSize: isMobile ? 20 : 24, fontWeight: 900, color: C.text, letterSpacing: "0.02em" }}>{user.full_name}</h2>
             {user.headline && <p style={{ margin: "0 0 6px", fontSize: 14.5, color: C.textSoft, fontWeight: 600 }}>{user.headline}</p>}
             <p style={{ margin: "0 0 8px", fontSize: 13, color: C.muted, fontFamily: "'JetBrains Mono', monospace" }}>{user.email}</p>
+            {connectionCount !== null && (
+              <button
+                onClick={() => navigate(id ? `/connections?user=${id}` : "/connections")}
+                style={{ background: "none", border: "none", padding: 0, cursor: "pointer", marginBottom: 8, display: "inline-flex", alignItems: "center", gap: 0 }}>
+                <span style={{ fontSize: 13.5, fontWeight: 800, color: ACCENT, fontFamily: "'Archivo', sans-serif" }}>
+                  {connectionCount >= 500 ? "500+" : connectionCount}
+                </span>
+                <span style={{ fontSize: 13.5, fontWeight: 600, color: C.muted, fontFamily: "'Archivo', sans-serif" }}>
+                  &nbsp;bağlantı
+                </span>
+              </button>
+            )}
 
             {user.major && (
               <p style={{ margin: "0 0 10px", fontSize: 13.5, color: C.textSoft, display: "flex", alignItems: "center", gap: 6 }}>
