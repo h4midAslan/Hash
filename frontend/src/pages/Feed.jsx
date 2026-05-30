@@ -247,6 +247,20 @@ function LeftNav({ C, dark, user, onCompose, onToggleTheme }) {
             </div>
           </Link>
         )}
+
+        {/* Footer links */}
+        <div style={{ padding: "8px 14px 0", display: "flex", flexWrap: "wrap", gap: "2px 10px" }}>
+          {[
+            { to: "/disclaimer", label: "Haqqında" },
+            { to: "/terms", label: "Qaydalar" },
+            { to: "/privacy", label: "Məxfilik" },
+          ].map(({ to, label }) => (
+            <Link key={to} to={to} style={{ fontSize: 11, color: C.faint, textDecoration: "none" }}
+              onMouseEnter={e => e.currentTarget.style.color = C.muted}
+              onMouseLeave={e => e.currentTarget.style.color = C.faint}>{label}</Link>
+          ))}
+          <span style={{ fontSize: 11, color: C.faint, width: "100%", marginTop: 2 }}>© 2026 Hash</span>
+        </div>
       </div>
     </div>
   );
@@ -1118,10 +1132,13 @@ export default function Feed() {
               </Panel>
             )}
 
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "4px 12px", fontSize: 11.5, color: C.muted }}>
-              {["Haqqında", "Qaydalar", "Məxfilik", "© 2026 Hash"].map(x => (
-                <span key={x} style={{ cursor: "pointer" }}>{x}</span>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "4px 12px", fontSize: 11.5 }}>
+              {[{ to: "/disclaimer", label: "Haqqında" }, { to: "/terms", label: "Qaydalar" }, { to: "/privacy", label: "Məxfilik" }].map(({ to, label }) => (
+                <Link key={to} to={to} style={{ color: C.faint, textDecoration: "none" }}
+                  onMouseEnter={e => e.currentTarget.style.color = C.muted}
+                  onMouseLeave={e => e.currentTarget.style.color = C.faint}>{label}</Link>
               ))}
+              <span style={{ color: C.faint, width: "100%" }}>© 2026 Hash</span>
             </div>
           </aside>
         )}
