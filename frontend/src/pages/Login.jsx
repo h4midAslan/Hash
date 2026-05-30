@@ -23,6 +23,12 @@ export default function Login() {
   const navigate = useNavigate();
   useFonts();
 
+  useEffect(() => {
+    document.body.style.background = "#050f1f";
+    document.body.style.margin = "0";
+    return () => { document.body.style.background = ""; };
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");

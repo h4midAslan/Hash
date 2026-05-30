@@ -3,13 +3,13 @@
 
 body {
   margin: 0;
+  padding: 0;
   font-family: system-ui, -apple-system, sans-serif;
-  background-color: #f3f4f6;
+  background-color: #050f1f;
 }
 
-html.dark body {
-  background-color: #111827;
-  color: #f9fafb;
+html:not(.dark) body {
+  background-color: #ffffff;
 }
 
 /* Tiptap editor styles */

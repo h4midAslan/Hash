@@ -673,8 +673,8 @@ export default function Feed() {
         {/* Center column */}
         <main style={{
           width: "100%", maxWidth: 600, flexShrink: 0,
-          borderLeft: `1px solid ${C.divider}`,
-          borderRight: `1px solid ${C.divider}`,
+          borderLeft: isMobile ? "none" : `1px solid ${C.divider}`,
+          borderRight: isMobile ? "none" : `1px solid ${C.divider}`,
           minHeight: "100vh",
           paddingBottom: isMobile ? 74 : 60,
         }}>

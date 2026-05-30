@@ -240,6 +240,12 @@ function AppShell({ children, adminCheck }) {
     }).catch(() => { if (adminCheck) setAllowed(false); });
   }, [token]);
 
+  useEffect(() => {
+    document.body.style.background = C.bg;
+    document.body.style.margin = "0";
+    document.body.style.padding = "0";
+  }, [C.bg]);
+
   if (!token) return <Navigate to="/login" />;
 
   if (adminCheck && allowed === null) return (
@@ -259,7 +265,7 @@ function AppShell({ children, adminCheck }) {
   return (
     <div style={{ background: C.bg, minHeight: "100vh", display: "flex", fontFamily: "'Archivo', system-ui, sans-serif", WebkitFontSmoothing: "antialiased" }}>
       {!isMobile && <LeftNav C={C} dark={dark} user={user} onToggleTheme={toggleTheme} />}
-      <div style={{ flex: 1, minWidth: 0, minHeight: "100vh", paddingBottom: isMobile ? 64 : 0, borderLeft: `1px solid ${C.divider}` }}>
+      <div style={{ flex: 1, minWidth: 0, minHeight: "100vh", paddingBottom: isMobile ? 64 : 0, borderLeft: isMobile ? "none" : `1px solid ${C.divider}` }}>
         <Suspense fallback={
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "50vh" }}>
             <div style={{ width: 32, height: 32, border: "3px solid rgba(30,144,255,0.2)", borderTopColor: "#1E90FF", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />

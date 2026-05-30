@@ -88,6 +88,12 @@ export default function Register() {
   const navigate = useNavigate();
   useFonts();
 
+  useEffect(() => {
+    document.body.style.background = "#050f1f";
+    document.body.style.margin = "0";
+    return () => { document.body.style.background = ""; };
+  }, []);
+
   const detectDomain = async (email) => {
     const match = email.match(/@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$/);
     if (!match) {
