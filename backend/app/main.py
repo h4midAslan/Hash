@@ -1,6 +1,7 @@
 import os
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -72,6 +73,7 @@ frontend_url = os.getenv("FRONTEND_URL")
 if frontend_url and frontend_url not in allowed_origins:
     allowed_origins.append(frontend_url)
 
+app.add_middleware(GZipMiddleware, minimum_size=500)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,

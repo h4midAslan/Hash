@@ -80,6 +80,9 @@ export default function Feed() {
   const [comments, setComments] = useState({});
   const [commentText, setCommentText] = useState({});
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [feedOffset, setFeedOffset] = useState(0);
   const [connectedIds, setConnectedIds] = useState(new Set());
   const [pendingIds, setPendingIds] = useState(new Set());
   const [suggested, setSuggested] = useState([]);
@@ -132,7 +135,24 @@ export default function Feed() {
   };
 
   const loadFeed = async () => {
-    try { const res = await api.get("/posts"); setPosts(res.data); } catch {}
+    try {
+      const res = await api.get("/posts?limit=20&offset=0");
+      setPosts(res.data);
+      setFeedOffset(20);
+      setHasMore(res.data.length === 20);
+    } catch {}
+  };
+
+  const loadMore = async () => {
+    if (loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    try {
+      const res = await api.get(`/posts?limit=20&offset=${feedOffset}`);
+      setPosts(prev => [...prev, ...res.data]);
+      setFeedOffset(prev => prev + 20);
+      setHasMore(res.data.length === 20);
+    } catch {}
+    setLoadingMore(false);
   };
 
   const handleImagePick = async (e) => {
@@ -171,9 +191,9 @@ export default function Feed() {
     if (!newPost.trim() && !imageUrls.length && !videoUrl) return;
     setPosting(true);
     try {
-      await api.post("/posts", { content: newPost.trim() || "", images: imageUrls, video_url: videoUrl || null, show_dislikes: showDislikes });
+      const res = await api.post("/posts", { content: newPost.trim() || "", images: imageUrls, video_url: videoUrl || null, show_dislikes: showDislikes });
       setNewPost(""); setImageUrls([]); setVideoUrl(""); setShowDislikes(true);
-      loadFeed();
+      setPosts(prev => [res.data, ...prev]);
     } catch (err) { toast.error(err.response?.data?.detail || "Post yaradılmadı"); }
     setPosting(false);
   };
@@ -555,6 +575,20 @@ export default function Feed() {
               )}
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Load more */}
+      {!loading && posts.length > 0 && (
+        <div style={{ textAlign: "center", padding: "12px 0 4px" }}>
+          {hasMore ? (
+            <button onClick={loadMore} disabled={loadingMore}
+              style={{ ...C.btnGhost, fontSize: 13, padding: "8px 24px", cursor: loadingMore ? "default" : "pointer", opacity: loadingMore ? 0.5 : 1 }}>
+              {loadingMore ? "Yüklənir..." : "Daha çox yüklə"}
+            </button>
+          ) : (
+            <span style={{ fontSize: 12, color: C.muted }}>Bütün postlar yükləndi</span>
+          )}
         </div>
       )}
 
