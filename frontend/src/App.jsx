@@ -192,7 +192,7 @@ function BottomNav({ C }) {
   const items = [
     { path: "/feed", icon: <Home size={22} /> },
     { path: "/search", icon: <Search size={22} /> },
-    { path: "/feed", icon: <PenSquare size={22} />, compose: true },
+    { path: "/connections", icon: <Users size={22} /> },
     { path: "/messages", icon: <MessageSquare size={22} /> },
     { path: "/profile", icon: <User size={22} /> },
   ];

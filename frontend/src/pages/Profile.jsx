@@ -5,7 +5,7 @@ import { useDarkMode } from "../hooks/useTheme";
 import {
   Edit3, Save, X, BookOpen, Award, GraduationCap, Sparkles, Plus, Trash2,
   ExternalLink, Camera, FolderGit2, Code2, Heart, ThumbsDown, MessageCircle,
-  FileText, Send, Mail, Globe,
+  FileText, Send, Mail, Globe, Settings,
 } from "lucide-react";
 
 const GithubIcon = () => (
@@ -345,6 +345,9 @@ export default function Profile() {
                     </button>
                     <button onClick={() => navigate("/messages")} style={btnGhost()}>
                       <Mail size={14} />Mesajlar
+                    </button>
+                    <button onClick={() => navigate("/settings")} style={btnGhost()}>
+                      <Settings size={14} />Parametrlər
                     </button>
                   </>
                 ) : isConnected && (

@@ -243,7 +243,7 @@ function BottomNav({ C, onCompose }) {
   const items = [
     { path: "/feed", icon: <Home size={22} /> },
     { path: "/search", icon: <Search size={22} /> },
-    { compose: true, icon: <PenSquare size={22} /> },
+    { path: "/connections", icon: <Users size={22} /> },
     { path: "/messages", icon: <MessageSquare size={22} /> },
     { path: "/profile", icon: <User size={22} /> },
   ];
@@ -672,7 +672,7 @@ export default function Feed() {
 
         {/* Center column */}
         <main style={{
-          width: "100%", maxWidth: 600, flexShrink: 0,
+          flex: isMobile ? 1 : "none", width: isMobile ? "100%" : "100%", maxWidth: isMobile ? "none" : 600, flexShrink: 0,
           borderLeft: isMobile ? "none" : `1px solid ${C.divider}`,
           borderRight: isMobile ? "none" : `1px solid ${C.divider}`,
           minHeight: "100vh",
