@@ -8,6 +8,15 @@ body {
   background-color: #050f1f;
 }
 
+/* Hide scrollbars globally but keep scroll functional */
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+*::-webkit-scrollbar {
+  display: none;
+}
+
 html:not(.dark) body {
   background-color: #ffffff;
 }
