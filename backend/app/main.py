@@ -13,6 +13,7 @@ from app.api.routes import push as push_router
 from app.api.routes import contest as contest_router
 from app.api.routes import experience as experience_router
 from app.api.routes import public as public_router
+from app.api.routes import opportunities as opportunities_router
 from alembic.config import Config
 from alembic import command
 
@@ -35,6 +36,7 @@ def ensure_tables():
     import app.models.push_subscription
     import app.models.contest
     import app.models.experience
+    import app.models.opportunity
     try:
         Base.metadata.create_all(bind=engine, checkfirst=True)
         print("ensure_tables: OK")
@@ -47,6 +49,28 @@ def ensure_tables():
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS username VARCHAR(30)",
         "CREATE UNIQUE INDEX IF NOT EXISTS ix_users_username ON users (username)",
         "ALTER TABLE posts ADD COLUMN IF NOT EXISTS repost_of_id INTEGER REFERENCES posts(id) ON DELETE SET NULL",
+        """CREATE TABLE IF NOT EXISTS opportunities (
+            id SERIAL PRIMARY KEY,
+            title VARCHAR(500) NOT NULL,
+            organizer VARCHAR(255) NOT NULL,
+            category VARCHAR(50) NOT NULL,
+            deadline DATE,
+            location VARCHAR(255),
+            prize VARCHAR(100),
+            description TEXT,
+            tags TEXT,
+            url VARCHAR(1000) NOT NULL,
+            logo_url VARCHAR(1000),
+            is_featured BOOLEAN DEFAULT FALSE,
+            is_active BOOLEAN DEFAULT TRUE,
+            difficulty VARCHAR(50),
+            source_name VARCHAR(100),
+            content_hash VARCHAR(64),
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+            updated_at TIMESTAMP WITH TIME ZONE
+        )""",
+        "CREATE INDEX IF NOT EXISTS ix_opportunities_category ON opportunities(category)",
+        "CREATE INDEX IF NOT EXISTS ix_opportunities_deadline ON opportunities(deadline)",
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS university VARCHAR(255)",
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS edu_start_year INTEGER",
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS edu_end_year INTEGER",
@@ -81,8 +105,30 @@ def ensure_tables():
 run_migrations()
 ensure_tables()
 
+import asyncio
+import logging
+from contextlib import asynccontextmanager
+logging.basicConfig(level=logging.INFO)
+
+@asynccontextmanager
+async def lifespan(app):
+    # Startup — scraper-i arxa planda başlat
+    from app.services.opportunity_scraper import run_forever, scrape_all_once
+    from app.services.database import get_db
+    # İlk tarama — deploy olandan dərhal sonra
+    try:
+        db = next(get_db())
+        await scrape_all_once(db)
+        db.close()
+    except Exception as e:
+        logging.getLogger("scraper").error("İlk tarama xətası: %s", e)
+    # Davamlı izləmə — arxa planda
+    asyncio.create_task(run_forever(get_db))
+    yield
+    # Shutdown — heç nə lazım deyil
+
 limiter = Limiter(key_func=get_remote_address)
-app = FastAPI(title="Hash API", version="1.0.0")
+app = FastAPI(title="Hash API", version="1.0.0", lifespan=lifespan)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
@@ -139,6 +185,7 @@ app.include_router(push_router.router)
 app.include_router(contest_router.router)
 app.include_router(experience_router.router)
 app.include_router(public_router.router)
+app.include_router(opportunities_router.router)
 
 
 @app.exception_handler(Exception)
