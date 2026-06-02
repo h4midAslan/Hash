@@ -390,14 +390,14 @@ export default function Radar() {
     document.head.appendChild(s);
   }, []);
 
-  // Fetch from API, fallback to hardcoded
+  // Fetch from API — no hardcoded fallback
   useEffect(() => {
     const tid = setTimeout(() => {
       api.get("/opportunities")
-        .then((r) => setData(r.data.length > 0 ? r.data : FALLBACK))
-        .catch(() => setData(FALLBACK))
+        .then((r) => setData(r.data || []))
+        .catch(() => setData([]))
         .finally(() => setLoading(false));
-    }, 800); // small delay for skeleton effect
+    }, 800);
     return () => clearTimeout(tid);
   }, []);
 
@@ -526,9 +526,17 @@ export default function Radar() {
             <div style={{ width:64, height:64, borderRadius:16, border:"1px solid "+t.border, display:"flex", alignItems:"center", justifyContent:"center", color:t.textFaint }}>
               <ICompass size={30} sw={1.8} />
             </div>
-            <div style={{ marginTop:18, fontSize:18, fontWeight:800, color:t.text, fontFamily:"'Archivo',sans-serif" }}>Uyğun imkan tapılmadı</div>
-            <p style={{ margin:"6px 0 0", fontSize:14, maxWidth:340, lineHeight:1.5, fontFamily:"'Archivo',sans-serif" }}>Axtarış və ya filtrləri dəyişməyi sınayın — yeni imkanlar mütəmadi əlavə olunur.</p>
-            <button onClick={clearAll} style={{ marginTop:18, padding:"10px 18px", borderRadius:10, border:"1px solid "+t.accent, background:t.accentSoft, color:t.accent, fontSize:13.5, fontWeight:700, cursor:"pointer", fontFamily:"'Archivo',sans-serif" }}>Filtrləri təmizlə</button>
+            <div style={{ marginTop:18, fontSize:18, fontWeight:800, color:t.text, fontFamily:"'Archivo',sans-serif" }}>
+              {(tab || query || dateFilter !== "all") ? "Uyğun imkan tapılmadı" : "Bot hələ məlumat toplayır..."}
+            </div>
+            <p style={{ margin:"6px 0 0", fontSize:14, maxWidth:360, lineHeight:1.5, fontFamily:"'Archivo',sans-serif" }}>
+              {(tab || query || dateFilter !== "all")
+                ? "Axtarış və ya filtrləri dəyişməyi sınayın — yeni imkanlar mütəmadi əlavə olunur."
+                : "Scraper Azərbaycan mənbələrini yoxlayır. İlk nəticələr bir neçə dəqiqə ərzində görünəcək."}
+            </p>
+            {(tab || query || dateFilter !== "all") && (
+              <button onClick={clearAll} style={{ marginTop:18, padding:"10px 18px", borderRadius:10, border:"1px solid "+t.accent, background:t.accentSoft, color:t.accent, fontSize:13.5, fontWeight:700, cursor:"pointer", fontFamily:"'Archivo',sans-serif" }}>Filtrləri təmizlə</button>
+            )}
           </div>
         ) : (
           <>
