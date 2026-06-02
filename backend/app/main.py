@@ -71,11 +71,11 @@ def ensure_tables():
         )""",
         "CREATE INDEX IF NOT EXISTS ix_opportunities_category ON opportunities(category)",
         "CREATE INDEX IF NOT EXISTS ix_opportunities_deadline ON opportunities(deadline)",
-        # Pensiya/noise məlumatlarını təmizlə
+        # Noise + Kiril (rus dilli) məlumatları sil
         """DELETE FROM opportunities WHERE
             title ILIKE '%pensiya%' OR title ILIKE '%pension%' OR
             title ILIKE '%sığorta%' OR title ILIKE '%пенсия%' OR
-            title ILIKE '%верги%' OR title ILIKE '%büdcə%'""",
+            title ~ '[а-яёА-ЯЁ]{3,}'""",
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS university VARCHAR(255)",
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS edu_start_year INTEGER",
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS edu_end_year INTEGER",

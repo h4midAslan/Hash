@@ -254,10 +254,14 @@ def _similarity(a, b):
 _SKIP = {"404","not found","xəta","error","cookie","giriş","login",
          "qeydiyyat","register","şifrə","sitemap","haqqımızda","contact"}
 
+_CYRILLIC = re.compile(r'[а-яёА-ЯЁ]{3,}')
+
 def _is_junk(title):
     if len(title) < 15:
         return True
     t = title.lower()
+    if _CYRILLIC.search(title):   # Rusca/Kiril başlıqları at
+        return True
     return any(w in t for w in _SKIP)
 
 
