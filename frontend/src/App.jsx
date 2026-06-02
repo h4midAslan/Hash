@@ -15,7 +15,7 @@ import api from "./api/client";
 import UserAvatar from "./components/UserAvatar";
 import {
   Home, Search, Users, MessageSquare, BookOpen, User, Settings, Shield,
-  PenSquare, Sun, Moon, Bell,
+  PenSquare, Sun, Moon, Bell, Radar as RadarIcon,
 } from "lucide-react";
 
 const Feed = lazy(() => import("./pages/Feed"));
@@ -30,6 +30,7 @@ const Articles = lazy(() => import("./pages/Articles"));
 const ArticleEditor = lazy(() => import("./pages/ArticleEditor"));
 const ArticleView = lazy(() => import("./pages/ArticleView"));
 const Notifications = lazy(() => import("./pages/Notifications"));
+const Radar = lazy(() => import("./pages/Radar"));
 
 const ACCENT = "#1E90FF";
 
@@ -141,6 +142,7 @@ function LeftNav({ C, dark, user, onToggleTheme }) {
     { to: "/connections", icon: <Users size={21} />, label: "Bağlantılar" },
     { to: "/messages", icon: <MessageSquare size={21} />, label: "Mesajlar" },
     { to: "/articles", icon: <BookOpen size={21} />, label: "Məqalələr" },
+    { to: "/radar", icon: <RadarIcon size={21} />, label: "Radar" },
     {
       to: "/notifications",
       icon: (
@@ -376,6 +378,7 @@ export default function App() {
         <Route path="/article/:id/edit" element={<AppShell><ArticleEditor /></AppShell>} />
         <Route path="/article/:id" element={<AppShell><ArticleView /></AppShell>} />
         <Route path="/notifications" element={<AppShell><Notifications /></AppShell>} />
+        <Route path="/radar" element={<AppShell><Radar /></AppShell>} />
         <Route path="/settings" element={<AppShell><Settings_ /></AppShell>} />
         <Route path="/admin" element={<AppShell adminCheck><Admin /></AppShell>} />
         <Route path="*" element={<Navigate to="/feed" />} />
