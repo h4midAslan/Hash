@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
+from datetime import date
 from app.services.database import get_db
 from app.models.user import User
 from app.models.certificate import Certificate
@@ -25,7 +26,7 @@ class PublicCertificate(BaseModel):
     id: int
     name: str
     issuer: str
-    issue_date: str | None
+    issue_date: date | None
     credential_url: str | None
     image_url: str | None
     class Config: from_attributes = True
