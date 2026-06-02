@@ -127,10 +127,13 @@ logging.basicConfig(level=logging.INFO)
 
 @asynccontextmanager
 async def lifespan(app):
-    # Scraper arxa planda başlayır — server blok olmur
-    from app.services.opportunity_scraper import run_forever
     from app.services.database import get_db
+    # Ümumi imkanlar scraper (staj, təqaüd, proqram, tədbir)
+    from app.services.opportunity_scraper import run_forever
     asyncio.create_task(run_forever(get_db))
+    # Hackathon Radar — yalnız hackathonlara həsr olunmuş
+    from app.services.hackathon_radar import run_hackathon_radar
+    asyncio.create_task(run_hackathon_radar(get_db))
     yield
 
 limiter = Limiter(key_func=get_remote_address)
