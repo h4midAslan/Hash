@@ -112,11 +112,20 @@ logging.basicConfig(level=logging.INFO)
 
 @asynccontextmanager
 async def lifespan(app):
-    # Scraper-i arxa planda başlat — serveri blok etmir
-    from app.services.opportunity_scraper import run_forever
+    # Startup — scraper-i arxa planda başlat
+    from app.services.opportunity_scraper import run_forever, scrape_all_once
     from app.services.database import get_db
+    # İlk tarama — deploy olandan dərhal sonra
+    try:
+        db = next(get_db())
+        await scrape_all_once(db)
+        db.close()
+    except Exception as e:
+        logging.getLogger("scraper").error("İlk tarama xətası: %s", e)
+    # Davamlı izləmə — arxa planda
     asyncio.create_task(run_forever(get_db))
     yield
+    # Shutdown — heç nə lazım deyil
 
 limiter = Limiter(key_func=get_remote_address)
 app = FastAPI(title="Hash API", version="1.0.0", lifespan=lifespan)
