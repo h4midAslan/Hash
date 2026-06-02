@@ -16,6 +16,8 @@ cloudinary==1.41.0
 slowapi==0.1.9
 requests==2.32.3
 beautifulsoup4==4.12.3
+lxml==5.4.0
+aiohttp==3.11.16
 groq==0.9.0
 pdfplumber==0.11.4
 pywebpush
