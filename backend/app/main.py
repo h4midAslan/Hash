@@ -18,7 +18,8 @@ from alembic import command
 
 def run_migrations():
     try:
-        alembic_cfg = Config("alembic.ini")
+        ini = os.path.join(os.path.dirname(__file__), "..", "alembic.ini")
+        alembic_cfg = Config(os.path.abspath(ini))
         command.upgrade(alembic_cfg, "head")
     except Exception as e:
         print(f"Migration xətası (davam edir): {e}")
