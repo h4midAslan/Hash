@@ -71,11 +71,21 @@ def ensure_tables():
         )""",
         "CREATE INDEX IF NOT EXISTS ix_opportunities_category ON opportunities(category)",
         "CREATE INDEX IF NOT EXISTS ix_opportunities_deadline ON opportunities(deadline)",
-        # Noise + Kiril (rus dilli) məlumatları sil
+        # Lazımsız məlumatları tam sil — yalnız real imkanlar qalsın
         """DELETE FROM opportunities WHERE
-            title ILIKE '%pensiya%' OR title ILIKE '%pension%' OR
-            title ILIKE '%sığorta%' OR title ILIKE '%пенсия%' OR
-            title ~ '[а-яёА-ЯЁ]{3,}'""",
+            title ~ '[а-яёА-ЯЁ]{3,}' OR
+            NOT (
+                title ILIKE '%staj%' OR title ILIKE '%internship%' OR
+                title ILIKE '%intern %' OR title ILIKE '%hackathon%' OR
+                title ILIKE '%hakatom%' OR title ILIKE '%müsabiqə%' OR
+                title ILIKE '%yarışma%' OR title ILIKE '%challenge%' OR
+                title ILIKE '%scholarship%' OR title ILIKE '%qrant%' OR
+                title ILIKE '%fellowship%' OR title ILIKE '%akselerator%' OR
+                title ILIKE '%inkubator%' OR title ILIKE '%bootcamp%' OR
+                title ILIKE '%workshop%' OR title ILIKE '%seminar%' OR
+                title ILIKE '%konfrans%' OR title ILIKE '%vakansiya%' OR
+                title ILIKE '%digicamp%' OR title ILIKE '%tələbə təqaüd%'
+            )""",
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS university VARCHAR(255)",
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS edu_start_year INTEGER",
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS edu_end_year INTEGER",

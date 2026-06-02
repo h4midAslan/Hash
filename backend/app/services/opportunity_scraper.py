@@ -256,13 +256,32 @@ _SKIP = {"404","not found","xəta","error","cookie","giriş","login",
 
 _CYRILLIC = re.compile(r'[а-яёА-ЯЁ]{3,}')
 
+# Başlıqda bu sözlərdən biri MÜTLƏQ olmalıdır
+_TITLE_MUST = [
+    "staj","internship","intern ",
+    "hackathon","hakatom","hakaton",
+    "müsabiqə","musabiqe","yarışma","yarış ",
+    "challenge","contest","competition",
+    "tələbə təqaüd","scholarship","qrant","grant ","fellowship",
+    "akselerator","accelerator","inkubator","incubator",
+    "bootcamp","digicamp","workshop",
+    "seminar ","konfrans",
+    "gənclər proqram","youth program",
+    "proqrama qəbul","müraciət qəbul","qeydiyyat açıldı",
+    "iş elanı","vakansiya",
+]
+
 def _is_junk(title):
     if len(title) < 15:
         return True
     t = title.lower()
-    if _CYRILLIC.search(title):   # Rusca/Kiril başlıqları at
+    if _CYRILLIC.search(title):
         return True
     return any(w in t for w in _SKIP)
+
+def _title_is_opportunity(title):
+    t = title.lower()
+    return any(w in t for w in _TITLE_MUST)
 
 
 # ─── RSS parser ───────────────────────────────────────────────────────────────
@@ -285,6 +304,9 @@ def _parse_rss(xml_text, category_hint, default_org="Azərbaycan"):
         title = re.sub(r"\s*-\s*[\w\s]+$", "", title_el.get_text(strip=True))  # "Title - Source" → "Title"
         title = _clean(title, 200)
         if _is_junk(title):
+            continue
+        # Başlıqda imkan sözü yoxdursa rədd et
+        if not _title_is_opportunity(title):
             continue
 
         # URL
