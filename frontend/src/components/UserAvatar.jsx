@@ -11,7 +11,7 @@ export default function UserAvatar({ user, size = "md", className = "" }) {
   };
 
   const sizeClass = sizes[size] || sizes.md;
-  const name = user?.full_name || user?.name || user?.email?.split("@")[0] || "U";
+  const name = user?.full_name || user?.name || user?.username || user?.email?.split("@")[0] || "U";
   const pic = user?.profile_picture;
 
   const showImg = pic && pic.startsWith("http") && !imgError;
