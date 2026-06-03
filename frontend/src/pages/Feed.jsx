@@ -1458,8 +1458,7 @@ export default function Feed() {
         </div>
       )}
 
-      {/* Mobile bottom nav */}
-      {isMobile && <BottomNav C={C} user={user} onCompose={() => setMobileComposer(true)} />}
+      {/* Bottom nav is rendered globally in App.jsx */}
 
       {/* Report modal */}
       {reportPostId && (

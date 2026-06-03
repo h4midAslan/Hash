@@ -239,41 +239,73 @@ function LeftNav({ C, dark, user, onToggleTheme }) {
   );
 }
 
-function BottomNav({ C }) {
+function BottomNav({ C, user }) {
   const location = useLocation();
   const navigate = useNavigate();
+  const [moreOpen, setMoreOpen] = useState(false);
   const p = location.pathname;
 
-  const items = [
-    { path: "/feed", icon: <Home size={22} /> },
-    { path: "/search", icon: <Search size={22} /> },
-    { path: "/connections", icon: <Users size={22} /> },
-    { path: "/messages", icon: <MessageSquare size={22} /> },
-    { path: "/notifications", icon: <Bell size={22} /> },
-    { path: "/profile", icon: <User size={22} /> },
+  const primary = [
+    { path: "/feed",          icon: <Home size={24} /> },
+    { path: "/search",        icon: <Search size={24} /> },
+    { path: "/messages",      icon: <MessageSquare size={24} /> },
+    { path: "/notifications", icon: <Bell size={24} /> },
   ];
 
+  const secondary = [
+    { path: "/profile",     icon: <User size={20} />,       label: "Profil" },
+    { path: "/radar",       icon: <RadarIcon size={20} />,  label: "Radar" },
+    { path: "/connections", icon: <Users size={20} />,      label: "Bağlantılar" },
+    { path: "/articles",    icon: <BookOpen size={20} />,   label: "Məqalələr" },
+    ...(user?.is_admin ? [{ path: "/admin", icon: <Shield size={20} />, label: "Admin" }] : []),
+  ];
+
+  const moreActive = secondary.some(s => p === s.path || p.startsWith(s.path + "/"));
+
   return (
-    <div style={{
-      position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 100,
-      height: 60, background: C.barBlur,
-      backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)",
-      borderTop: `1px solid ${C.divider}`, display: "flex", alignItems: "stretch",
-    }}>
-      {items.map((item, i) => {
-        const isActive = p === item.path || (item.path !== "/feed" && item.path !== "/profile" && p.startsWith(item.path));
-        return (
-          <button key={i} onClick={() => navigate(item.path)}
-            style={{
-              flex: 1, display: "flex", alignItems: "center", justifyContent: "center",
-              border: "none", background: "transparent", cursor: "pointer",
-              color: isActive ? C.accent : C.muted, transition: "color .12s",
-            }}>
-            {item.icon}
-          </button>
-        );
-      })}
-    </div>
+    <>
+      {moreOpen && (
+        <div onClick={() => setMoreOpen(false)}
+          style={{ position: "fixed", inset: 0, zIndex: 99, background: "rgba(0,0,0,0.35)", backdropFilter: "blur(4px)" }}>
+          <div onClick={e => e.stopPropagation()}
+            style={{ position: "absolute", bottom: 66, left: 16, right: 16, background: C.bg, border: `1px solid ${C.divider}`, borderRadius: 18, padding: "8px 0", boxShadow: "0 -8px 32px rgba(0,0,0,0.18)" }}>
+            {secondary.map(item => {
+              const active = p === item.path || p.startsWith(item.path + "/");
+              return (
+                <button key={item.path} onClick={() => { navigate(item.path); setMoreOpen(false); }}
+                  style={{ width: "100%", display: "flex", alignItems: "center", gap: 14, padding: "13px 20px", background: "none", border: "none", cursor: "pointer", color: active ? C.accent : C.text, fontSize: 15, fontWeight: 700, fontFamily: "'Archivo', sans-serif", WebkitTapHighlightColor: "transparent" }}>
+                  <span style={{ color: active ? C.accent : C.muted }}>{item.icon}</span>
+                  {item.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+      <div style={{
+        position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 100,
+        height: 62, background: C.barBlur,
+        backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
+        borderTop: `1px solid ${C.divider}`, display: "flex", alignItems: "stretch",
+        paddingBottom: "env(safe-area-inset-bottom)",
+      }}>
+        {primary.map((item, i) => {
+          const isActive = p === item.path || (item.path !== "/feed" && p.startsWith(item.path));
+          return (
+            <button key={i} onClick={() => navigate(item.path)}
+              style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", border: "none", background: "transparent", cursor: "pointer", color: isActive ? C.accent : C.muted, transition: "color .12s", WebkitTapHighlightColor: "transparent" }}>
+              {item.icon}
+            </button>
+          );
+        })}
+        <button onClick={() => setMoreOpen(v => !v)}
+          style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 3, border: "none", background: "transparent", cursor: "pointer", color: moreActive || moreOpen ? C.accent : C.muted, transition: "color .12s", WebkitTapHighlightColor: "transparent" }}>
+          <span style={{ display: "flex", gap: 3 }}>
+            {[0,1,2].map(i => <span key={i} style={{ width: 4, height: 4, borderRadius: "50%", background: "currentColor", display: "block" }} />)}
+          </span>
+        </button>
+      </div>
+    </>
   );
 }
 
@@ -331,7 +363,7 @@ function AppShell({ children, adminCheck }) {
           {children}
         </Suspense>
       </div>
-      {isMobile && <BottomNav C={C} />}
+      {isMobile && <BottomNav C={C} user={user} />}
     </div>
   );
 }
