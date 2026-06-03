@@ -128,12 +128,18 @@ logging.basicConfig(level=logging.INFO)
 @asynccontextmanager
 async def lifespan(app):
     from app.services.database import get_db
-    # Ümumi imkanlar scraper (staj, təqaüd, proqram, tədbir)
-    from app.services.opportunity_scraper import run_forever
-    asyncio.create_task(run_forever(get_db))
-    # Hackathon Radar — yalnız hackathonlara həsr olunmuş
+    # Hər tab üçün ayrıca scraper — öz mənbələri, öz filterləri
     from app.services.hackathon_radar import run_hackathon_radar
+    from app.services.staj_radar     import run_staj_radar
+    from app.services.teqaud_radar   import run_teqaud_radar
+    from app.services.tedbir_radar   import run_tedbir_radar
+    from app.services.proqram_radar  import run_proqram_radar
+
     asyncio.create_task(run_hackathon_radar(get_db))
+    asyncio.create_task(run_staj_radar(get_db))
+    asyncio.create_task(run_teqaud_radar(get_db))
+    asyncio.create_task(run_tedbir_radar(get_db))
+    asyncio.create_task(run_proqram_radar(get_db))
     yield
 
 limiter = Limiter(key_func=get_remote_address)
