@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { Check, X, Users, Clock, UserCheck, UserMinus, UserPlus, Sparkles } from "lucide-react";
+import { Check, X, Users, Clock, UserPlus, Sparkles, MoreVertical, ExternalLink, UserMinus } from "lucide-react";
 import api from "../api/client";
 import { toast } from "../components/Toast";
 import { useLang } from "../hooks/useLang";
@@ -8,6 +8,40 @@ import { useIsMobile } from "../hooks/useIsMobile";
 import { useDarkMode } from "../hooks/useTheme";
 
 const ACCENT = "#1E90FF";
+
+// ── Typo & localization corrections ─────────────────────────────────────────
+const MAJOR_FIXES = {
+  "Managment": "Menecment",
+  "Management": "Menecment",
+  "Business & Managment": "Biznes və Menecment",
+  "Business & Management": "Biznes və Menecment",
+  "Business Administration": "Biznesin İdarə Edilməsi",
+  "Computer Science": "Kompüter Elmləri",
+  "Computer Engineering": "Kompüter Mühəndisliyi",
+  "Software Engineering": "Proqram Mühəndisliyi",
+  "Information Technology": "İnformasiya Texnologiyaları",
+  "Information Security": "İnformasiya Təhlükəsizliyi",
+  "Cybersecurity": "Kibertəhlükəsizlik",
+  "Mechatronics and robotics": "Mexatronika və Robototexnika",
+  "Mechatronics and robotics engineering": "Mexatronika və Robototexnika Mühəndisliyi",
+  "Electrical Engineering": "Elektrik Mühəndisliyi",
+  "Artificial Intelligence": "Süni İntellekt",
+  "Data Science": "Məlumat Elmi",
+  "Finance": "Maliyyə",
+  "Economics": "İqtisadiyyat",
+  "International Relations": "Beynəlxalq Münasibətlər",
+  "Law": "Hüquq",
+  "Architecture": "Memarlıq",
+  "Civil Engineering": "İnşaat Mühəndisliyi",
+};
+
+const normalizeMajor = (str) => {
+  if (!str) return str;
+  const exact = MAJOR_FIXES[str.trim()];
+  if (exact) return exact;
+  // partial replacement for typos inside longer strings
+  return str.replace(/\bManagment\b/gi, "Menecment").replace(/\bManagement\b/gi, "Menecment");
+};
 
 function useFonts() {
   useEffect(() => {
@@ -27,42 +61,44 @@ function useColors(dark) {
     surface2:   dark ? "#0d2248" : "#f8faff",
     border:     dark ? "rgba(255,255,255,0.07)" : "#e4e9f1",
     text:       dark ? "#ffffff" : "#071428",
+    textSoft:   dark ? "#c8d4e8" : "#3a4861",
     muted:      dark ? "#7d8ba3" : "#69768d",
     accent:     ACCENT,
     accentWash: dark ? "rgba(30,144,255,0.12)" : "rgba(30,144,255,0.07)",
     danger:     "#f87171",
     success:    "#34d399",
+    menuBg:     dark ? "#0d2248" : "#ffffff",
+    menuShadow: dark ? "0 8px 32px rgba(0,0,0,0.5)" : "0 8px 32px rgba(0,0,0,0.12)",
   };
 }
 
 const TABS = [
-  { key: "my",        Icon: UserCheck, labelKey: "connections_yours" },
-  { key: "pending",   Icon: Clock,     labelKey: "connections_pending" },
-  { key: "suggested", Icon: Sparkles,  label:    "Tövsiyyə" },
+  { key: "my",        Icon: Users,    labelKey: "connections_yours" },
+  { key: "pending",   Icon: Clock,    labelKey: "connections_pending" },
+  { key: "suggested", Icon: Sparkles, label:    "Tövsiyyə" },
 ];
 
 function Avatar({ name, picture, size = 56 }) {
+  const [err, setErr] = useState(false);
   const colors = ["#1a4a8a", "#2563eb", "#7c3aed", "#0891b2", "#059669", "#d97706"];
   const color = colors[(name?.charCodeAt(0) || 0) % colors.length];
-  if (picture) {
+  if (picture && !err) {
     return (
-      <img src={picture} alt={name} style={{
-        width: size, height: size, borderRadius: "50%",
-        objectFit: "cover", flexShrink: 0,
-        border: `2px solid rgba(30,144,255,0.25)`,
-      }} />
+      <img
+        src={picture} alt={name}
+        onError={() => setErr(true)}
+        style={{ width: size, height: size, borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: `2px solid rgba(30,144,255,0.25)` }}
+      />
     );
   }
   return (
     <div style={{
-      width: size, height: size, borderRadius: "50%",
-      background: color, flexShrink: 0,
+      width: size, height: size, borderRadius: "50%", background: color, flexShrink: 0,
       display: "flex", alignItems: "center", justifyContent: "center",
       color: "#fff", fontWeight: 800, fontSize: size * 0.38,
-      fontFamily: "'Archivo', sans-serif",
-      border: `2px solid rgba(30,144,255,0.25)`,
+      fontFamily: "'Archivo', sans-serif", border: `2px solid rgba(30,144,255,0.25)`,
     }}>
-      {name?.charAt(0)?.toUpperCase()}
+      {name?.charAt(0)?.toUpperCase() || "?"}
     </div>
   );
 }
@@ -72,15 +108,12 @@ function SkillChips({ skills, C }) {
   let arr = [];
   try { arr = typeof skills === "string" ? JSON.parse(skills) : skills; } catch { return null; }
   if (!arr?.length) return null;
-  const shown = arr.slice(0, 3);
   return (
     <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 8, justifyContent: "center" }}>
-      {shown.map((s, i) => (
+      {arr.slice(0, 3).map((s, i) => (
         <span key={i} style={{
-          fontSize: 10, padding: "2px 8px",
-          borderRadius: 99, fontWeight: 600,
-          background: C.accentWash,
-          color: ACCENT,
+          fontSize: 10, padding: "2px 8px", borderRadius: 99, fontWeight: 600,
+          background: C.accentWash, color: ACCENT,
           border: `1px solid rgba(30,144,255,0.18)`,
           fontFamily: "'JetBrains Mono', monospace",
         }}>{s}</span>
@@ -88,10 +121,83 @@ function SkillChips({ skills, C }) {
       {arr.length > 3 && (
         <span style={{
           fontSize: 10, padding: "2px 8px", borderRadius: 99,
-          background: C.surface2, color: C.muted,
-          border: `1px solid ${C.border}`,
+          background: C.surface2, color: C.muted, border: `1px solid ${C.border}`,
           fontFamily: "'JetBrains Mono', monospace",
         }}>+{arr.length - 3}</span>
+      )}
+    </div>
+  );
+}
+
+// ── Three-dots dropdown menu ─────────────────────────────────────────────────
+function CardMenu({ userId, connectionId, name, onRemove, C }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  return (
+    <div ref={ref} style={{ position: "absolute", top: 10, right: 10 }}>
+      <button
+        onClick={(e) => { e.stopPropagation(); setOpen(v => !v); }}
+        title="Seçimlər"
+        style={{
+          background: "none", border: "none", cursor: "pointer",
+          color: C.muted, padding: 4, borderRadius: 6,
+          display: "flex", alignItems: "center",
+          transition: "color 0.15s, background 0.15s",
+        }}
+        onMouseEnter={e => { e.currentTarget.style.color = C.textSoft; e.currentTarget.style.background = C.accentWash; }}
+        onMouseLeave={e => { e.currentTarget.style.color = C.muted; e.currentTarget.style.background = "none"; }}
+      >
+        <MoreVertical size={15} />
+      </button>
+
+      {open && (
+        <div style={{
+          position: "absolute", top: "calc(100% + 4px)", right: 0,
+          background: C.menuBg, borderRadius: 10,
+          border: `1px solid ${C.border}`,
+          boxShadow: C.menuShadow,
+          zIndex: 50, minWidth: 170, overflow: "hidden",
+        }}>
+          <Link
+            to={`/profile/${userId}`}
+            onClick={() => setOpen(false)}
+            style={{
+              display: "flex", alignItems: "center", gap: 9,
+              padding: "10px 14px", fontSize: 13, fontWeight: 600,
+              color: C.textSoft, textDecoration: "none",
+              fontFamily: "'Archivo', sans-serif",
+              transition: "background 0.12s",
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = C.accentWash}
+            onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+          >
+            <ExternalLink size={13} /> Profili gör
+          </Link>
+          <button
+            onClick={() => { setOpen(false); onRemove(connectionId, name); }}
+            style={{
+              display: "flex", alignItems: "center", gap: 9,
+              padding: "10px 14px", width: "100%",
+              fontSize: 13, fontWeight: 600,
+              background: "none", border: "none", cursor: "pointer",
+              color: C.danger, textAlign: "left",
+              fontFamily: "'Archivo', sans-serif",
+              transition: "background 0.12s",
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = "rgba(248,113,113,0.08)"}
+            onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+          >
+            <UserMinus size={13} /> Bağlantını kəs
+          </button>
+        </div>
       )}
     </div>
   );
@@ -106,42 +212,25 @@ function ConnectionCard({ c, onRemove, C }) {
       style={{
         background: C.surface,
         border: `1px solid ${hover ? "rgba(30,144,255,0.25)" : C.border}`,
-        borderRadius: 18,
-        padding: "22px 18px 18px",
+        borderRadius: 18, padding: "22px 18px 18px",
         display: "flex", flexDirection: "column", alignItems: "center",
-        textAlign: "center",
-        position: "relative",
+        textAlign: "center", position: "relative",
         transition: "border-color 0.2s, box-shadow 0.2s, transform 0.2s",
         boxShadow: hover ? "0 8px 32px rgba(30,144,255,0.10)" : "none",
         transform: hover ? "translateY(-3px)" : "translateY(0)",
         fontFamily: "'Archivo', sans-serif",
       }}
     >
-      <button
-        onClick={() => onRemove(c.id, c.full_name)}
-        title="Bağlantını sil"
-        style={{
-          position: "absolute", top: 10, right: 10,
-          background: "none", border: "none", cursor: "pointer",
-          color: C.muted, padding: 4, borderRadius: 6,
-          display: "flex", alignItems: "center", transition: "color 0.15s",
-        }}
-        onMouseEnter={e => e.currentTarget.style.color = "#f87171"}
-        onMouseLeave={e => e.currentTarget.style.color = C.muted}
-      >
-        <UserMinus size={14} />
-      </button>
+      <CardMenu userId={c.user_id} connectionId={c.id} name={c.full_name} onRemove={onRemove} C={C} />
 
       <Link to={`/profile/${c.user_id}`} style={{ textDecoration: "none" }}>
         <Avatar name={c.full_name} picture={c.profile_picture} size={62} />
       </Link>
 
       <Link to={`/profile/${c.user_id}`} style={{
-        fontWeight: 800, fontSize: 14,
-        color: C.text,
+        fontWeight: 800, fontSize: 14, color: C.text,
         textDecoration: "none", marginTop: 10, display: "block",
-        lineHeight: 1.3, fontFamily: "'Archivo', sans-serif",
-        transition: "color 0.15s",
+        lineHeight: 1.3, fontFamily: "'Archivo', sans-serif", transition: "color 0.15s",
       }}
         onMouseEnter={e => e.currentTarget.style.color = ACCENT}
         onMouseLeave={e => e.currentTarget.style.color = C.text}
@@ -151,7 +240,7 @@ function ConnectionCard({ c, onRemove, C }) {
 
       {c.major && (
         <p style={{ fontSize: 12, color: C.muted, margin: "4px 0 0", lineHeight: 1.4, fontFamily: "'Archivo', sans-serif" }}>
-          {c.major}
+          {normalizeMajor(c.major)}
         </p>
       )}
 
@@ -169,8 +258,7 @@ function PendingCard({ p, onAccept, onReject, C }) {
       style={{
         background: C.surface,
         border: `1px solid ${hover ? "rgba(30,144,255,0.25)" : C.border}`,
-        borderRadius: 16,
-        padding: "16px 18px",
+        borderRadius: 16, padding: "16px 18px",
         display: "flex", alignItems: "center", gap: 14,
         transition: "border-color 0.2s, box-shadow 0.2s",
         boxShadow: hover ? "0 4px 20px rgba(30,144,255,0.08)" : "none",
@@ -183,15 +271,14 @@ function PendingCard({ p, onAccept, onReject, C }) {
 
       <div style={{ flex: 1, minWidth: 0 }}>
         <Link to={`/profile/${p.sender_id}`} style={{
-          fontWeight: 800, fontSize: 14,
-          color: C.text, textDecoration: "none", display: "block",
-          fontFamily: "'Archivo', sans-serif",
+          fontWeight: 800, fontSize: 14, color: C.text,
+          textDecoration: "none", display: "block", fontFamily: "'Archivo', sans-serif",
         }}>
           {p.sender_name}
         </Link>
         {p.sender_major && (
           <p style={{ fontSize: 12, color: C.muted, margin: "3px 0 0", fontFamily: "'Archivo', sans-serif" }}>
-            {p.sender_major}
+            {normalizeMajor(p.sender_major)}
           </p>
         )}
       </div>
@@ -202,11 +289,9 @@ function PendingCard({ p, onAccept, onReject, C }) {
           style={{
             display: "flex", alignItems: "center", gap: 5,
             padding: "7px 14px", borderRadius: 10, cursor: "pointer",
-            background: ACCENT, border: "none",
-            color: "#fff", fontSize: 12, fontWeight: 700,
-            fontFamily: "'Archivo', sans-serif",
-            boxShadow: "0 4px 14px rgba(30,144,255,0.35)",
-            transition: "opacity 0.15s",
+            background: ACCENT, border: "none", color: "#fff",
+            fontSize: 12, fontWeight: 700, fontFamily: "'Archivo', sans-serif",
+            boxShadow: "0 4px 14px rgba(30,144,255,0.35)", transition: "opacity 0.15s",
           }}
           onMouseEnter={e => e.currentTarget.style.opacity = "0.88"}
           onMouseLeave={e => e.currentTarget.style.opacity = "1"}
@@ -218,12 +303,9 @@ function PendingCard({ p, onAccept, onReject, C }) {
           style={{
             display: "flex", alignItems: "center", gap: 5,
             padding: "7px 12px", borderRadius: 10, cursor: "pointer",
-            background: "transparent",
-            border: `1px solid ${C.border}`,
-            color: C.muted,
-            fontSize: 12, fontWeight: 600,
-            fontFamily: "'Archivo', sans-serif",
-            transition: "border-color 0.15s, color 0.15s",
+            background: "transparent", border: `1px solid ${C.border}`,
+            color: C.muted, fontSize: 12, fontWeight: 600,
+            fontFamily: "'Archivo', sans-serif", transition: "border-color 0.15s, color 0.15s",
           }}
           onMouseEnter={e => { e.currentTarget.style.borderColor = "#f87171"; e.currentTarget.style.color = "#f87171"; }}
           onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.muted; }}
@@ -245,8 +327,7 @@ function SuggestedCard({ u, onConnect, sentIds, C }) {
       style={{
         background: C.surface,
         border: `1px solid ${hover ? "rgba(30,144,255,0.25)" : C.border}`,
-        borderRadius: 18,
-        padding: "22px 18px 18px",
+        borderRadius: 18, padding: "22px 18px 18px",
         display: "flex", flexDirection: "column", alignItems: "center",
         textAlign: "center",
         transition: "border-color 0.2s, box-shadow 0.2s, transform 0.2s",
@@ -260,11 +341,9 @@ function SuggestedCard({ u, onConnect, sentIds, C }) {
       </Link>
 
       <Link to={`/profile/${u.id}`} style={{
-        fontWeight: 800, fontSize: 14,
-        color: C.text,
+        fontWeight: 800, fontSize: 14, color: C.text,
         textDecoration: "none", marginTop: 10, display: "block",
-        lineHeight: 1.3, fontFamily: "'Archivo', sans-serif",
-        transition: "color 0.15s",
+        lineHeight: 1.3, fontFamily: "'Archivo', sans-serif", transition: "color 0.15s",
       }}
         onMouseEnter={e => e.currentTarget.style.color = ACCENT}
         onMouseLeave={e => e.currentTarget.style.color = C.text}
@@ -274,15 +353,12 @@ function SuggestedCard({ u, onConnect, sentIds, C }) {
 
       {u.major && (
         <p style={{ fontSize: 12, color: C.muted, margin: "4px 0 0", fontFamily: "'Archivo', sans-serif" }}>
-          {u.major}
+          {normalizeMajor(u.major)}
         </p>
       )}
 
       {u.mutual_count > 0 && (
-        <p style={{
-          fontSize: 11, color: ACCENT, marginTop: 6, fontWeight: 600,
-          fontFamily: "'JetBrains Mono', monospace",
-        }}>
+        <p style={{ fontSize: 11, color: ACCENT, marginTop: 6, fontWeight: 600, fontFamily: "'JetBrains Mono', monospace" }}>
           {u.mutual_count} ortaq bağlantı
         </p>
       )}
@@ -298,8 +374,7 @@ function SuggestedCard({ u, onConnect, sentIds, C }) {
           background: sent ? C.accentWash : ACCENT,
           border: sent ? `1px solid rgba(30,144,255,0.25)` : "none",
           color: sent ? ACCENT : "#fff",
-          fontSize: 13, fontWeight: 700,
-          fontFamily: "'Archivo', sans-serif",
+          fontSize: 13, fontWeight: 700, fontFamily: "'Archivo', sans-serif",
           boxShadow: sent ? "none" : "0 4px 14px rgba(30,144,255,0.30)",
           transition: "opacity 0.15s",
         }}
@@ -317,11 +392,9 @@ function EmptyState({ Icon, title, sub, C }) {
   return (
     <div style={{ textAlign: "center", padding: "64px 20px", fontFamily: "'Archivo', sans-serif" }}>
       <div style={{
-        width: 72, height: 72, borderRadius: "50%",
-        background: C.accentWash,
+        width: 72, height: 72, borderRadius: "50%", background: C.accentWash,
         display: "flex", alignItems: "center", justifyContent: "center",
-        margin: "0 auto 18px",
-        border: `1px solid rgba(30,144,255,0.18)`,
+        margin: "0 auto 18px", border: `1px solid rgba(30,144,255,0.18)`,
       }}>
         <Icon size={28} color={ACCENT} />
       </div>
@@ -397,11 +470,7 @@ export default function Connections() {
   };
 
   return (
-    <div style={{
-      minHeight: "100vh",
-      background: C.bg,
-      fontFamily: "'Archivo', sans-serif",
-    }}>
+    <div style={{ minHeight: "100vh", background: C.bg, fontFamily: "'Archivo', sans-serif" }}>
       <div style={{ maxWidth: 900, margin: "0 auto", padding: isMobile ? "20px 12px" : "32px 20px" }}>
 
         {/* Page header */}
@@ -411,7 +480,7 @@ export default function Connections() {
               fontSize: 11, fontWeight: 600, letterSpacing: "0.08em",
               color: ACCENT, fontFamily: "'JetBrains Mono', monospace",
               textTransform: "uppercase",
-            }}>NETWORK</span>
+            }}>ŞƏBƏKƏ</span>
           </div>
           <h1 style={{
             fontSize: isMobile ? 22 : 26, fontWeight: 900,
@@ -428,12 +497,8 @@ export default function Connections() {
         {/* Tab bar */}
         <div style={{
           display: "flex", gap: 2,
-          background: C.surface,
-          border: `1px solid ${C.border}`,
-          borderRadius: 14,
-          padding: 4,
-          marginBottom: 24,
-          width: "fit-content",
+          background: C.surface, border: `1px solid ${C.border}`,
+          borderRadius: 14, padding: 4, marginBottom: 24, width: "fit-content",
         }}>
           {TABS.map(({ key, Icon, label, labelKey }) => {
             const active = tab === key;
@@ -448,12 +513,14 @@ export default function Connections() {
                   borderRadius: 10, border: "none", cursor: "pointer",
                   fontSize: 13, fontWeight: active ? 800 : 600,
                   background: active ? ACCENT : "transparent",
-                  color: active ? "#fff" : C.muted,
+                  color: active ? "#fff" : C.textSoft,
                   boxShadow: active ? "0 4px 14px rgba(30,144,255,0.30)" : "none",
                   transition: "all 0.15s",
                   fontFamily: "'Archivo', sans-serif",
                   whiteSpace: "nowrap",
                 }}
+                onMouseEnter={e => { if (!active) e.currentTarget.style.color = C.text; }}
+                onMouseLeave={e => { if (!active) e.currentTarget.style.color = C.textSoft; }}
               >
                 <Icon size={13} />
                 {labelKey ? t(labelKey) : label}
