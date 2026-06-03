@@ -304,33 +304,38 @@ function LeftNav({ C, dark, user, onCompose, onToggleTheme }) {
   );
 }
 
-function BottomNav({ C, onCompose }) {
+function BottomNav({ C, user, onCompose }) {
   const location = useLocation();
   const navigate = useNavigate();
   const p = location.pathname;
 
   const items = [
-    { path: "/feed", icon: <Home size={22} /> },
-    { path: "/search", icon: <Search size={22} /> },
-    { path: "/connections", icon: <Users size={22} /> },
-    { path: "/messages", icon: <MessageSquare size={22} /> },
-    { path: "/profile", icon: <User size={22} /> },
+    { path: "/feed",        icon: <Home size={21} /> },
+    { path: "/search",      icon: <Search size={21} /> },
+    { path: "/radar",       icon: <TrendingUp size={21} /> },
+    { path: "/connections", icon: <Users size={21} /> },
+    { path: "/messages",    icon: <MessageSquare size={21} /> },
+    { path: "/notifications", icon: <Bell size={21} /> },
+    { path: "/profile",     icon: <User size={21} /> },
+    ...(user?.is_admin ? [{ path: "/admin", icon: <Shield size={21} /> }] : []),
   ];
 
   return (
     <div style={{
       position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 100,
-      height: 60, background: C.barBlur,
+      height: 58, background: C.barBlur,
       backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)",
       borderTop: `1px solid ${C.divider}`,
       display: "flex", alignItems: "stretch",
+      overflowX: "auto", scrollbarWidth: "none",
     }}>
       {items.map((item, i) => {
-        const isActive = item.path && (p === item.path || (item.path !== "/feed" && item.path !== "/profile" && p.startsWith(item.path)));
+        const isActive = p === item.path || (item.path !== "/feed" && item.path !== "/profile" && p.startsWith(item.path));
         return (
-          <button key={i} onClick={() => item.compose ? onCompose() : navigate(item.path)}
+          <button key={i} onClick={() => navigate(item.path)}
             style={{
-              flex: 1, display: "flex", alignItems: "center", justifyContent: "center",
+              flex: "0 0 auto", minWidth: 52,
+              display: "flex", alignItems: "center", justifyContent: "center",
               border: "none", background: "transparent", cursor: "pointer",
               color: isActive ? C.accent : C.muted, transition: "color .12s",
             }}>
@@ -1409,7 +1414,7 @@ export default function Feed() {
       )}
 
       {/* Mobile bottom nav */}
-      {isMobile && <BottomNav C={C} onCompose={() => setMobileComposer(true)} />}
+      {isMobile && <BottomNav C={C} user={user} onCompose={() => setMobileComposer(true)} />}
 
       {/* Report modal */}
       {reportPostId && (
