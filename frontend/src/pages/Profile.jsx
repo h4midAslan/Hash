@@ -447,12 +447,6 @@ export default function Profile() {
                     <button onClick={() => cvInputRef.current?.click()} disabled={cvParsing} style={btnGhost({ opacity: cvParsing ? 0.6 : 1 })}>
                       <FileText size={14} />{cvParsing ? "Oxunur..." : "CV yüklə"}
                     </button>
-                    <button onClick={() => navigate("/messages")} style={btnGhost()}>
-                      <Mail size={14} />Mesajlar
-                    </button>
-                    <button onClick={() => navigate("/settings")} style={btnGhost()}>
-                      <Settings size={14} />Parametrlər
-                    </button>
                   </>
                 ) : isConnected ? (
                   <button onClick={() => navigate(`/messages?to=${user.id}&name=${encodeURIComponent(user.full_name)}`)} style={btnPrimary()}>
