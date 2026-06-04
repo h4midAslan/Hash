@@ -31,6 +31,7 @@ const ArticleEditor = lazy(() => import("./pages/ArticleEditor"));
 const ArticleView = lazy(() => import("./pages/ArticleView"));
 const Notifications = lazy(() => import("./pages/Notifications"));
 const Radar = lazy(() => import("./pages/Radar"));
+const CVGenerator = lazy(() => import("./pages/CVGenerator"));
 
 const ACCENT = "#1E90FF";
 
@@ -413,6 +414,7 @@ export default function App() {
         <Route path="/radar" element={<AppShell><Radar /></AppShell>} />
         <Route path="/settings" element={<AppShell><Settings_ /></AppShell>} />
         <Route path="/admin" element={<AppShell adminCheck><Admin /></AppShell>} />
+        <Route path="/cv" element={<AppShell><CVGenerator /></AppShell>} />
         <Route path="*" element={<Navigate to="/feed" />} />
       </Routes>
     </BrowserRouter>
