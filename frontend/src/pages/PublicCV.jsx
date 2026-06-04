@@ -92,22 +92,22 @@ body { background: #f1f5f9; font-family: 'Inter', system-ui, -apple-system, sans
 }
 
 /* BODY */
-.cv-body { display: grid; grid-template-columns: 28% 72%; }
-.cv-left { background: #f8fafc; border-right: 1px solid #e2e8f0; padding: 28px 22px; }
-.cv-right { padding: 28px 32px; }
-.block { margin-bottom: 26px; }
+.cv-body { display: grid; grid-template-columns: 32% 68%; }
+.cv-left { background: #f8fafc; border-right: 1px solid #e2e8f0; padding: 28px 20px; }
+.cv-right { padding: 28px 32px; background: #fff; }
+.block { margin-bottom: 28px; }
 .block:last-child { margin-bottom: 0; }
 
 /* skills */
-.skill-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
+.skill-wrap { display: flex; flex-wrap: wrap; gap: 5px; }
 .skill-tag {
-  background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; border-radius: 4px;
-  padding: 3px 10px; font-size: 12px; font-weight: 500;
-  transition: transform .14s ease, box-shadow .14s ease; cursor: default;
+  background: #fff; color: #374151; border: 1px solid #d1d5db; border-radius: 5px;
+  padding: 3px 9px; font-size: 11px; font-weight: 500; cursor: default;
+  transition: border-color .12s, color .12s;
 }
-.skill-tag:hover { transform: scale(1.04); box-shadow: 0 2px 8px rgba(30,144,255,.2); }
-.more-btn { margin-top: 9px; background: none; border: none; color: #1d4ed8; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer; padding: 0; display: block; }
-.more-btn:hover { text-decoration: underline; }
+.skill-tag:hover { border-color: #6b7280; color: #111827; }
+.more-btn { margin-top: 9px; background: none; border: none; color: #6b7280; font-family: inherit; font-size: 11.5px; font-weight: 600; cursor: pointer; padding: 0; display: block; }
+.more-btn:hover { color: #1a4a8a; text-decoration: underline; }
 
 /* contact */
 .contact-row { display: flex; align-items: center; gap: 9px; color: #374151; font-size: 12.5px; text-decoration: none; transition: color .15s ease; }
@@ -128,18 +128,18 @@ body { background: #f1f5f9; font-family: 'Inter', system-ui, -apple-system, sans
 .now-pill { display: inline-block; margin-left: 8px; vertical-align: middle; background: #dcfce7; color: #15803d; font-size: 10px; font-weight: 700; padding: 1px 7px; border-radius: 20px; }
 
 /* projects */
-.proj-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.proj-list { display: flex; flex-direction: column; gap: 12px; }
 .proj-card {
-  display: block; background: #fff; border: 1px solid #e2e8f0; border-radius: 10px;
-  padding: 14px 16px; box-shadow: 0 1px 3px rgba(0,0,0,.05); text-decoration: none;
-  transition: transform .16s ease, box-shadow .16s ease;
+  display: block; background: #fff; border: 1px solid #e8ecf1; border-radius: 10px;
+  padding: 13px 16px; box-shadow: 0 1px 2px rgba(0,0,0,.04); text-decoration: none;
+  transition: border-color .16s ease, box-shadow .16s ease;
 }
-.proj-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,.1); }
-.proj-top { display: flex; align-items: center; gap: 7px; }
-.proj-title { font-size: 13.5px; font-weight: 700; color: #0f172a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.proj-desc { font-size: 12px; color: #6b7280; line-height: 1.55; margin: 6px 0 8px; }
-.proj-tech { display: flex; flex-wrap: wrap; gap: 5px; }
-.tech-tag { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; font-size: 11px; padding: 2px 7px; border-radius: 3px; }
+.proj-card:hover { border-color: #c7d2e0; box-shadow: 0 4px 14px rgba(0,0,0,.08); }
+.proj-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 3px; }
+.proj-title { font-size: 13.5px; font-weight: 700; color: #0f172a; }
+.proj-date { font-size: 11px; color: #94a3b8; white-space: nowrap; flex-shrink: 0; }
+.proj-desc { font-size: 12.5px; color: #64748b; line-height: 1.55; margin: 4px 0 6px; }
+.proj-stack { font-size: 11px; color: #64748b; font-family: 'JetBrains Mono', 'Fira Code', monospace; letter-spacing: 0.01em; }
 
 /* certificates */
 .cert-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; border-left: 3px solid #1E90FF; border-radius: 2px; padding: 2px 0 2px 12px; }
@@ -155,8 +155,15 @@ body { background: #f1f5f9; font-family: 'Inter', system-ui, -apple-system, sans
 .reveal.in { opacity: 1; transform: translateY(0); }
 
 /* section title */
-.sec-title { display: flex; align-items: center; gap: 7px; margin-bottom: 10px; }
-.sec-title span { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: #64748b; }
+.sec-title {
+  display: flex; align-items: center; gap: 7px;
+  margin-bottom: 12px; padding-bottom: 7px;
+  border-bottom: 1px solid #f1f5f9;
+}
+.sec-title span {
+  font-size: 10.5px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.14em; color: #1E90FF;
+}
 
 /* responsive */
 @media (max-width: 640px) {
@@ -168,7 +175,7 @@ body { background: #f1f5f9; font-family: 'Inter', system-ui, -apple-system, sans
   .cv-body { grid-template-columns: 1fr; }
   .cv-left { border-right: none; border-bottom: 1px solid #e2e8f0; }
   .cv-right { padding: 24px 22px; }
-  .proj-grid { grid-template-columns: 1fr; }
+  .proj-list { gap: 8px; }
   .cv-topbar-name { display: none; }
   .btn span { display: none; }
   .btn { padding: 8px; }
@@ -570,23 +577,29 @@ function CVPage({ profile }) {
 
               {projects.length > 0 && (
                 <Reveal className="block">
-                  <SectionTitle icon={<IconFolder size={13} stroke="#1a4a8a" />}>{t.projects}</SectionTitle>
-                  <div className="proj-grid">
-                    {projects.map((p, i) => (
-                      <a key={i} className="proj-card" href={p.github_url || undefined} target={p.github_url ? '_blank' : undefined} rel="noopener noreferrer">
-                        <div className="proj-top">
-                          <IconFolder size={13} stroke="#1a4a8a" />
-                          <span className="proj-title">{p.title}</span>
-                          {p.github_url && <IconExternal size={12} stroke="#94a3b8" style={{ marginLeft: 'auto' }} />}
-                        </div>
-                        {p.description && <p className="proj-desc">{p.description}</p>}
-                        {asList(p.technologies).length > 0 && (
-                          <div className="proj-tech">
-                            {asList(p.technologies).map((t, j) => <span key={j} className="tech-tag">{t}</span>)}
+                  <SectionTitle icon={<IconFolder size={13} stroke="#1E90FF" />}>{t.projects}</SectionTitle>
+                  <div className="proj-list">
+                    {projects.map((proj, i) => {
+                      const techs = asList(proj.technologies);
+                      return (
+                        <a key={i} className="proj-card" href={proj.github_url || undefined} target={proj.github_url ? '_blank' : undefined} rel="noopener noreferrer">
+                          <div className="proj-top">
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                              <IconFolder size={12} stroke="#1E90FF" />
+                              <span className="proj-title">{proj.title}</span>
+                              {proj.github_url && <IconExternal size={11} stroke="#94a3b8" />}
+                            </div>
+                            {proj.github_url && (
+                              <span className="proj-date">GitHub ↗</span>
+                            )}
                           </div>
-                        )}
-                      </a>
-                    ))}
+                          {techs.length > 0 && (
+                            <div className="proj-stack">{techs.join(' · ')}</div>
+                          )}
+                          {proj.description && <p className="proj-desc">{proj.description}</p>}
+                        </a>
+                      );
+                    })}
                   </div>
                 </Reveal>
               )}
@@ -598,12 +611,13 @@ function CVPage({ profile }) {
                     {certificates.map((c, i) => (
                       <div className="cert-row" key={i}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 0 }}>
-                          <IconAward size={14} stroke="#1a4a8a" />
+                          <IconAward size={14} stroke="#1E90FF" />
                           <div style={{ minWidth: 0 }}>
-                            <div style={{ fontSize: 13, fontWeight: 700, color: '#0f172a' }}>{c.name}</div>
-                            <div style={{ fontSize: 12, color: '#6b7280' }}>
-                              {c.issuer}{c.issue_date ? <span style={{ color: '#9ca3af' }}> · {fmtDate(c.issue_date, t.months)}</span> : null}
+                            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 }}>
+                              <span style={{ fontSize: 13, fontWeight: 700, color: '#0f172a' }}>{c.name}</span>
+                              {c.issue_date && <span style={{ fontSize: 11, color: '#94a3b8', whiteSpace: 'nowrap', flexShrink: 0 }}>{fmtDate(c.issue_date, t.months)}</span>}
                             </div>
+                            <div style={{ fontSize: 11.5, color: '#6b7280', marginTop: 1 }}>{c.issuer}</div>
                           </div>
                         </div>
                         {c.credential_url && (
