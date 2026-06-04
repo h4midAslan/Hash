@@ -4,6 +4,25 @@ import api from "../api/client";
 
 const ACCENT = "#1E90FF";
 
+function HashMark({ size = 32 }) {
+  return (
+    <svg viewBox="0 0 100 100" width={size} height={size} style={{ display: "block" }}>
+      <g fill="#ffffff">
+        <rect x="32" y="10" width="11" height="80" />
+        <rect x="57" y="10" width="11" height="80" />
+        <rect x="10" y="32" width="80" height="11" />
+        <rect x="10" y="57" width="80" height="11" />
+      </g>
+      <g fill="#00CFFF">
+        <circle cx="37" cy="37" r="7" />
+        <circle cx="63" cy="37" r="7" />
+        <circle cx="37" cy="63" r="7" />
+        <circle cx="63" cy="63" r="7" />
+      </g>
+    </svg>
+  );
+}
+
 function useFonts() {
   useEffect(() => {
     if (document.getElementById("hash-fonts")) return;
@@ -67,11 +86,12 @@ export default function Login() {
         <div style={{ textAlign: "center", marginBottom: 36 }}>
           <Link to="/" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 12, justifyContent: "center" }}>
             <div style={{
-              width: 48, height: 48, borderRadius: 14, background: ACCENT,
+              width: 48, height: 48, borderRadius: 14, background: "#071428",
               display: "flex", alignItems: "center", justifyContent: "center",
-              color: "#fff", fontWeight: 900, fontSize: 28,
               boxShadow: "0 8px 24px rgba(30,144,255,0.45)",
-            }}>#</div>
+            }}>
+              <HashMark size={34} />
+            </div>
             <span style={{
               fontWeight: 900, fontSize: 26, letterSpacing: "0.06em",
               color: "#ffffff", fontFamily: "'Archivo', sans-serif",
