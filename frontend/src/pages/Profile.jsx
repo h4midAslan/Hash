@@ -588,7 +588,7 @@ export default function Profile() {
                 <InputField C={C} label="Username" hint="(hashcampus.site/u/...)">
                   <div style={{ display: "flex", alignItems: "center", border: C.border, borderRadius: 11, overflow: "hidden" }}>
                     <span style={{ padding: "10px 12px", fontSize: 13.5, color: C.muted, background: C.bg, borderRight: C.border, whiteSpace: "nowrap", fontFamily: "'JetBrains Mono', monospace" }}>u/</span>
-                    <input type="text" value={form.username || ""} onChange={e => setForm({ ...form, username: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, "") })} placeholder="hamid_dev" style={{ ...inputStyle(C), border: "none", borderRadius: 0, flex: 1 }} />
+                    <input type="text" value={form.username || ""} onChange={e => setForm({ ...form, username: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, "") })} placeholder="username" style={{ ...inputStyle(C), border: "none", borderRadius: 0, flex: 1 }} />
                   </div>
                 </InputField>
               </div>
